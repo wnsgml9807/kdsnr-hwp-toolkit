@@ -148,19 +148,28 @@ def _apply_role_style(src: Paragraph, slot: Slot) -> Paragraph:
     has_visual = any(
         isinstance(it, (OpaqueInlineItem, TableItem)) for it in items
     )
+    has_picture = any(
+        isinstance(it, OpaqueInlineItem) and "pic" in it.tag for it in items
+    )
     # Visual paragraphs (picture/equation containers) keep src's paraPr as
     # well: templet slot paraPr (e.g. math PIC_BLOCK with `lineSpacing=60%`)
     # constrains line height too tight for the visual's actual vertsize.
-    # Src's paraPr was authored to fit the visual it carries. The cached
-    # lineseg vpos, however, is absolute in the source page; rebase it so
-    # the split question flows sequentially instead of jumping down.
+    # Src's paraPr was authored to fit the visual it carries. For picture
+    # paragraphs, the cached lineseg vpos is absolute in the source page;
+    # rebase only those so split questions don't jump down. Equation-only
+    # paragraphs keep their stored vpos because rhwp uses it for display
+    # equation spacing.
     if has_visual:
         return replace(
             src,
             items=new_items,
             starts_new_page=False,
             starts_new_column=False,
-            linesegs_xml=_rebase_lineseg_vertpos(src.linesegs_xml),
+            linesegs_xml=(
+                _rebase_lineseg_vertpos(src.linesegs_xml)
+                if has_picture
+                else src.linesegs_xml
+            ),
         )
     return replace(
         src,

@@ -34,6 +34,7 @@ _QNUM_RE = re.compile(r"^(\s*\d+\s*\.\s*)")
 # first char of a balmun paragraph — src often carries leading 전각 공백 that
 # breaks the templet's negative-indent (내어쓰기) for question numbers.
 _BALMUN_LEADING_WS_RE = re.compile(r"^[\s　]+")
+_LINESEG_RE = re.compile(r'<hp:lineseg\b[^/]*/>')
 
 
 def _restamp_char_shape(item, cs_id: int):
@@ -79,6 +80,42 @@ def _strip_seonji_tab(items: tuple, slot: Slot) -> tuple:
     return (items[0], space) + tuple(items[2:])
 
 
+def _rebase_lineseg_vertpos(xml: str) -> str:
+    """Keep line heights but make visual paragraph vpos local to the split item."""
+    matches = list(_LINESEG_RE.finditer(xml or ""))
+    if not matches:
+        return xml
+
+    def read_vp(seg: str) -> int | None:
+        m = re.search(r'\bvertpos="(-?\d+)"', seg)
+        return int(m.group(1)) if m else None
+
+    first_vp = read_vp(matches[0].group())
+    if first_vp in (None, 0):
+        return xml
+
+    parts: list[str] = []
+    last_end = 0
+    for match in matches:
+        seg = match.group()
+        vp = read_vp(seg)
+        parts.append(xml[last_end:match.start()])
+        if vp is None:
+            parts.append(seg)
+        else:
+            parts.append(
+                re.sub(
+                    r'\bvertpos="-?\d+"',
+                    f'vertpos="{max(0, vp - first_vp)}"',
+                    seg,
+                    count=1,
+                )
+            )
+        last_end = match.end()
+    parts.append(xml[last_end:])
+    return "".join(parts)
+
+
 def _apply_role_style(src: Paragraph, slot: Slot) -> Paragraph:
     """Non-box path: templet OWNS paragraph paraPr/style/cs and item cs.
 
@@ -114,13 +151,16 @@ def _apply_role_style(src: Paragraph, slot: Slot) -> Paragraph:
     # Visual paragraphs (picture/equation containers) keep src's paraPr as
     # well: templet slot paraPr (e.g. math PIC_BLOCK with `lineSpacing=60%`)
     # constrains line height too tight for the visual's actual vertsize.
-    # Src's paraPr was authored to fit the visual it carries.
+    # Src's paraPr was authored to fit the visual it carries. The cached
+    # lineseg vpos, however, is absolute in the source page; rebase it so
+    # the split question flows sequentially instead of jumping down.
     if has_visual:
         return replace(
             src,
             items=new_items,
             starts_new_page=False,
             starts_new_column=False,
+            linesegs_xml=_rebase_lineseg_vertpos(src.linesegs_xml),
         )
     return replace(
         src,

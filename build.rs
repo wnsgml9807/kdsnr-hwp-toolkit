@@ -17,6 +17,9 @@ fn main() {
     }
 
     let bin_dir = manifest_dir.join("src/kdsnr_hwp_toolkit/bin");
+    if bin_dir.join(format!("{}.xz", exe_name)).exists() {
+        return;
+    }
     fs::create_dir_all(&bin_dir).expect("failed to create Python package bin dir");
     fs::copy(&built, bin_dir.join(exe_name)).expect("failed to copy rhwp into Python package");
 }

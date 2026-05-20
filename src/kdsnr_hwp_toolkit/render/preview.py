@@ -4,8 +4,9 @@ import os
 import re
 import subprocess
 import tempfile
+import lzma
 from pathlib import Path
-from shutil import copyfile
+from shutil import copyfile, copyfileobj
 
 
 _CROP_LEFT_X_FRACTION = 0.04
@@ -37,7 +38,26 @@ def _default_rhwp_bin() -> Path:
     package_bin = Path(__file__).resolve().parents[1] / "bin" / exe_name
     if package_bin.exists():
         return package_bin
+    package_xz = package_bin.with_name(f"{exe_name}.xz")
+    if package_xz.exists():
+        return _extract_packaged_rhwp(package_xz, exe_name)
     return source_bin
+
+
+def _extract_packaged_rhwp(package_xz: Path, exe_name: str) -> Path:
+    cache_root = Path(os.environ.get("KDSNR_HWP_TOOLKIT_CACHE", Path.home() / ".cache" / "kdsnr-hwp-toolkit"))
+    cache_root.mkdir(parents=True, exist_ok=True)
+    stamp = f"{package_xz.stat().st_size}-{int(package_xz.stat().st_mtime)}"
+    out_dir = cache_root / stamp
+    out_dir.mkdir(parents=True, exist_ok=True)
+    target = out_dir / exe_name
+    if not target.exists():
+        tmp = target.with_suffix(target.suffix + ".tmp")
+        with lzma.open(package_xz, "rb") as src, tmp.open("wb") as dst:
+            copyfileobj(src, dst)
+        tmp.replace(target)
+    _ensure_executable(target)
+    return target
 
 
 def _ensure_executable(path: Path) -> None:

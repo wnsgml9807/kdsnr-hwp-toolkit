@@ -2,7 +2,7 @@
 name = "kdsnr-render"
 version = "0.1.0"
 edition = "2021"
-description = "Hancom HWPX rendering engine — Hnc::Shape rendering primitives (Flag/BWMode/Hit/Theme/Surface) byte-equivalent port from libHncDrawingEngine + libHncFoundation."
+description = "HWPX rendering primitives for the KDSNR HWP toolkit."
 license = "MIT"
 
 [lib]

@@ -201,13 +201,7 @@ impl Guid {
         // raw 의 zero-init 은 위 Guid::new 가 처리.
         // 그 후 CoCreateGuid 가 16B 영역에 v4 UUID 작성.
         let mut bytes = [0u8; 16];
-        unsafe {
-            // macOS arc4random_buf(buf, len) — entropy 보장 + non-blocking.
-            extern "C" {
-                fn arc4random_buf(buf: *mut std::ffi::c_void, nbytes: usize);
-            }
-            arc4random_buf(bytes.as_mut_ptr() as *mut std::ffi::c_void, 16);
-        }
+        fill_random_bytes(&mut bytes);
         // RFC 4122 v4 variant bits:
         //   bytes[6] = (bytes[6] & 0x0F) | 0x40   ; version = 4
         //   bytes[8] = (bytes[8] & 0x3F) | 0x80   ; variant = RFC 4122
@@ -237,6 +231,41 @@ impl Guid {
             && self.data4[5] == 0
             && self.data4[6] == 0
             && self.data4[7] == 0
+    }
+}
+
+#[cfg(windows)]
+fn fill_random_bytes(bytes: &mut [u8; 16]) {
+    const BCRYPT_USE_SYSTEM_PREFERRED_RNG: u32 = 0x0000_0002;
+
+    #[link(name = "bcrypt")]
+    extern "system" {
+        fn BCryptGenRandom(
+            h_algorithm: *mut std::ffi::c_void,
+            pb_buffer: *mut u8,
+            cb_buffer: u32,
+            dw_flags: u32,
+        ) -> i32;
+    }
+
+    let status = unsafe {
+        BCryptGenRandom(
+            std::ptr::null_mut(),
+            bytes.as_mut_ptr(),
+            bytes.len() as u32,
+            BCRYPT_USE_SYSTEM_PREFERRED_RNG,
+        )
+    };
+    assert!(status >= 0, "BCryptGenRandom failed with status {status:#x}");
+}
+
+#[cfg(not(windows))]
+fn fill_random_bytes(bytes: &mut [u8; 16]) {
+    unsafe {
+        extern "C" {
+            fn arc4random_buf(buf: *mut std::ffi::c_void, nbytes: usize);
+        }
+        arc4random_buf(bytes.as_mut_ptr() as *mut std::ffi::c_void, bytes.len());
     }
 }
 

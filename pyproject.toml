@@ -13,7 +13,9 @@ classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: Implementation :: CPython",
-    "Operating System :: OS Independent",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
     "Intended Audience :: Education",
 ]
 
@@ -31,7 +33,6 @@ include = [
     { path = "vendor/rhwp/Cargo.toml", format = "sdist" },
     { path = "vendor/rhwp/LICENSE", format = "sdist" },
     { path = "vendor/rhwp/src/**/*", format = "sdist" },
-    { path = "hft-decoder/README.md", format = "sdist" },
     { path = "hft-decoder/rust/Cargo.toml", format = "sdist" },
     { path = "hft-decoder/rust/src/**/*", format = "sdist" },
     { path = "hft-decoder/rust/fonts/**/*", format = "sdist" },

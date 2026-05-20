@@ -54,6 +54,10 @@ def _strip_binary(path: Path) -> None:
 
 
 def _cargo_env() -> dict[str, str]:
+    if not hasattr(os, "environb"):
+        env = os.environ.copy()
+        env.pop("_", None)
+        return env
     env = {}
     for key_b, value_b in os.environb.items():
         try:

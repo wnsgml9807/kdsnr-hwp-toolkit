@@ -18,11 +18,14 @@ venv/
 # Native build artifacts
 /target/
 **/target/
+/dist/
 *.so
 *.dylib
 *.dll
 
 # Local/probe outputs
+/HANDOFF/
+/docs/
 /work/
 /original/
 /templet/
@@ -38,9 +41,12 @@ venv/
 *.png
 *.hwp
 *.hwpx
+/src/kdsnr_hwp_toolkit/bin/rhwp
+/src/kdsnr_hwp_toolkit/bin/rhwp.exe
 
 # Keep package resources/templates tracked even though root samples are ignored.
 !src/kdsnr_hwp_toolkit/resources/templates/*.hwpx
+!src/kdsnr_hwp_toolkit/bin/.gitkeep
 
 # Test/probe corpora are local and large; keep source code and package data only.
 /tests/
@@ -60,6 +66,9 @@ venv/
 /vendor/rhwp/web/
 /hft-decoder/examples/
 /hft-decoder/rust/examples/
+/hft-decoder/README.md
+/vendor/rhwp/*.md
+/vendor/rhwp/.github/
 
 # Nested vendored git metadata should not enter the top-level repository.
 **/.git/

@@ -1618,6 +1618,33 @@ impl LayoutEngine {
         let col_width_hu = (col_area.width / self.dpi * 7200.0).round() as i32;
         let mut prev_layout_para: Option<usize> = None;
         let mut prev_tac_seg_applied = false;
+        let is_display_equation_para = |pi: usize| {
+            paragraphs.get(pi).is_some_and(|p| {
+                let text_is_punct_only = p.text.chars().all(|ch| {
+                    ch.is_whitespace()
+                        || matches!(
+                            ch,
+                            ',' | '.'
+                                | ';'
+                                | ':'
+                                | '('
+                                | ')'
+                                | '['
+                                | ']'
+                                | '{'
+                                | '}'
+                                | '，'
+                                | '。'
+                                | '、'
+                                | 'ㆍ'
+                                | '·'
+                        )
+                });
+                text_is_punct_only
+                    && p.controls.iter().any(|c| matches!(c, Control::Equation(_)))
+                    && p.controls.iter().all(|c| matches!(c, Control::Equation(_)))
+            })
+        };
 
         // 고정값 줄간격 TAC 표 병행 (Task #9): 표 하단 비교용
         let mut fix_table_start_y: f64 = 0.0;
@@ -1707,7 +1734,9 @@ impl LayoutEngine {
                                 })
                             })
                             .unwrap_or(false);
-                        if !prev_has_overlay_shape {
+                        let crosses_display_equation = is_display_equation_para(prev_pi)
+                            || is_display_equation_para(item_para);
+                        if !prev_has_overlay_shape && !crosses_display_equation {
                             if let Some(prev_para) = paragraphs.get(prev_pi) {
                                 // Task #332 Stage 5: vpos correction trigger 조건 완화 —
                                 // 기존엔 segment_width 가 col_width 와 ±3000 HWPUNIT 이내일 때만 적용해

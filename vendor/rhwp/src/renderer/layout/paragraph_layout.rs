@@ -51,6 +51,99 @@ pub(crate) fn ensure_min_baseline(raw_baseline: f64, max_font_size: f64) -> f64 
     raw_baseline.max(min_baseline)
 }
 
+fn looks_like_short_tab_marker(text: &str) -> bool {
+    let trimmed = text.trim();
+    if trimmed.is_empty() || trimmed.chars().count() > 8 {
+        return false;
+    }
+    if trimmed.chars().any(char::is_whitespace) {
+        return false;
+    }
+    trimmed.ends_with('.')
+        || trimmed.ends_with(')')
+        || trimmed.chars().all(|c| {
+            matches!(
+                c,
+                'ㄱ'..='ㅎ'
+                    | '가'..='힣'
+                    | '①'..='⑳'
+                    | '㉠'..='㉭'
+                    | '0'..='9'
+                    | 'A'..='Z'
+                    | 'a'..='z'
+                    | '.'
+                    | ')'
+                    | '('
+            )
+        })
+}
+
+fn compute_cell_tab_hanging_indent(
+    composed: &ComposedParagraph,
+    styles: &ResolvedStyleSet,
+    line_idx: usize,
+    tab_width: f64,
+    tab_stops: &[TabStop],
+    auto_tab_right: bool,
+    available_width: f64,
+) -> f64 {
+    if line_idx == 0 || composed.lines.get(line_idx).map_or(0, |l| l.char_start) == 0 {
+        return 0.0;
+    }
+
+    let mut global_tab_idx = 0usize;
+    for prior_line in composed.lines.iter().take(line_idx) {
+        let mut line_x = 0.0;
+        let mut line_prefix = String::new();
+        for run in &prior_line.runs {
+            let mut run_prefix = String::new();
+            for ch in run.text.chars() {
+                if ch == '\t' {
+                    if !looks_like_short_tab_marker(&line_prefix) {
+                        return 0.0;
+                    }
+                    run_prefix.push(ch);
+                    let mut ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                    ts.default_tab_width = tab_width;
+                    ts.tab_stops = tab_stops.to_vec();
+                    ts.auto_tab_right = auto_tab_right;
+                    ts.available_width = available_width;
+                    ts.line_x_offset = line_x;
+                    ts.inline_tabs = composed
+                        .tab_extended
+                        .get(global_tab_idx..)
+                        .unwrap_or(&[])
+                        .to_vec();
+                    let positions = compute_char_positions(&run_prefix, &ts);
+                    let indent = line_x + positions.last().copied().unwrap_or(0.0);
+                    if indent > 4.0 && indent < available_width * 0.45 {
+                        return indent;
+                    }
+                    return 0.0;
+                }
+                run_prefix.push(ch);
+                line_prefix.push(ch);
+            }
+
+            let mut ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+            ts.default_tab_width = tab_width;
+            ts.tab_stops = tab_stops.to_vec();
+            ts.auto_tab_right = auto_tab_right;
+            ts.available_width = available_width;
+            ts.line_x_offset = line_x;
+            ts.inline_tabs = composed
+                .tab_extended
+                .get(global_tab_idx..)
+                .unwrap_or(&[])
+                .to_vec();
+            line_x += estimate_text_width(&run.text, &ts);
+            global_tab_idx += run.text.chars().filter(|c| *c == '\t').count();
+        }
+    }
+
+    0.0
+}
+
 /// run 이 `\t` 로 끝날 때, 그 마지막 `\t` 가 cross-run 우측/가운데 탭으로 동작해야 하는지 판정한다.
 ///
 /// HWP 본문 탭에는 두 가지 정보원이 있다:
@@ -1201,6 +1294,8 @@ impl LayoutEngine {
                     ),
                 )
             };
+            let raw_baseline_px = hwpunit_to_px(comp_line.baseline_distance, self.dpi);
+            let baseline_for_inline_objects = raw_baseline_px.max(baseline);
 
             // 들여쓰기/내어쓰기: 문단 여백은 무조건 적용
             // - 보통(ind=0): 모든 줄 margin_left
@@ -1392,6 +1487,40 @@ impl LayoutEngine {
                 (col_area.x, col_area.width)
             };
 
+            let inline_offset = if line_idx == start_line {
+                first_line_x_offset
+            } else {
+                0.0
+            };
+            // 번호/글머리표 마커: 모든 줄에서 마커 폭만큼 가용폭 차감 (행잉 인덴트)
+            let num_offset = if numbering_width > 0.0 {
+                numbering_width
+            } else {
+                0.0
+            };
+            let base_available_width = effective_col_w
+                - effective_margin_left
+                - effective_margin_right
+                - inline_offset
+                - num_offset;
+            // HWPX lineSeg 가 셀 내부의 "짧은 마커 + 탭" continuation indent 를
+            // horzpos 에 싣지 않는 케이스가 있다. 원본 탭 위치를 복원해서 둘째 줄 이후를
+            // 마커 뒤 본문 시작 위치에 맞춘다.
+            if cell_ctx.is_some() && line_idx > 0 && base_available_width > 0.0 {
+                let hanging_indent = compute_cell_tab_hanging_indent(
+                    composed,
+                    styles,
+                    line_idx,
+                    tab_width,
+                    &tab_stops,
+                    auto_tab_right,
+                    base_available_width,
+                );
+                if hanging_indent > 0.0 {
+                    effective_margin_left += hanging_indent;
+                }
+            }
+
             // 2026-05-19: 모든 paragraph 에 stored vp 사용 (use_stored_vp).
             // 인라인 Shape 가 있는 줄은 stored vp 기반 위치 위에 추가 보정.
             let text_y = if use_stored_vp {
@@ -1441,17 +1570,6 @@ impl LayoutEngine {
                 ),
             );
 
-            let inline_offset = if line_idx == start_line {
-                first_line_x_offset
-            } else {
-                0.0
-            };
-            // 번호/글머리표 마커: 모든 줄에서 마커 폭만큼 가용폭 차감 (행잉 인덴트)
-            let num_offset = if numbering_width > 0.0 {
-                numbering_width
-            } else {
-                0.0
-            };
             let available_width = effective_col_w
                 - effective_margin_left
                 - effective_margin_right
@@ -2671,14 +2789,18 @@ impl LayoutEngine {
                                 // 2026-05-19: .max(y) → .max(y_para_origin). 분수가 line top
                                 // 위로 침범하는 것은 baseline 정렬의 정상 동작 (한컴은 line 위
                                 // 글자 baseline 까지 침범 허용). 단 paragraph top 위로는 금지.
+                                let min_eq_y = y_para_origin - (eq_h - line_height).max(0.0);
                                 let eq_y = if eq.baseline != 0 && eq_h > 0.0 {
                                     let bl_ratio = (eq.baseline as f64).clamp(0.0, 100.0) / 100.0;
-                                    (y + baseline - eq_h * bl_ratio).max(y_para_origin)
+                                    (y + baseline_for_inline_objects - eq_h * bl_ratio)
+                                        .max(min_eq_y)
                                 } else if hwp_eq_h > 0.0 && layout_box.height > 0.0 {
                                     let scale = hwp_eq_h / layout_box.height;
-                                    (y + baseline - layout_box.baseline * scale).max(y_para_origin)
+                                    (y + baseline_for_inline_objects - layout_box.baseline * scale)
+                                        .max(min_eq_y)
                                 } else {
-                                    (y + baseline - layout_box.baseline).max(y_para_origin)
+                                    (y + baseline_for_inline_objects - layout_box.baseline)
+                                        .max(min_eq_y)
                                 };
                                 let (eq_cell_idx, eq_cell_para_idx) =
                                     if let Some(ref ctx) = cell_ctx {
@@ -3217,14 +3339,17 @@ impl LayoutEngine {
                             // 한컴 저장 baseline (% of eq.height) 우선 — 동일 정책을 paragraph_layout
                             // 의 다른 인라인 수식 경로 (~line 1835) 와 통일.
                             // 2026-05-19: .max(y) → .max(y_para_origin) 동일 적용.
+                            let min_eq_y = y_para_origin - (eq_h - line_height).max(0.0);
                             let eq_y = if eq.baseline != 0 && eq_h > 0.0 {
                                 let bl_ratio = (eq.baseline as f64).clamp(0.0, 100.0) / 100.0;
-                                (y + baseline - eq_h * bl_ratio).max(y_para_origin)
+                                (y + baseline_for_inline_objects - eq_h * bl_ratio).max(min_eq_y)
                             } else if hwp_eq_h > 0.0 && layout_box.height > 0.0 {
                                 let scale = hwp_eq_h / layout_box.height;
-                                (y + baseline - layout_box.baseline * scale).max(y_para_origin)
+                                (y + baseline_for_inline_objects - layout_box.baseline * scale)
+                                    .max(min_eq_y)
                             } else {
-                                (y + baseline - layout_box.baseline).max(y_para_origin)
+                                (y + baseline_for_inline_objects - layout_box.baseline)
+                                    .max(min_eq_y)
                             };
                             let (eq_cell_idx, eq_cell_para_idx) = if let Some(ref ctx) = cell_ctx {
                                 (

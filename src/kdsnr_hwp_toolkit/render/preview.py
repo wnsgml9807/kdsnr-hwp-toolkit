@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -26,10 +27,26 @@ def _default_rhwp_bin() -> Path:
     env = os.environ.get("RHWP_BIN")
     if env:
         return Path(env)
+    exe_name = "rhwp.exe" if os.name == "nt" else "rhwp"
     # parents[3] = kdsnr-hwp-toolkit (이 패키지의 source 와 함께 vendor 된 rhwp).
     # 옛 flap-hwp-parser/vendor/rhwp 는 더 이상 사용하지 않음.
     toolkit_root = Path(__file__).resolve().parents[3]
-    return toolkit_root / "vendor" / "rhwp" / "target" / "release" / "rhwp"
+    source_bin = toolkit_root / "vendor" / "rhwp" / "target" / "release" / exe_name
+    if source_bin.exists():
+        return source_bin
+    package_bin = Path(__file__).resolve().parents[1] / "bin" / exe_name
+    if package_bin.exists():
+        return package_bin
+    return source_bin
+
+
+def _ensure_executable(path: Path) -> None:
+    if os.name == "nt" or not path.exists():
+        return
+    mode = path.stat().st_mode
+    if mode & 0o111:
+        return
+    path.chmod(mode | 0o755)
 
 
 def _hft_args() -> list[str]:
@@ -59,6 +76,7 @@ def render_pdf(hwpx_path: str | os.PathLike, pdf_path: str | os.PathLike, *, rhw
     rhwp = Path(rhwp_bin) if rhwp_bin is not None else _default_rhwp_bin()
     if not rhwp.exists():
         raise FileNotFoundError(f"rhwp binary not found: {rhwp}")
+    _ensure_executable(rhwp)
     pdf.parent.mkdir(parents=True, exist_ok=True)
     cmd = [str(rhwp), "export-pdf", str(hwpx), "-o", str(pdf)]
     # rhwp 는 embedded HFT cache 를 기본 사용한다. RHWP_HFT_PATH 는
@@ -76,6 +94,7 @@ def render_svg(hwpx_path: str | os.PathLike, svg_path: str | os.PathLike, *, rhw
     rhwp = Path(rhwp_bin) if rhwp_bin is not None else _default_rhwp_bin()
     if not rhwp.exists():
         raise FileNotFoundError(f"rhwp binary not found: {rhwp}")
+    _ensure_executable(rhwp)
     svg.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as td:
         out_dir = Path(td)
@@ -125,45 +144,28 @@ def _detect_header_divider_y(img) -> int:
     return max(0, first_content_y - _CROP_HEADER_PADDING_PX)
 
 
-def pdf_to_question_png(
-    pdf_path: str | os.PathLike,
-    png_path: str | os.PathLike,
-    *,
-    subject: str | None = None,
-) -> Path:
-    """Render first PDF page and crop to the left-column question region."""
-
+def _render_pdf_first_page(pdf_path: str | os.PathLike):
+    import fitz
     from PIL import Image
 
-    pdf = Path(pdf_path)
-    png = Path(png_path)
-    with tempfile.TemporaryDirectory() as td:
-        prefix = Path(td) / "raw"
-        subprocess.run(
-            [
-                "pdftoppm",
-                "-r",
-                str(_CROP_DPI),
-                "-png",
-                "-f",
-                "1",
-                "-l",
-                "1",
-                str(pdf),
-                str(prefix),
-            ],
-            check=True,
-            capture_output=True,
-        )
-        produced = list(prefix.parent.glob(f"{prefix.name}-*.png"))
-        if not produced:
-            candidate = prefix.parent / f"{prefix.name}.png"
-            if candidate.exists():
-                produced = [candidate]
-        if not produced:
-            raise RuntimeError(f"pdftoppm produced no PNG (pdf={pdf})")
-        img = Image.open(produced[0])
+    doc = fitz.open(Path(pdf_path))
+    page = doc[0]
+    pix = page.get_pixmap(matrix=fitz.Matrix(_CROP_DPI / 72, _CROP_DPI / 72), alpha=False)
+    return Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
 
+
+def _render_svg_page(svg_path: str | os.PathLike):
+    import fitz
+    from PIL import Image
+
+    svg = Path(svg_path)
+    doc = fitz.open("svg", svg.read_bytes())
+    page = doc[0]
+    pix = page.get_pixmap(matrix=fitz.Matrix(_CROP_DPI / 72, _CROP_DPI / 72), alpha=False)
+    return Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+
+
+def _question_crop_box(img) -> tuple[int, int, int, int]:
     w, h = img.size
     header_y = max(0, _detect_header_divider_y(img) - _CROP_CONTENT_MARGIN_PX)
     left_x = int(w * _CROP_LEFT_X_FRACTION)
@@ -173,30 +175,113 @@ def pdf_to_question_png(
     content_bbox = _content_bbox(body)
     if content_bbox is not None:
         left, top, right, bottom = content_bbox
-        content = body.crop((left, top, right, bottom))
-        padded = Image.new(
-            body.mode,
-            (
-                content.width + _CROP_CONTENT_MARGIN_PX * 2,
-                content.height + _CROP_CONTENT_MARGIN_PX * 2,
-            ),
-            "white",
+        return (
+            left_x + left - _CROP_CONTENT_MARGIN_PX,
+            header_y + top - _CROP_CONTENT_MARGIN_PX,
+            left_x + right + _CROP_CONTENT_MARGIN_PX,
+            header_y + bottom + _CROP_CONTENT_MARGIN_PX,
         )
-        padded.paste(content, (_CROP_CONTENT_MARGIN_PX, _CROP_CONTENT_MARGIN_PX))
-        body = padded
+    return left_x, header_y, right_x, h
 
+
+def _crop_image_with_padding(img, box: tuple[int, int, int, int]):
+    from PIL import Image
+
+    left, top, right, bottom = box
+    width = max(1, right - left)
+    height = max(1, bottom - top)
+    canvas = Image.new(img.mode, (width, height), "white")
+    src_box = (max(0, left), max(0, top), min(img.width, right), min(img.height, bottom))
+    if src_box[2] > src_box[0] and src_box[3] > src_box[1]:
+        content = img.crop(src_box)
+        canvas.paste(content, (src_box[0] - left, src_box[1] - top))
+    return canvas
+
+
+def pdf_to_question_png(
+    pdf_path: str | os.PathLike,
+    png_path: str | os.PathLike,
+    *,
+    subject: str | None = None,
+    crop: bool = True,
+) -> Path:
+    """Render first PDF page to PNG, optionally cropped to the question."""
+
+    img = _render_pdf_first_page(pdf_path)
+    body = _crop_image_with_padding(img, _question_crop_box(img)) if crop else img
+
+    png = Path(png_path)
     png.parent.mkdir(parents=True, exist_ok=True)
     body.save(png, optimize=True)
     return png
 
 
+def crop_pdf_to_question_pdf(
+    pdf_path: str | os.PathLike,
+    cropped_pdf_path: str | os.PathLike,
+    *,
+    subject: str | None = None,
+) -> Path:
+    """Create a cropped PDF preview from the first page."""
+
+    img = _render_pdf_first_page(pdf_path)
+    body = _crop_image_with_padding(img, _question_crop_box(img)).convert("RGB")
+    out = Path(cropped_pdf_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    body.save(out, "PDF", resolution=_CROP_DPI)
+    return out
+
+
+def crop_svg_to_question_svg(
+    svg_path: str | os.PathLike,
+    cropped_svg_path: str | os.PathLike,
+    *,
+    subject: str | None = None,
+) -> Path:
+    """Crop an SVG preview by rewriting its root viewport/viewBox."""
+
+    svg = Path(svg_path)
+    text = svg.read_text(encoding="utf-8")
+    root_match = re.search(r"<svg\b[^>]*>", text)
+    if not root_match:
+        raise RuntimeError(f"invalid SVG: {svg}")
+    root = root_match.group(0)
+    width_match = re.search(r'\bwidth="([0-9.]+)"', root)
+    height_match = re.search(r'\bheight="([0-9.]+)"', root)
+    if not width_match or not height_match:
+        raise RuntimeError(f"SVG root has no width/height: {svg}")
+    svg_w = float(width_match.group(1))
+    svg_h = float(height_match.group(1))
+
+    img = _render_svg_page(svg)
+    box = _question_crop_box(img)
+
+    scale_x = svg_w / img.width
+    scale_y = svg_h / img.height
+    x = box[0] * scale_x
+    y = box[1] * scale_y
+    w = max(1.0, (box[2] - box[0]) * scale_x)
+    h = max(1.0, (box[3] - box[1]) * scale_y)
+    new_root = re.sub(r'\bwidth="[^"]*"', f'width="{w}"', root)
+    new_root = re.sub(r'\bheight="[^"]*"', f'height="{h}"', new_root)
+    if re.search(r'\bviewBox="[^"]*"', new_root):
+        new_root = re.sub(r'\bviewBox="[^"]*"', f'viewBox="{x} {y} {w} {h}"', new_root)
+    else:
+        new_root = new_root[:-1] + f' viewBox="{x} {y} {w} {h}">'
+    out = Path(cropped_svg_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(text[: root_match.start()] + new_root + text[root_match.end() :], encoding="utf-8")
+    return out
+
+
 def _content_bbox(img) -> tuple[int, int, int, int] | None:
-    """Return the first content block bbox inside the initial page crop.
+    """Return the content bbox inside the initial page crop.
 
     Page footers and column divider strokes can otherwise make a naive bbox
-    span the full page. Drop near-full-height vertical rule columns, then keep
-    the first ink group before a large blank gap. The caller adds a uniform
-    margin around the returned ink bbox.
+    span the full page. Drop near-full-height vertical rule columns and
+    horizontal rules, then keep the full remaining ink bbox. Some math
+    questions contain large intentional gaps before diagrams; stopping at the
+    first row gap clips those diagrams.
     """
 
     import numpy as np
@@ -218,17 +303,13 @@ def _content_bbox(img) -> tuple[int, int, int, int] | None:
     if len(rows) == 0:
         return None
 
-    start = prev = int(rows[0])
-    for row in rows[1:]:
-        row = int(row)
-        if row - prev > _CROP_VERTICAL_GROUP_GAP_PX:
-            break
-        prev = row
-    block = mask[start:prev + 1, :]
+    start = int(rows[0])
+    end = int(rows[-1]) + 1
+    block = mask[start:end, :]
     cols = np.where(block.any(axis=0))[0]
     if len(cols) == 0:
         return None
-    return int(cols[0]), start, int(cols[-1]) + 1, prev + 1
+    return int(cols[0]), start, int(cols[-1]) + 1, end
 
 
 def render_question_png(
@@ -237,9 +318,10 @@ def render_question_png(
     *,
     rhwp_bin: str | os.PathLike | None = None,
     subject: str | None = None,
+    crop: bool = True,
 ) -> Path:
     png = Path(png_path)
     with tempfile.TemporaryDirectory() as td:
         pdf = Path(td) / "question.pdf"
         render_pdf(hwpx_path, pdf, rhwp_bin=rhwp_bin)
-        return pdf_to_question_png(pdf, png, subject=subject)
+        return pdf_to_question_png(pdf, png, subject=subject, crop=crop)

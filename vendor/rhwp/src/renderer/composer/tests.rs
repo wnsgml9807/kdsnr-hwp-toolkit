@@ -584,6 +584,7 @@ fn test_estimate_composed_line_width() {
         line_spacing: 0,
         has_line_break: false,
         char_start: 0,
+        vertical_pos: 0,
     };
 
     let width = estimate_composed_line_width(&line, &styles);

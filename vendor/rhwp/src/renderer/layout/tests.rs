@@ -1192,6 +1192,7 @@ fn test_tac_leading_width_block_table_full_line() {
         line_spacing: 0,
         has_line_break: false,
         char_start: 0,
+        vertical_pos: 0,
     };
     let composed = ComposedParagraph {
         lines: vec![line],
@@ -1282,6 +1283,7 @@ fn test_tac_leading_width_inline_table_partial() {
         line_spacing: 0,
         has_line_break: false,
         char_start: 0,
+        vertical_pos: 0,
     };
     let composed = ComposedParagraph {
         lines: vec![line],

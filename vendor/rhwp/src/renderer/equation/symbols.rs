@@ -137,6 +137,7 @@ static OPERATORS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(
         // 비교/관계
         ("NEQ", "≠"),
         ("!=", "≠"),
+        ("->", "→"),
         ("LE", "≤"),
         ("LEQ", "≤"),
         ("GE", "≥"),

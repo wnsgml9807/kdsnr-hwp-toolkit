@@ -183,8 +183,9 @@ impl EqParser {
             }
             TokenType::Symbol => {
                 self.pos += 1;
-                // -> 는 →로 변환
-                if val == "->" {
+                if let Some(symbol) = lookup_symbol(&val) {
+                    EqNode::MathSymbol(symbol.to_string())
+                } else if val == "->" {
                     EqNode::MathSymbol("→".to_string())
                 } else {
                     EqNode::Symbol(val)
@@ -623,7 +624,15 @@ impl EqParser {
             TokenType::Number => EqNode::Number(val),
             TokenType::Text => EqNode::Text(val),
             TokenType::Quoted => EqNode::Quoted(val),
-            TokenType::Symbol => EqNode::Symbol(val),
+            TokenType::Symbol => {
+                if let Some(symbol) = lookup_symbol(&val) {
+                    EqNode::MathSymbol(symbol.to_string())
+                } else if val == "->" {
+                    EqNode::MathSymbol("→".to_string())
+                } else {
+                    EqNode::Symbol(val)
+                }
+            }
             _ => EqNode::Text(val),
         }
     }
@@ -1395,6 +1404,14 @@ mod tests {
             }
             _ => panic!("Expected Row, got {:?}", ast),
         }
+    }
+
+    #[test]
+    fn test_symbol_shorthands() {
+        let ast = parse("a != b -> c");
+        let ast_str = format!("{:?}", ast);
+        assert!(ast_str.contains("≠"), "!= must render as ≠: {}", ast_str);
+        assert!(ast_str.contains("→"), "-> must render as →: {}", ast_str);
     }
 
     #[test]

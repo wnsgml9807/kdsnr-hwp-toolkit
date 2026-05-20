@@ -158,7 +158,7 @@ def classify(p: Paragraph, *, prev_atom: Atom | None, subject: str) -> Atom:
     if _has_equation(p) or txt_strip:
         if prev_atom in (
             Atom.EQ_BLOCK, Atom.DATA_BOX, Atom.BOGI_BOX,
-            Atom.BALMUN, Atom.BALMUN_CONT,
+            Atom.BALMUN, Atom.BALMUN_CONT, Atom.PIC_BLOCK,
         ):
             return Atom.BALMUN_CONT
     return Atom.UNKNOWN

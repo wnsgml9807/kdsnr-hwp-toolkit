@@ -6,8 +6,9 @@ build-backend = "maturin"
 name = "kdsnr-hwp-toolkit"
 version = "0.1.0"
 description = "KSAT HWP/HWPX extraction, template composition, and rendering toolkit"
+readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["tqdm>=4.66"]
+dependencies = ["numpy>=1.24", "pillow>=10", "pymupdf>=1.24", "tqdm>=4.66"]
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: 3",
@@ -25,6 +26,7 @@ include = [
     { path = "src/kdsnr_hwp_toolkit/resources/templates/*.hwpx", format = "wheel" },
     { path = "src/kdsnr_hwp_toolkit/_resources/calibration/*", format = "sdist" },
     { path = "src/kdsnr_hwp_toolkit/_resources/calibration/*", format = "wheel" },
+    { path = "src/kdsnr_hwp_toolkit/bin/*", format = "wheel" },
     { path = "Cargo.lock", format = "sdist" },
     { path = "vendor/rhwp/Cargo.toml", format = "sdist" },
     { path = "vendor/rhwp/LICENSE", format = "sdist" },

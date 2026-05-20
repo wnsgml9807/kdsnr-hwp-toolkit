@@ -1,0 +1,22 @@
+# Rust
+rust/target/
+rust/Cargo.lock
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Test fixtures (proprietary Hancom files — fetch via scripts/, do not commit)
+rust/test-data/*.HFT
+src/test-data/*.HFT
+
+# Embedded Hancom HFT archive.
+# Keep these tracked only if the distribution license permits it. They are
+# required for source builds that enable kdsnr-hft's "embedded" feature.
+
+# OS
+.DS_Store
+Thumbs.db

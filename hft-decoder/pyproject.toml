@@ -1,0 +1,17 @@
+[project]
+name = "kdsnr-hft"
+version = "0.1.0"
+description = "Hancom HFT (Han Unified Font File) decoder — bitmap + vector"
+authors = [{ name = "권준희", email = "wnsgml9807@naver.com" }]
+requires-python = ">=3.9"
+
+[project.urls]
+producer = "강남대성수능연구소"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"

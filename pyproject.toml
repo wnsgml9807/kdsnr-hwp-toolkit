@@ -1,0 +1,40 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "kdsnr-hwp-toolkit"
+version = "0.1.0"
+description = "KSAT HWP/HWPX extraction, template composition, and rendering toolkit"
+requires-python = ">=3.10"
+dependencies = ["tqdm>=4.66"]
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Education",
+]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+python-source = "src"
+module-name = "kdsnr_hwp_toolkit._native"
+include = [
+    { path = "src/kdsnr_hwp_toolkit/resources/templates/*.hwpx", format = "sdist" },
+    { path = "src/kdsnr_hwp_toolkit/resources/templates/*.hwpx", format = "wheel" },
+    { path = "src/kdsnr_hwp_toolkit/_resources/calibration/*", format = "sdist" },
+    { path = "src/kdsnr_hwp_toolkit/_resources/calibration/*", format = "wheel" },
+    { path = "Cargo.lock", format = "sdist" },
+    { path = "vendor/rhwp/Cargo.toml", format = "sdist" },
+    { path = "vendor/rhwp/LICENSE", format = "sdist" },
+    { path = "vendor/rhwp/src/**/*", format = "sdist" },
+    { path = "hft-decoder/README.md", format = "sdist" },
+    { path = "hft-decoder/rust/Cargo.toml", format = "sdist" },
+    { path = "hft-decoder/rust/src/**/*", format = "sdist" },
+    { path = "hft-decoder/rust/fonts/**/*", format = "sdist" },
+    { path = "layout-decoder/rust/Cargo.toml", format = "sdist" },
+    { path = "layout-decoder/rust/src/**/*", format = "sdist" },
+    { path = "render-engine/rust/Cargo.toml", format = "sdist" },
+    { path = "render-engine/rust/src/**/*", format = "sdist" },
+]

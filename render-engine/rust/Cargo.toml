@@ -1,0 +1,73 @@
+[package]
+name = "kdsnr-render"
+version = "0.1.0"
+edition = "2021"
+description = "Hancom HWPX rendering engine — Hnc::Shape rendering primitives (Flag/BWMode/Hit/Theme/Surface) byte-equivalent port from libHncDrawingEngine + libHncFoundation."
+license = "MIT"
+
+[lib]
+name = "kdsnr_render"
+path = "src/lib.rs"
+
+[dependencies]
+kdsnr-hft = { path = "../../hft-decoder/rust", features = ["embedded"] }
+base64 = "0.22"
+
+# e2e bench (examples/e2e_bench.rs) — rhwp baseline SVG, resvg/usvg 로 PNG
+# 변환, PNG decode/encode 위해 dev-deps 로만 (lib 본체엔 영향 없음).
+[dev-dependencies]
+rhwp = { path = "../../vendor/rhwp" }
+kdsnr-layout = { path = "../../layout-decoder/rust" }
+resvg = "0.45"
+usvg = "0.45"
+tiny-skia = "0.11"
+png = "0.17"
+tempfile = "3"
+
+[[example]]
+name = "e2e_bench"
+path = "examples/e2e_bench.rs"
+
+[[example]]
+name = "e2e_bench_all"
+path = "examples/e2e_bench_all.rs"
+
+[[example]]
+name = "svg_surface_probe"
+path = "examples/svg_surface_probe.rs"
+
+[[example]]
+name = "wire_probe"
+path = "examples/wire_probe.rs"
+
+[[example]]
+name = "wire_real_gt"
+path = "examples/wire_real_gt.rs"
+
+[[example]]
+name = "dump_tree"
+path = "examples/dump_tree.rs"
+
+[[example]]
+name = "probe_hft_ascii"
+path = "examples/probe_hft_ascii.rs"
+
+[[example]]
+name = "probe_doc_pages"
+path = "examples/probe_doc_pages.rs"
+
+[[example]]
+name = "probe_g_real"
+path = "examples/probe_g_real.rs"
+
+[[example]]
+name = "probe_g_multi"
+path = "examples/probe_g_multi.rs"
+
+[[example]]
+name = "probe_g_drawdirect"
+path = "examples/probe_g_drawdirect.rs"
+
+[[example]]
+name = "probe_g_drawdirect_multi"
+path = "examples/probe_g_drawdirect_multi.rs"

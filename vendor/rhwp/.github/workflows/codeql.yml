@@ -1,0 +1,70 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main, devel]
+    paths-ignore:
+      - 'mydocs/**'
+      - 'docs/**'
+      - 'samples/**'
+      - 'assets/**'
+      - '*.md'
+      - 'LICENSE'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/FUNDING.yml'
+      - '.github/CODE_OF_CONDUCT.md'
+      - '.github/SECURITY.md'
+      - '.github/pull_request_template.md'
+      - '.github/dependabot.yml'
+      - 'rhwp-logo.*'
+  pull_request:
+    branches: [main, devel]
+    paths-ignore:
+      - 'mydocs/**'
+      - 'docs/**'
+      - 'samples/**'
+      - 'assets/**'
+      - '*.md'
+      - 'LICENSE'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/FUNDING.yml'
+      - '.github/CODE_OF_CONDUCT.md'
+      - '.github/SECURITY.md'
+      - '.github/pull_request_template.md'
+      - '.github/dependabot.yml'
+      - 'rhwp-logo.*'
+  schedule:
+    - cron: '0 6 * * 1'  # 매주 월요일 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, python, rust]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Install Rust toolchain
+        if: matrix.language == 'rust'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Rust (for CodeQL)
+        if: matrix.language == 'rust'
+        run: cargo build
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4

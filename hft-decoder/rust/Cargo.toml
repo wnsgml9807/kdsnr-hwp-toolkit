@@ -1,0 +1,26 @@
+[package]
+name = "kdsnr-hft"
+version = "0.1.0"
+edition = "2024"
+description = "Hancom HFT (Han Unified Font File) decoder — bitmap + vector"
+authors = ["권준희 <wnsgml9807@naver.com>"]
+readme = "../README.md"
+publish = false
+
+[package.metadata]
+producer = "강남대성수능연구소"
+contact = "wnsgml9807@naver.com"
+
+[lib]
+name = "kdsnr_hft"
+path = "src/lib.rs"
+
+[features]
+# 한컴 HFT 폰트 archive (180MB, fonts/ 폴더) 를 binary 에 embed.
+# 사내 사용 가정. 외부 배포 시 한컴 office 라이센스 필수.
+embedded = ["dep:include_dir"]
+
+[dependencies]
+include_dir = { version = "0.7", optional = true }
+
+[dev-dependencies]

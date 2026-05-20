@@ -1,0 +1,17 @@
+[package]
+name = "kdsnr-layout"
+version = "0.1.0"
+edition = "2021"
+description = "Hancom HWPX paragraph layout engine — TeX-style box/glue/Knuth-Plass port from Hnc::Shape::Text (raid 24 RE)"
+license = "MIT"
+
+[lib]
+name = "kdsnr_layout"
+path = "src/lib.rs"
+
+[dependencies]
+kdsnr-render = { path = "../../render-engine/rust" }
+
+[[example]]
+name = "probe_g_paragraph"
+path = "examples/probe_g_paragraph.rs"

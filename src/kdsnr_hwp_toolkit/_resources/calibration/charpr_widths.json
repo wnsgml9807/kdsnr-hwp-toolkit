@@ -1,0 +1,6695 @@
+[
+  {
+    "para_idx": 1,
+    "intended_charPr": 6,
+    "char": "가",
+    "lines": 7,
+    "line_chars": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 32.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 950.25
+  },
+  {
+    "para_idx": 2,
+    "intended_charPr": 6,
+    "char": "0",
+    "lines": 4,
+    "line_chars": [
+      57,
+      57,
+      57,
+      29
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 57.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 533.47
+  },
+  {
+    "para_idx": 3,
+    "intended_charPr": 6,
+    "char": "5",
+    "lines": 4,
+    "line_chars": [
+      57,
+      57,
+      57,
+      29
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 57.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 533.47
+  },
+  {
+    "para_idx": 4,
+    "intended_charPr": 6,
+    "char": "A",
+    "lines": 5,
+    "line_chars": [
+      44,
+      44,
+      44,
+      44,
+      24
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 44.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 691.09
+  },
+  {
+    "para_idx": 5,
+    "intended_charPr": 6,
+    "char": "M",
+    "lines": 6,
+    "line_chars": [
+      37,
+      37,
+      37,
+      37,
+      37,
+      15
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 37.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 821.84
+  },
+  {
+    "para_idx": 6,
+    "intended_charPr": 6,
+    "char": "W",
+    "lines": 6,
+    "line_chars": [
+      34,
+      34,
+      34,
+      34,
+      34,
+      30
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 34.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 894.35
+  },
+  {
+    "para_idx": 7,
+    "intended_charPr": 6,
+    "char": "I",
+    "lines": 2,
+    "line_chars": [
+      103,
+      97
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 103.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 295.22
+  },
+  {
+    "para_idx": 8,
+    "intended_charPr": 6,
+    "char": "a",
+    "lines": 4,
+    "line_chars": [
+      55,
+      55,
+      55,
+      35
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 55.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 552.87
+  },
+  {
+    "para_idx": 9,
+    "intended_charPr": 6,
+    "char": "m",
+    "lines": 6,
+    "line_chars": [
+      34,
+      34,
+      34,
+      34,
+      34,
+      30
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 34.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 894.35
+  },
+  {
+    "para_idx": 10,
+    "intended_charPr": 6,
+    "char": "w",
+    "lines": 5,
+    "line_chars": [
+      43,
+      43,
+      43,
+      43,
+      28
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 43.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 707.16
+  },
+  {
+    "para_idx": 11,
+    "intended_charPr": 6,
+    "char": "i",
+    "lines": 2,
+    "line_chars": [
+      109,
+      91
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 109.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 278.97
+  },
+  {
+    "para_idx": 12,
+    "intended_charPr": 6,
+    "char": "l",
+    "lines": 2,
+    "line_chars": [
+      109,
+      91
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 109.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 278.97
+  },
+  {
+    "para_idx": 13,
+    "intended_charPr": 6,
+    "char": ".",
+    "lines": 3,
+    "line_chars": [
+      98,
+      98,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 98.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 310.29
+  },
+  {
+    "para_idx": 14,
+    "intended_charPr": 6,
+    "char": ",",
+    "lines": 3,
+    "line_chars": [
+      98,
+      98,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 98.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 310.29
+  },
+  {
+    "para_idx": 15,
+    "intended_charPr": 6,
+    "char": "=",
+    "lines": 4,
+    "line_chars": [
+      57,
+      57,
+      57,
+      29
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 57.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 533.47
+  },
+  {
+    "para_idx": 16,
+    "intended_charPr": 6,
+    "char": "≤",
+    "lines": 7,
+    "line_chars": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 32.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 950.25
+  },
+  {
+    "para_idx": 17,
+    "intended_charPr": 6,
+    "char": "×",
+    "lines": 4,
+    "line_chars": [
+      51,
+      51,
+      51,
+      47
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 51.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 596.24
+  },
+  {
+    "para_idx": 18,
+    "intended_charPr": 18,
+    "char": "가",
+    "lines": 7,
+    "line_chars": [
+      29,
+      29,
+      29,
+      29,
+      29,
+      29,
+      26
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 29.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1048.55
+  },
+  {
+    "para_idx": 19,
+    "intended_charPr": 18,
+    "char": "0",
+    "lines": 5,
+    "line_chars": [
+      48,
+      48,
+      48,
+      48,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 48.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 633.5
+  },
+  {
+    "para_idx": 20,
+    "intended_charPr": 18,
+    "char": "5",
+    "lines": 5,
+    "line_chars": [
+      48,
+      48,
+      48,
+      48,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 48.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 633.5
+  },
+  {
+    "para_idx": 21,
+    "intended_charPr": 18,
+    "char": "A",
+    "lines": 6,
+    "line_chars": [
+      36,
+      36,
+      36,
+      36,
+      36,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 36.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 844.67
+  },
+  {
+    "para_idx": 22,
+    "intended_charPr": 18,
+    "char": "M",
+    "lines": 8,
+    "line_chars": [
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 28.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1086.0
+  },
+  {
+    "para_idx": 23,
+    "intended_charPr": 18,
+    "char": "W",
+    "lines": 8,
+    "line_chars": [
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      11
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 27.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1126.22
+  },
+  {
+    "para_idx": 24,
+    "intended_charPr": 18,
+    "char": "I",
+    "lines": 4,
+    "line_chars": [
+      64,
+      64,
+      64,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 64.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 475.12
+  },
+  {
+    "para_idx": 25,
+    "intended_charPr": 18,
+    "char": "a",
+    "lines": 5,
+    "line_chars": [
+      45,
+      45,
+      45,
+      45,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 45.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 675.73
+  },
+  {
+    "para_idx": 26,
+    "intended_charPr": 18,
+    "char": "m",
+    "lines": 7,
+    "line_chars": [
+      29,
+      29,
+      29,
+      29,
+      29,
+      29,
+      26
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 29.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1048.55
+  },
+  {
+    "para_idx": 27,
+    "intended_charPr": 18,
+    "char": "w",
+    "lines": 7,
+    "line_chars": [
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      2
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 33.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 921.45
+  },
+  {
+    "para_idx": 28,
+    "intended_charPr": 18,
+    "char": "i",
+    "lines": 3,
+    "line_chars": [
+      78,
+      78,
+      44
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 78.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 389.85
+  },
+  {
+    "para_idx": 29,
+    "intended_charPr": 18,
+    "char": "l",
+    "lines": 3,
+    "line_chars": [
+      77,
+      78,
+      45
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 78.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 389.85
+  },
+  {
+    "para_idx": 30,
+    "intended_charPr": 18,
+    "char": ".",
+    "lines": 3,
+    "line_chars": [
+      74,
+      75,
+      51
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 75.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 405.44
+  },
+  {
+    "para_idx": 31,
+    "intended_charPr": 18,
+    "char": ",",
+    "lines": 3,
+    "line_chars": [
+      74,
+      75,
+      51
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 75.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 405.44
+  },
+  {
+    "para_idx": 32,
+    "intended_charPr": 18,
+    "char": "=",
+    "lines": 7,
+    "line_chars": [
+      29,
+      29,
+      29,
+      29,
+      29,
+      29,
+      26
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 29.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1048.55
+  },
+  {
+    "para_idx": 33,
+    "intended_charPr": 18,
+    "char": "≤",
+    "lines": 7,
+    "line_chars": [
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 34,
+    "intended_charPr": 18,
+    "char": "×",
+    "lines": 5,
+    "line_chars": [
+      48,
+      48,
+      48,
+      48,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 48.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 633.5
+  },
+  {
+    "para_idx": 35,
+    "intended_charPr": 19,
+    "char": "가",
+    "lines": 7,
+    "line_chars": [
+      29,
+      29,
+      29,
+      29,
+      29,
+      29,
+      26
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 29.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1048.55
+  },
+  {
+    "para_idx": 36,
+    "intended_charPr": 19,
+    "char": "0",
+    "lines": 4,
+    "line_chars": [
+      59,
+      59,
+      59,
+      23
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 59.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 515.39
+  },
+  {
+    "para_idx": 37,
+    "intended_charPr": 19,
+    "char": "5",
+    "lines": 4,
+    "line_chars": [
+      59,
+      59,
+      59,
+      23
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 59.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 515.39
+  },
+  {
+    "para_idx": 38,
+    "intended_charPr": 19,
+    "char": "A",
+    "lines": 6,
+    "line_chars": [
+      37,
+      37,
+      37,
+      37,
+      37,
+      15
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 37.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 821.84
+  },
+  {
+    "para_idx": 39,
+    "intended_charPr": 19,
+    "char": "M",
+    "lines": 7,
+    "line_chars": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 31.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 980.9
+  },
+  {
+    "para_idx": 40,
+    "intended_charPr": 19,
+    "char": "W",
+    "lines": 8,
+    "line_chars": [
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 28.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1086.0
+  },
+  {
+    "para_idx": 41,
+    "intended_charPr": 19,
+    "char": "I",
+    "lines": 3,
+    "line_chars": [
+      89,
+      89,
+      22
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 89.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 341.66
+  },
+  {
+    "para_idx": 42,
+    "intended_charPr": 19,
+    "char": "a",
+    "lines": 4,
+    "line_chars": [
+      58,
+      58,
+      58,
+      26
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 58.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 524.28
+  },
+  {
+    "para_idx": 43,
+    "intended_charPr": 19,
+    "char": "m",
+    "lines": 6,
+    "line_chars": [
+      34,
+      34,
+      34,
+      34,
+      34,
+      30
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 34.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 894.35
+  },
+  {
+    "para_idx": 44,
+    "intended_charPr": 19,
+    "char": "w",
+    "lines": 6,
+    "line_chars": [
+      35,
+      35,
+      35,
+      35,
+      35,
+      25
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 35.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 868.8
+  },
+  {
+    "para_idx": 45,
+    "intended_charPr": 19,
+    "char": "i",
+    "lines": 2,
+    "line_chars": [
+      107,
+      93
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 107.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 284.19
+  },
+  {
+    "para_idx": 46,
+    "intended_charPr": 19,
+    "char": "l",
+    "lines": 2,
+    "line_chars": [
+      109,
+      91
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 109.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 278.97
+  },
+  {
+    "para_idx": 47,
+    "intended_charPr": 19,
+    "char": ".",
+    "lines": 2,
+    "line_chars": [
+      122,
+      78
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 122.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 249.25
+  },
+  {
+    "para_idx": 48,
+    "intended_charPr": 19,
+    "char": ",",
+    "lines": 2,
+    "line_chars": [
+      126,
+      74
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 126.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 241.33
+  },
+  {
+    "para_idx": 49,
+    "intended_charPr": 19,
+    "char": "=",
+    "lines": 4,
+    "line_chars": [
+      52,
+      52,
+      52,
+      44
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 52.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 584.77
+  },
+  {
+    "para_idx": 50,
+    "intended_charPr": 19,
+    "char": "≤",
+    "lines": 7,
+    "line_chars": [
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 51,
+    "intended_charPr": 19,
+    "char": "×",
+    "lines": 5,
+    "line_chars": [
+      48,
+      48,
+      48,
+      48,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 48.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 633.5
+  },
+  {
+    "para_idx": 52,
+    "intended_charPr": 46,
+    "char": "가",
+    "lines": 8,
+    "line_chars": [
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      11
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 27.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1126.22
+  },
+  {
+    "para_idx": 53,
+    "intended_charPr": 46,
+    "char": "0",
+    "lines": 5,
+    "line_chars": [
+      47,
+      48,
+      48,
+      48,
+      9
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 48.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 633.5
+  },
+  {
+    "para_idx": 54,
+    "intended_charPr": 46,
+    "char": "5",
+    "lines": 5,
+    "line_chars": [
+      47,
+      48,
+      48,
+      48,
+      9
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 48.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 633.5
+  },
+  {
+    "para_idx": 55,
+    "intended_charPr": 46,
+    "char": "A",
+    "lines": 7,
+    "line_chars": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 32.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 950.25
+  },
+  {
+    "para_idx": 56,
+    "intended_charPr": 46,
+    "char": "M",
+    "lines": 8,
+    "line_chars": [
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      11
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 27.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1126.22
+  },
+  {
+    "para_idx": 57,
+    "intended_charPr": 46,
+    "char": "W",
+    "lines": 8,
+    "line_chars": [
+      25,
+      25,
+      25,
+      25,
+      25,
+      25,
+      25,
+      25
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 25.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1216.32
+  },
+  {
+    "para_idx": 58,
+    "intended_charPr": 46,
+    "char": "I",
+    "lines": 3,
+    "line_chars": [
+      70,
+      70,
+      60
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 70.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 434.4
+  },
+  {
+    "para_idx": 59,
+    "intended_charPr": 46,
+    "char": "a",
+    "lines": 5,
+    "line_chars": [
+      48,
+      48,
+      48,
+      48,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 48.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 633.5
+  },
+  {
+    "para_idx": 60,
+    "intended_charPr": 46,
+    "char": "m",
+    "lines": 7,
+    "line_chars": [
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 61,
+    "intended_charPr": 46,
+    "char": "w",
+    "lines": 7,
+    "line_chars": [
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 62,
+    "intended_charPr": 46,
+    "char": "i",
+    "lines": 3,
+    "line_chars": [
+      86,
+      86,
+      28
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 86.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 353.58
+  },
+  {
+    "para_idx": 63,
+    "intended_charPr": 46,
+    "char": "l",
+    "lines": 3,
+    "line_chars": [
+      88,
+      88,
+      24
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 88.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 345.55
+  },
+  {
+    "para_idx": 64,
+    "intended_charPr": 46,
+    "char": ".",
+    "lines": 3,
+    "line_chars": [
+      86,
+      86,
+      28
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 86.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 353.58
+  },
+  {
+    "para_idx": 65,
+    "intended_charPr": 46,
+    "char": ",",
+    "lines": 3,
+    "line_chars": [
+      94,
+      94,
+      12
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 94.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 323.49
+  },
+  {
+    "para_idx": 66,
+    "intended_charPr": 46,
+    "char": "=",
+    "lines": 5,
+    "line_chars": [
+      42,
+      42,
+      42,
+      42,
+      32
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 42.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 724.0
+  },
+  {
+    "para_idx": 67,
+    "intended_charPr": 46,
+    "char": "≤",
+    "lines": 8,
+    "line_chars": [
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      11
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 27.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1126.22
+  },
+  {
+    "para_idx": 68,
+    "intended_charPr": 46,
+    "char": "×",
+    "lines": 8,
+    "line_chars": [
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      18
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 26.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1169.54
+  },
+  {
+    "para_idx": 69,
+    "intended_charPr": 47,
+    "char": "가",
+    "lines": 8,
+    "line_chars": [
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 28.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1086.0
+  },
+  {
+    "para_idx": 70,
+    "intended_charPr": 47,
+    "char": "0",
+    "lines": 4,
+    "line_chars": [
+      57,
+      57,
+      57,
+      29
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 57.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 533.47
+  },
+  {
+    "para_idx": 71,
+    "intended_charPr": 47,
+    "char": "5",
+    "lines": 4,
+    "line_chars": [
+      57,
+      57,
+      57,
+      29
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 57.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 533.47
+  },
+  {
+    "para_idx": 72,
+    "intended_charPr": 47,
+    "char": "A",
+    "lines": 6,
+    "line_chars": [
+      36,
+      36,
+      36,
+      36,
+      36,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 36.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 844.67
+  },
+  {
+    "para_idx": 73,
+    "intended_charPr": 47,
+    "char": "M",
+    "lines": 7,
+    "line_chars": [
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 74,
+    "intended_charPr": 47,
+    "char": "W",
+    "lines": 8,
+    "line_chars": [
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      11
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 27.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1126.22
+  },
+  {
+    "para_idx": 75,
+    "intended_charPr": 47,
+    "char": "I",
+    "lines": 3,
+    "line_chars": [
+      86,
+      86,
+      28
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 86.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 353.58
+  },
+  {
+    "para_idx": 76,
+    "intended_charPr": 47,
+    "char": "a",
+    "lines": 4,
+    "line_chars": [
+      57,
+      57,
+      57,
+      29
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 57.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 533.47
+  },
+  {
+    "para_idx": 77,
+    "intended_charPr": 47,
+    "char": "m",
+    "lines": 7,
+    "line_chars": [
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      2
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 33.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 921.45
+  },
+  {
+    "para_idx": 78,
+    "intended_charPr": 47,
+    "char": "w",
+    "lines": 6,
+    "line_chars": [
+      34,
+      34,
+      34,
+      34,
+      34,
+      30
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 34.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 894.35
+  },
+  {
+    "para_idx": 79,
+    "intended_charPr": 47,
+    "char": "i",
+    "lines": 2,
+    "line_chars": [
+      104,
+      96
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 104.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 292.38
+  },
+  {
+    "para_idx": 80,
+    "intended_charPr": 47,
+    "char": "l",
+    "lines": 2,
+    "line_chars": [
+      106,
+      94
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 106.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 286.87
+  },
+  {
+    "para_idx": 81,
+    "intended_charPr": 47,
+    "char": ".",
+    "lines": 2,
+    "line_chars": [
+      119,
+      81
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 119.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 255.53
+  },
+  {
+    "para_idx": 82,
+    "intended_charPr": 47,
+    "char": ",",
+    "lines": 2,
+    "line_chars": [
+      122,
+      78
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 122.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 249.25
+  },
+  {
+    "para_idx": 83,
+    "intended_charPr": 47,
+    "char": "=",
+    "lines": 4,
+    "line_chars": [
+      50,
+      50,
+      50,
+      50
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 50.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 608.16
+  },
+  {
+    "para_idx": 84,
+    "intended_charPr": 47,
+    "char": "≤",
+    "lines": 7,
+    "line_chars": [
+      29,
+      29,
+      29,
+      29,
+      29,
+      29,
+      26
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 29.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1048.55
+  },
+  {
+    "para_idx": 85,
+    "intended_charPr": 47,
+    "char": "×",
+    "lines": 5,
+    "line_chars": [
+      47,
+      47,
+      47,
+      47,
+      12
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 47.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 646.98
+  },
+  {
+    "para_idx": 86,
+    "intended_charPr": 58,
+    "char": "가",
+    "lines": 8,
+    "line_chars": [
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 28.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1086.0
+  },
+  {
+    "para_idx": 87,
+    "intended_charPr": 58,
+    "char": "0",
+    "lines": 5,
+    "line_chars": [
+      41,
+      41,
+      41,
+      41,
+      36
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 41.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 741.66
+  },
+  {
+    "para_idx": 88,
+    "intended_charPr": 58,
+    "char": "5",
+    "lines": 5,
+    "line_chars": [
+      41,
+      41,
+      41,
+      41,
+      36
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 41.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 741.66
+  },
+  {
+    "para_idx": 89,
+    "intended_charPr": 58,
+    "char": "A",
+    "lines": 7,
+    "line_chars": [
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      2
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 33.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 921.45
+  },
+  {
+    "para_idx": 90,
+    "intended_charPr": 58,
+    "char": "M",
+    "lines": 7,
+    "line_chars": [
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 91,
+    "intended_charPr": 58,
+    "char": "W",
+    "lines": 8,
+    "line_chars": [
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      18
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 26.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1169.54
+  },
+  {
+    "para_idx": 92,
+    "intended_charPr": 58,
+    "char": "I",
+    "lines": 3,
+    "line_chars": [
+      79,
+      79,
+      42
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 79.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 384.91
+  },
+  {
+    "para_idx": 93,
+    "intended_charPr": 58,
+    "char": "a",
+    "lines": 5,
+    "line_chars": [
+      44,
+      44,
+      44,
+      44,
+      24
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 44.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 691.09
+  },
+  {
+    "para_idx": 94,
+    "intended_charPr": 58,
+    "char": "m",
+    "lines": 7,
+    "line_chars": [
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 95,
+    "intended_charPr": 58,
+    "char": "w",
+    "lines": 6,
+    "line_chars": [
+      35,
+      35,
+      35,
+      35,
+      35,
+      25
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 35.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 868.8
+  },
+  {
+    "para_idx": 96,
+    "intended_charPr": 58,
+    "char": "i",
+    "lines": 3,
+    "line_chars": [
+      92,
+      92,
+      16
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 92.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 330.52
+  },
+  {
+    "para_idx": 97,
+    "intended_charPr": 58,
+    "char": "l",
+    "lines": 3,
+    "line_chars": [
+      92,
+      92,
+      16
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 92.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 330.52
+  },
+  {
+    "para_idx": 98,
+    "intended_charPr": 58,
+    "char": ".",
+    "lines": 3,
+    "line_chars": [
+      72,
+      72,
+      56
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 72.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 422.33
+  },
+  {
+    "para_idx": 99,
+    "intended_charPr": 58,
+    "char": ",",
+    "lines": 3,
+    "line_chars": [
+      72,
+      72,
+      56
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 72.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 422.33
+  },
+  {
+    "para_idx": 100,
+    "intended_charPr": 58,
+    "char": "=",
+    "lines": 8,
+    "line_chars": [
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 28.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1086.0
+  },
+  {
+    "para_idx": 101,
+    "intended_charPr": 58,
+    "char": "≤",
+    "lines": 8,
+    "line_chars": [
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 28.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1086.0
+  },
+  {
+    "para_idx": 102,
+    "intended_charPr": 58,
+    "char": "×",
+    "lines": 6,
+    "line_chars": [
+      34,
+      34,
+      34,
+      34,
+      34,
+      30
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 34.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 894.35
+  },
+  {
+    "para_idx": 103,
+    "intended_charPr": 59,
+    "char": "가",
+    "lines": 10,
+    "line_chars": [
+      20,
+      20,
+      20,
+      20,
+      20,
+      20,
+      20,
+      20,
+      20,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 20.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1520.4
+  },
+  {
+    "para_idx": 104,
+    "intended_charPr": 59,
+    "char": "0",
+    "lines": 6,
+    "line_chars": [
+      36,
+      36,
+      36,
+      36,
+      36,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 36.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 844.67
+  },
+  {
+    "para_idx": 105,
+    "intended_charPr": 59,
+    "char": "5",
+    "lines": 6,
+    "line_chars": [
+      36,
+      36,
+      36,
+      36,
+      36,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 36.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 844.67
+  },
+  {
+    "para_idx": 106,
+    "intended_charPr": 59,
+    "char": "A",
+    "lines": 8,
+    "line_chars": [
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 28.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1086.0
+  },
+  {
+    "para_idx": 107,
+    "intended_charPr": 59,
+    "char": "M",
+    "lines": 9,
+    "line_chars": [
+      23,
+      23,
+      23,
+      23,
+      23,
+      23,
+      23,
+      23,
+      16
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 23.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1322.09
+  },
+  {
+    "para_idx": 108,
+    "intended_charPr": 59,
+    "char": "W",
+    "lines": 10,
+    "line_chars": [
+      21,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      3
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 22.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1382.18
+  },
+  {
+    "para_idx": 109,
+    "intended_charPr": 59,
+    "char": "I",
+    "lines": 4,
+    "line_chars": [
+      66,
+      66,
+      66,
+      2
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 66.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 460.73
+  },
+  {
+    "para_idx": 110,
+    "intended_charPr": 59,
+    "char": "a",
+    "lines": 6,
+    "line_chars": [
+      35,
+      35,
+      35,
+      35,
+      35,
+      25
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 35.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 868.8
+  },
+  {
+    "para_idx": 111,
+    "intended_charPr": 59,
+    "char": "m",
+    "lines": 10,
+    "line_chars": [
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      2
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 22.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1382.18
+  },
+  {
+    "para_idx": 112,
+    "intended_charPr": 59,
+    "char": "w",
+    "lines": 8,
+    "line_chars": [
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      11
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 27.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1126.22
+  },
+  {
+    "para_idx": 113,
+    "intended_charPr": 59,
+    "char": "i",
+    "lines": 3,
+    "line_chars": [
+      70,
+      70,
+      60
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 70.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 434.4
+  },
+  {
+    "para_idx": 114,
+    "intended_charPr": 59,
+    "char": "l",
+    "lines": 3,
+    "line_chars": [
+      70,
+      70,
+      60
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 70.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 434.4
+  },
+  {
+    "para_idx": 115,
+    "intended_charPr": 59,
+    "char": ".",
+    "lines": 4,
+    "line_chars": [
+      62,
+      62,
+      62,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 62.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 490.45
+  },
+  {
+    "para_idx": 116,
+    "intended_charPr": 59,
+    "char": ",",
+    "lines": 4,
+    "line_chars": [
+      62,
+      62,
+      62,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 62.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 490.45
+  },
+  {
+    "para_idx": 117,
+    "intended_charPr": 59,
+    "char": "=",
+    "lines": 6,
+    "line_chars": [
+      36,
+      36,
+      36,
+      36,
+      36,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 36.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 844.67
+  },
+  {
+    "para_idx": 118,
+    "intended_charPr": 59,
+    "char": "≤",
+    "lines": 10,
+    "line_chars": [
+      20,
+      20,
+      20,
+      20,
+      20,
+      20,
+      20,
+      20,
+      20,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 20.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1520.4
+  },
+  {
+    "para_idx": 119,
+    "intended_charPr": 59,
+    "char": "×",
+    "lines": 7,
+    "line_chars": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 32.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 950.25
+  },
+  {
+    "para_idx": 120,
+    "intended_charPr": 68,
+    "char": "가",
+    "lines": 8,
+    "line_chars": [
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 28.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1086.0
+  },
+  {
+    "para_idx": 121,
+    "intended_charPr": 68,
+    "char": "0",
+    "lines": 5,
+    "line_chars": [
+      45,
+      45,
+      45,
+      45,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 45.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 675.73
+  },
+  {
+    "para_idx": 122,
+    "intended_charPr": 68,
+    "char": "5",
+    "lines": 5,
+    "line_chars": [
+      45,
+      45,
+      45,
+      45,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 45.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 675.73
+  },
+  {
+    "para_idx": 123,
+    "intended_charPr": 68,
+    "char": "A",
+    "lines": 6,
+    "line_chars": [
+      34,
+      34,
+      34,
+      34,
+      34,
+      30
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 34.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 894.35
+  },
+  {
+    "para_idx": 124,
+    "intended_charPr": 68,
+    "char": "M",
+    "lines": 8,
+    "line_chars": [
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      27,
+      11
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 27.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1126.22
+  },
+  {
+    "para_idx": 125,
+    "intended_charPr": 68,
+    "char": "W",
+    "lines": 8,
+    "line_chars": [
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      18
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 26.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1169.54
+  },
+  {
+    "para_idx": 126,
+    "intended_charPr": 68,
+    "char": "I",
+    "lines": 4,
+    "line_chars": [
+      59,
+      59,
+      59,
+      23
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 59.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 515.39
+  },
+  {
+    "para_idx": 127,
+    "intended_charPr": 68,
+    "char": "a",
+    "lines": 5,
+    "line_chars": [
+      43,
+      43,
+      43,
+      43,
+      28
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 43.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 707.16
+  },
+  {
+    "para_idx": 128,
+    "intended_charPr": 68,
+    "char": "m",
+    "lines": 7,
+    "line_chars": [
+      28,
+      29,
+      29,
+      29,
+      29,
+      29,
+      27
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 29.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1048.55
+  },
+  {
+    "para_idx": 129,
+    "intended_charPr": 68,
+    "char": "w",
+    "lines": 7,
+    "line_chars": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 32.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 950.25
+  },
+  {
+    "para_idx": 130,
+    "intended_charPr": 68,
+    "char": "i",
+    "lines": 3,
+    "line_chars": [
+      70,
+      70,
+      60
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 70.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 434.4
+  },
+  {
+    "para_idx": 131,
+    "intended_charPr": 68,
+    "char": "l",
+    "lines": 3,
+    "line_chars": [
+      70,
+      70,
+      60
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 70.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 434.4
+  },
+  {
+    "para_idx": 132,
+    "intended_charPr": 68,
+    "char": ".",
+    "lines": 3,
+    "line_chars": [
+      67,
+      67,
+      66
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 67.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 453.85
+  },
+  {
+    "para_idx": 133,
+    "intended_charPr": 68,
+    "char": ",",
+    "lines": 3,
+    "line_chars": [
+      67,
+      67,
+      66
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 67.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 453.85
+  },
+  {
+    "para_idx": 134,
+    "intended_charPr": 68,
+    "char": "=",
+    "lines": 8,
+    "line_chars": [
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 28.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1086.0
+  },
+  {
+    "para_idx": 135,
+    "intended_charPr": 68,
+    "char": "≤",
+    "lines": 7,
+    "line_chars": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 31.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 980.9
+  },
+  {
+    "para_idx": 136,
+    "intended_charPr": 68,
+    "char": "×",
+    "lines": 5,
+    "line_chars": [
+      45,
+      45,
+      45,
+      45,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 45.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 675.73
+  },
+  {
+    "para_idx": 137,
+    "intended_charPr": 132,
+    "char": "가",
+    "lines": 7,
+    "line_chars": [
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      2
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 33.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 921.45
+  },
+  {
+    "para_idx": 138,
+    "intended_charPr": 132,
+    "char": "0",
+    "lines": 5,
+    "line_chars": [
+      48,
+      48,
+      48,
+      48,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 48.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 633.5
+  },
+  {
+    "para_idx": 139,
+    "intended_charPr": 132,
+    "char": "5",
+    "lines": 5,
+    "line_chars": [
+      48,
+      48,
+      48,
+      48,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 48.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 633.5
+  },
+  {
+    "para_idx": 140,
+    "intended_charPr": 132,
+    "char": "A",
+    "lines": 5,
+    "line_chars": [
+      40,
+      40,
+      40,
+      40,
+      40
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 40.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 760.2
+  },
+  {
+    "para_idx": 141,
+    "intended_charPr": 132,
+    "char": "M",
+    "lines": 7,
+    "line_chars": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 31.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 980.9
+  },
+  {
+    "para_idx": 142,
+    "intended_charPr": 132,
+    "char": "W",
+    "lines": 7,
+    "line_chars": [
+      28,
+      29,
+      29,
+      29,
+      29,
+      29,
+      27
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 29.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1048.55
+  },
+  {
+    "para_idx": 143,
+    "intended_charPr": 132,
+    "char": "I",
+    "lines": 2,
+    "line_chars": [
+      104,
+      96
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 104.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 292.38
+  },
+  {
+    "para_idx": 144,
+    "intended_charPr": 132,
+    "char": "a",
+    "lines": 4,
+    "line_chars": [
+      51,
+      51,
+      51,
+      47
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 51.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 596.24
+  },
+  {
+    "para_idx": 145,
+    "intended_charPr": 132,
+    "char": "m",
+    "lines": 7,
+    "line_chars": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 31.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 980.9
+  },
+  {
+    "para_idx": 146,
+    "intended_charPr": 132,
+    "char": "w",
+    "lines": 6,
+    "line_chars": [
+      35,
+      35,
+      35,
+      35,
+      35,
+      25
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 35.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 868.8
+  },
+  {
+    "para_idx": 147,
+    "intended_charPr": 132,
+    "char": "i",
+    "lines": 2,
+    "line_chars": [
+      103,
+      97
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 103.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 295.22
+  },
+  {
+    "para_idx": 148,
+    "intended_charPr": 132,
+    "char": "l",
+    "lines": 2,
+    "line_chars": [
+      103,
+      97
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 103.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 295.22
+  },
+  {
+    "para_idx": 149,
+    "intended_charPr": 132,
+    "char": ".",
+    "lines": 3,
+    "line_chars": [
+      83,
+      83,
+      34
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 83.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 366.36
+  },
+  {
+    "para_idx": 150,
+    "intended_charPr": 132,
+    "char": ",",
+    "lines": 3,
+    "line_chars": [
+      83,
+      83,
+      34
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 83.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 366.36
+  },
+  {
+    "para_idx": 151,
+    "intended_charPr": 132,
+    "char": "=",
+    "lines": 7,
+    "line_chars": [
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      2
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 33.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 921.45
+  },
+  {
+    "para_idx": 152,
+    "intended_charPr": 132,
+    "char": "≤",
+    "lines": 7,
+    "line_chars": [
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      2
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 33.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 921.45
+  },
+  {
+    "para_idx": 153,
+    "intended_charPr": 132,
+    "char": "×",
+    "lines": 6,
+    "line_chars": [
+      39,
+      39,
+      39,
+      39,
+      39,
+      5
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 39.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 779.69
+  },
+  {
+    "para_idx": 154,
+    "intended_charPr": 140,
+    "char": "가",
+    "lines": 7,
+    "line_chars": [
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 155,
+    "intended_charPr": 140,
+    "char": "0",
+    "lines": 4,
+    "line_chars": [
+      64,
+      64,
+      64,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 64.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 475.12
+  },
+  {
+    "para_idx": 156,
+    "intended_charPr": 140,
+    "char": "5",
+    "lines": 4,
+    "line_chars": [
+      64,
+      64,
+      64,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 64.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 475.12
+  },
+  {
+    "para_idx": 157,
+    "intended_charPr": 140,
+    "char": "A",
+    "lines": 4,
+    "line_chars": [
+      53,
+      53,
+      53,
+      41
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 53.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 573.74
+  },
+  {
+    "para_idx": 158,
+    "intended_charPr": 140,
+    "char": "M",
+    "lines": 5,
+    "line_chars": [
+      40,
+      40,
+      40,
+      40,
+      40
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 40.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 760.2
+  },
+  {
+    "para_idx": 159,
+    "intended_charPr": 140,
+    "char": "W",
+    "lines": 6,
+    "line_chars": [
+      37,
+      37,
+      37,
+      37,
+      37,
+      15
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 37.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 821.84
+  },
+  {
+    "para_idx": 160,
+    "intended_charPr": 140,
+    "char": "I",
+    "lines": 2,
+    "line_chars": [
+      128,
+      72
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 128.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 237.56
+  },
+  {
+    "para_idx": 161,
+    "intended_charPr": 140,
+    "char": "a",
+    "lines": 4,
+    "line_chars": [
+      64,
+      64,
+      64,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 64.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 475.12
+  },
+  {
+    "para_idx": 162,
+    "intended_charPr": 140,
+    "char": "m",
+    "lines": 5,
+    "line_chars": [
+      41,
+      41,
+      41,
+      41,
+      36
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 41.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 741.66
+  },
+  {
+    "para_idx": 163,
+    "intended_charPr": 140,
+    "char": "w",
+    "lines": 5,
+    "line_chars": [
+      45,
+      45,
+      45,
+      45,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 45.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 675.73
+  },
+  {
+    "para_idx": 164,
+    "intended_charPr": 140,
+    "char": "i",
+    "lines": 2,
+    "line_chars": [
+      148,
+      52
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 148.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 205.46
+  },
+  {
+    "para_idx": 165,
+    "intended_charPr": 140,
+    "char": "l",
+    "lines": 2,
+    "line_chars": [
+      148,
+      52
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 148.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 205.46
+  },
+  {
+    "para_idx": 166,
+    "intended_charPr": 140,
+    "char": ".",
+    "lines": 2,
+    "line_chars": [
+      115,
+      85
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 115.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 264.42
+  },
+  {
+    "para_idx": 167,
+    "intended_charPr": 140,
+    "char": ",",
+    "lines": 2,
+    "line_chars": [
+      115,
+      85
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 115.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 264.42
+  },
+  {
+    "para_idx": 168,
+    "intended_charPr": 140,
+    "char": "=",
+    "lines": 4,
+    "line_chars": [
+      53,
+      53,
+      53,
+      41
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 53.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 573.74
+  },
+  {
+    "para_idx": 169,
+    "intended_charPr": 140,
+    "char": "≤",
+    "lines": 7,
+    "line_chars": [
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 170,
+    "intended_charPr": 140,
+    "char": "×",
+    "lines": 5,
+    "line_chars": [
+      49,
+      49,
+      49,
+      49,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 49.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 620.57
+  },
+  {
+    "para_idx": 171,
+    "intended_charPr": 141,
+    "char": "가",
+    "lines": 6,
+    "line_chars": [
+      34,
+      34,
+      34,
+      34,
+      34,
+      30
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 34.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 894.35
+  },
+  {
+    "para_idx": 172,
+    "intended_charPr": 141,
+    "char": "0",
+    "lines": 4,
+    "line_chars": [
+      56,
+      56,
+      56,
+      32
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 56.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 543.0
+  },
+  {
+    "para_idx": 173,
+    "intended_charPr": 141,
+    "char": "5",
+    "lines": 4,
+    "line_chars": [
+      56,
+      56,
+      56,
+      32
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 56.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 543.0
+  },
+  {
+    "para_idx": 174,
+    "intended_charPr": 141,
+    "char": "A",
+    "lines": 5,
+    "line_chars": [
+      42,
+      42,
+      42,
+      42,
+      32
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 42.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 724.0
+  },
+  {
+    "para_idx": 175,
+    "intended_charPr": 141,
+    "char": "M",
+    "lines": 7,
+    "line_chars": [
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      2
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 33.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 921.45
+  },
+  {
+    "para_idx": 176,
+    "intended_charPr": 141,
+    "char": "W",
+    "lines": 7,
+    "line_chars": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 32.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 950.25
+  },
+  {
+    "para_idx": 177,
+    "intended_charPr": 141,
+    "char": "I",
+    "lines": 3,
+    "line_chars": [
+      75,
+      75,
+      50
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 75.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 405.44
+  },
+  {
+    "para_idx": 178,
+    "intended_charPr": 141,
+    "char": "a",
+    "lines": 4,
+    "line_chars": [
+      53,
+      53,
+      53,
+      41
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 53.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 573.74
+  },
+  {
+    "para_idx": 179,
+    "intended_charPr": 141,
+    "char": "m",
+    "lines": 6,
+    "line_chars": [
+      34,
+      34,
+      34,
+      34,
+      34,
+      30
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 34.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 894.35
+  },
+  {
+    "para_idx": 180,
+    "intended_charPr": 141,
+    "char": "w",
+    "lines": 6,
+    "line_chars": [
+      39,
+      39,
+      39,
+      39,
+      39,
+      5
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 39.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 779.69
+  },
+  {
+    "para_idx": 181,
+    "intended_charPr": 141,
+    "char": "i",
+    "lines": 3,
+    "line_chars": [
+      92,
+      92,
+      16
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 92.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 330.52
+  },
+  {
+    "para_idx": 182,
+    "intended_charPr": 141,
+    "char": "l",
+    "lines": 3,
+    "line_chars": [
+      92,
+      92,
+      16
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 92.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 330.52
+  },
+  {
+    "para_idx": 183,
+    "intended_charPr": 141,
+    "char": ".",
+    "lines": 3,
+    "line_chars": [
+      87,
+      87,
+      26
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 87.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 349.52
+  },
+  {
+    "para_idx": 184,
+    "intended_charPr": 141,
+    "char": ",",
+    "lines": 3,
+    "line_chars": [
+      87,
+      87,
+      26
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 87.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 349.52
+  },
+  {
+    "para_idx": 185,
+    "intended_charPr": 141,
+    "char": "=",
+    "lines": 6,
+    "line_chars": [
+      34,
+      34,
+      34,
+      34,
+      34,
+      30
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 34.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 894.35
+  },
+  {
+    "para_idx": 186,
+    "intended_charPr": 141,
+    "char": "≤",
+    "lines": 6,
+    "line_chars": [
+      36,
+      36,
+      36,
+      36,
+      36,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 36.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 844.67
+  },
+  {
+    "para_idx": 187,
+    "intended_charPr": 141,
+    "char": "×",
+    "lines": 4,
+    "line_chars": [
+      56,
+      56,
+      56,
+      32
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 56.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 543.0
+  },
+  {
+    "para_idx": 188,
+    "intended_charPr": 167,
+    "char": "가",
+    "lines": 7,
+    "line_chars": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 31.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 980.9
+  },
+  {
+    "para_idx": 189,
+    "intended_charPr": 167,
+    "char": "0",
+    "lines": 4,
+    "line_chars": [
+      51,
+      51,
+      51,
+      47
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 51.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 596.24
+  },
+  {
+    "para_idx": 190,
+    "intended_charPr": 167,
+    "char": "5",
+    "lines": 4,
+    "line_chars": [
+      51,
+      51,
+      51,
+      47
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 51.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 596.24
+  },
+  {
+    "para_idx": 191,
+    "intended_charPr": 167,
+    "char": "A",
+    "lines": 6,
+    "line_chars": [
+      38,
+      38,
+      38,
+      38,
+      38,
+      10
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 38.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 800.21
+  },
+  {
+    "para_idx": 192,
+    "intended_charPr": 167,
+    "char": "M",
+    "lines": 7,
+    "line_chars": [
+      29,
+      30,
+      30,
+      30,
+      30,
+      30,
+      21
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 193,
+    "intended_charPr": 167,
+    "char": "W",
+    "lines": 7,
+    "line_chars": [
+      29,
+      29,
+      29,
+      29,
+      29,
+      29,
+      26
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 29.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1048.55
+  },
+  {
+    "para_idx": 194,
+    "intended_charPr": 167,
+    "char": "I",
+    "lines": 3,
+    "line_chars": [
+      68,
+      69,
+      63
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 69.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 440.7
+  },
+  {
+    "para_idx": 195,
+    "intended_charPr": 167,
+    "char": "a",
+    "lines": 5,
+    "line_chars": [
+      48,
+      48,
+      48,
+      48,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 48.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 633.5
+  },
+  {
+    "para_idx": 196,
+    "intended_charPr": 167,
+    "char": "m",
+    "lines": 7,
+    "line_chars": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 31.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 980.9
+  },
+  {
+    "para_idx": 197,
+    "intended_charPr": 167,
+    "char": "w",
+    "lines": 6,
+    "line_chars": [
+      36,
+      36,
+      36,
+      36,
+      36,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 36.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 844.67
+  },
+  {
+    "para_idx": 198,
+    "intended_charPr": 167,
+    "char": "i",
+    "lines": 3,
+    "line_chars": [
+      83,
+      83,
+      34
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 83.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 366.36
+  },
+  {
+    "para_idx": 199,
+    "intended_charPr": 167,
+    "char": "l",
+    "lines": 3,
+    "line_chars": [
+      83,
+      83,
+      34
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 83.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 366.36
+  },
+  {
+    "para_idx": 200,
+    "intended_charPr": 167,
+    "char": ".",
+    "lines": 3,
+    "line_chars": [
+      79,
+      79,
+      42
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 79.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 384.91
+  },
+  {
+    "para_idx": 201,
+    "intended_charPr": 167,
+    "char": ",",
+    "lines": 3,
+    "line_chars": [
+      79,
+      79,
+      42
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 79.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 384.91
+  },
+  {
+    "para_idx": 202,
+    "intended_charPr": 167,
+    "char": "=",
+    "lines": 7,
+    "line_chars": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 31.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 980.9
+  },
+  {
+    "para_idx": 203,
+    "intended_charPr": 167,
+    "char": "≤",
+    "lines": 7,
+    "line_chars": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      8
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 32.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 950.25
+  },
+  {
+    "para_idx": 204,
+    "intended_charPr": 167,
+    "char": "×",
+    "lines": 4,
+    "line_chars": [
+      51,
+      51,
+      51,
+      47
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 51.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 596.24
+  },
+  {
+    "para_idx": 205,
+    "intended_charPr": 179,
+    "char": "가",
+    "lines": 7,
+    "line_chars": [
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 30.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1013.6
+  },
+  {
+    "para_idx": 206,
+    "intended_charPr": 179,
+    "char": "0",
+    "lines": 4,
+    "line_chars": [
+      60,
+      61,
+      61,
+      18
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 61.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 498.49
+  },
+  {
+    "para_idx": 207,
+    "intended_charPr": 179,
+    "char": "5",
+    "lines": 4,
+    "line_chars": [
+      60,
+      61,
+      61,
+      18
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 61.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 498.49
+  },
+  {
+    "para_idx": 208,
+    "intended_charPr": 179,
+    "char": "A",
+    "lines": 6,
+    "line_chars": [
+      38,
+      38,
+      38,
+      38,
+      38,
+      10
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 38.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 800.21
+  },
+  {
+    "para_idx": 209,
+    "intended_charPr": 179,
+    "char": "M",
+    "lines": 7,
+    "line_chars": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 31.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 980.9
+  },
+  {
+    "para_idx": 210,
+    "intended_charPr": 179,
+    "char": "W",
+    "lines": 7,
+    "line_chars": [
+      29,
+      29,
+      29,
+      29,
+      29,
+      29,
+      26
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 29.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 1048.55
+  },
+  {
+    "para_idx": 211,
+    "intended_charPr": 179,
+    "char": "I",
+    "lines": 3,
+    "line_chars": [
+      91,
+      91,
+      18
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 91.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 334.15
+  },
+  {
+    "para_idx": 212,
+    "intended_charPr": 179,
+    "char": "a",
+    "lines": 4,
+    "line_chars": [
+      60,
+      60,
+      60,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 60.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 506.8
+  },
+  {
+    "para_idx": 213,
+    "intended_charPr": 179,
+    "char": "m",
+    "lines": 6,
+    "line_chars": [
+      35,
+      35,
+      35,
+      35,
+      35,
+      25
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 35.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 868.8
+  },
+  {
+    "para_idx": 214,
+    "intended_charPr": 179,
+    "char": "w",
+    "lines": 6,
+    "line_chars": [
+      36,
+      36,
+      36,
+      36,
+      36,
+      20
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 36.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 844.67
+  },
+  {
+    "para_idx": 215,
+    "intended_charPr": 179,
+    "char": "i",
+    "lines": 2,
+    "line_chars": [
+      110,
+      90
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 110.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 276.44
+  },
+  {
+    "para_idx": 216,
+    "intended_charPr": 179,
+    "char": "l",
+    "lines": 2,
+    "line_chars": [
+      112,
+      88
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 112.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 271.5
+  },
+  {
+    "para_idx": 217,
+    "intended_charPr": 179,
+    "char": ".",
+    "lines": 2,
+    "line_chars": [
+      124,
+      76
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 124.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 245.23
+  },
+  {
+    "para_idx": 218,
+    "intended_charPr": 179,
+    "char": ",",
+    "lines": 2,
+    "line_chars": [
+      128,
+      72
+    ],
+    "horzpos_list": [
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538
+    ],
+    "middle_avg": 128.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 237.56
+  },
+  {
+    "para_idx": 219,
+    "intended_charPr": 179,
+    "char": "=",
+    "lines": 4,
+    "line_chars": [
+      53,
+      53,
+      53,
+      41
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 53.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 573.74
+  },
+  {
+    "para_idx": 220,
+    "intended_charPr": 179,
+    "char": "≤",
+    "lines": 7,
+    "line_chars": [
+      31,
+      31,
+      31,
+      31,
+      31,
+      31,
+      14
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 31.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 980.9
+  },
+  {
+    "para_idx": 221,
+    "intended_charPr": 179,
+    "char": "×",
+    "lines": 5,
+    "line_chars": [
+      49,
+      49,
+      49,
+      49,
+      4
+    ],
+    "horzpos_list": [
+      1130,
+      1130,
+      1130,
+      1130,
+      1130
+    ],
+    "horzsize_list": [
+      31538,
+      31538,
+      31538,
+      31538,
+      31538
+    ],
+    "middle_avg": 49.0,
+    "middle_eff": 30408.0,
+    "char_width_hwpunit": 620.57
+  }
+]

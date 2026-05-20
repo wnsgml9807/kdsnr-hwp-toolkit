@@ -1,0 +1,13 @@
+[package]
+name = "kdsnr_hwp_toolkit"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "kdsnr_hwp_toolkit"
+path = "src_rust/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module", "abi3-py310"] }
+rhwp = { path = "vendor/rhwp" }

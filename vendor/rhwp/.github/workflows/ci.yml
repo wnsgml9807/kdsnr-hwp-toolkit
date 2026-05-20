@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [main, devel]
+    tags: ['v*']
+    paths-ignore:
+      - 'mydocs/**'
+      - 'docs/**'
+      - 'samples/**'
+      - 'assets/**'
+      - '*.md'
+      - 'LICENSE'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/FUNDING.yml'
+      - '.github/CODE_OF_CONDUCT.md'
+      - '.github/SECURITY.md'
+      - '.github/pull_request_template.md'
+      - '.github/dependabot.yml'
+      - 'rhwp-logo.*'
+  pull_request:
+    branches: [main, devel]
+    paths-ignore:
+      - 'mydocs/**'
+      - 'docs/**'
+      - 'samples/**'
+      - 'assets/**'
+      - '*.md'
+      - 'LICENSE'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/FUNDING.yml'
+      - '.github/CODE_OF_CONDUCT.md'
+      - '.github/SECURITY.md'
+      - '.github/pull_request_template.md'
+      - '.github/dependabot.yml'
+      - 'rhwp-logo.*'
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+          targets: wasm32-unknown-unknown
+
+      - name: Cache cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Canvas layer parity tests
+        run: cargo test canvas_layer_tree_matches_legacy --lib --verbose
+
+      - name: Check WASM target
+        run: cargo check --target wasm32-unknown-unknown --lib
+
+      - name: Run tests
+        run: cargo test --verbose
+
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+
+  wasm-build:
+    name: WASM Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Cache cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-wasm-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-wasm-
+
+      - name: Build WASM
+        run: wasm-pack build --target web --release
+
+      - name: Upload WASM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rhwp-wasm-pkg
+          path: pkg/
+          retention-days: 30

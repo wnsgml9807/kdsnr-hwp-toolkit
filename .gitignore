@@ -1,0 +1,65 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Python local artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Native build artifacts
+/target/
+**/target/
+*.so
+*.dylib
+*.dll
+
+# Local/probe outputs
+/work/
+/original/
+/templet/
+/font-*.ttf
+/image-*.png
+/hs_err_pid*.log
+*.tmp
+*.bak
+
+# Generated previews and debug documents outside source resources
+*.pdf
+*.svg
+*.png
+*.hwp
+*.hwpx
+
+# Keep package resources/templates tracked even though root samples are ignored.
+!src/kdsnr_hwp_toolkit/resources/templates/*.hwpx
+
+# Test/probe corpora are local and large; keep source code and package data only.
+/tests/
+/hft-decoder/tests/
+/hft-decoder/rust/tests/
+/hft-decoder/rust/test-data/
+/vendor/rhwp/tests/
+/vendor/rhwp/output/
+/vendor/rhwp/assets/
+/vendor/rhwp/examples/
+/vendor/rhwp/mydocs/
+/vendor/rhwp/npm/
+/vendor/rhwp/rhwp-*/
+/vendor/rhwp/samples/
+/vendor/rhwp/ttfs/
+/vendor/rhwp/typescript/
+/vendor/rhwp/web/
+/hft-decoder/examples/
+/hft-decoder/rust/examples/
+
+# Nested vendored git metadata should not enter the top-level repository.
+**/.git/

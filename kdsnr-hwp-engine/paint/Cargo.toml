@@ -1,0 +1,16 @@
+[package]
+name = "kdsnr-hwp-paint"
+version = "0.1.0"
+edition = "2021"
+description = "Backend-independent HWP paint tree."
+license = "MIT"
+
+[lib]
+name = "kdsnr_hwp_paint"
+path = "src/lib.rs"
+
+[dependencies]
+kdsnr-hwp-core = { path = "../core" }
+kdsnr-hwp-doc = { path = "../doc" }
+kdsnr-hwp-layout = { path = "../layout" }
+kdsnr-hwp-equation = { path = "../equation" }

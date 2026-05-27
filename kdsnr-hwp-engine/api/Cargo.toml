@@ -1,0 +1,21 @@
+[package]
+name = "kdsnr-hwp-api"
+version = "0.1.0"
+edition = "2021"
+
+# Model-centric conversion/render API over the engine crates. Pure Rust core
+# (no PyO3 here); the Python extension wraps this. See project_engine_api_redesign.
+[dependencies]
+kdsnr-hwp-parser = { path = "../parser" }
+kdsnr-hwp-doc = { path = "../doc" }
+kdsnr-hwp-layout = { path = "../layout" }
+kdsnr-hwp-paint = { path = "../paint" }
+kdsnr-hwp-render = { path = "../render" }
+kdsnr-hwp-font = { path = "../font" }
+
+# Preview rasterization/PDF. The engine emits self-contained SVG (glyphs as
+# <path>, images as data URIs), so usvg needs no font DB to parse it.
+usvg = "0.45"
+resvg = "0.45"
+tiny-skia = "0.11"
+svg2pdf = "0.13"

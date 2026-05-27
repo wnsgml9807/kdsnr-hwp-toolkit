@@ -1,0 +1,122 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Python local artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Native build artifacts
+/target/
+**/target/
+/dist/
+*.so
+*.dylib
+*.dll
+
+# Local/probe outputs
+/HANDOFF/
+/docs/
+/work/
+/original/
+/templet/
+/examples/input_hwp/
+/font-*.ttf
+/image-*.png
+/hs_err_pid*.log
+*.tmp
+*.bak
+
+# Generated previews and debug documents outside source resources
+*.pdf
+*.svg
+*.png
+*.hwp
+*.hwpx
+/src/kdsnr_hwp_toolkit/bin/rhwp
+/src/kdsnr_hwp_toolkit/bin/rhwp.exe
+
+# Keep package resources/templates tracked even though root samples are ignored.
+!src/kdsnr_hwp_toolkit/resources/templates/*.hwpx
+!src/kdsnr_hwp_toolkit/bin/.gitkeep
+
+# Test/probe corpora are local and large; keep source code and package data only.
+/tests/
+/hft-decoder/tests/
+/hft-decoder/rust/tests/
+/hft-decoder/rust/test-data/
+/vendor/rhwp/tests/
+/vendor/rhwp/output/
+/vendor/rhwp/assets/
+/vendor/rhwp/examples/
+/vendor/rhwp/mydocs/
+/vendor/rhwp/npm/
+/vendor/rhwp/rhwp-*/
+/vendor/rhwp/samples/
+/vendor/rhwp/ttfs/
+/vendor/rhwp/typescript/
+/vendor/rhwp/web/
+/hft-decoder/examples/
+/hft-decoder/rust/examples/
+/hft-decoder/README.md
+/vendor/rhwp/*.md
+/vendor/rhwp/.github/
+
+# Nested vendored git metadata should not enter the top-level repository.
+**/.git/
+
+# ── Proprietary font sources — NEVER commit/distribute ──────────────────────
+# Glyphs reach partners only as the encrypted, opaque glyph store; the raw
+# Hancom/Microsoft font files must stay local so they cannot be lifted from the
+# repo. Local copies remain on disk (gitignore does not delete) for regenerating
+# the blob; they are simply never tracked.
+*.hft
+*.HFT
+*.ttf
+*.TTF
+*.ttc
+*.otf
+*.woff
+*.woff2
+assets/fonts/
+hft-decoder/rust/fonts/
+kdsnr-hwp-engine/hft/fonts/
+kdsnr-hwp-engine/hft/test-data/
+kdsnr-hwp-engine-inventory/hft/fonts/
+
+# Glyph-store encryption key + any key/extraction/decrypt scripts (internal).
+*.key
+*.glyphkey
+/secrets/
+**/glyph_store_key*
+**/*_decrypt_key*
+
+# Legacy / archived code (not for git)
+/legacy/
+
+# Engine dev artifacts — not needed to build/run, regenerable or note-only.
+# (.fonts is the local render font source: kept on disk, never tracked.)
+**/work/
+**/docs/
+**/memory/
+kdsnr-hwp-engine/.fonts/
+
+# Docs are rewritten from scratch; do not track Markdown anywhere in the tree.
+*.md
+
+# Dev scripts / probes and the uv lock — not needed to build or run the API.
+/scripts/
+/uv.lock
+
+# Tracked exceptions: the README and its logo (override *.md / *.png above).
+!README.md
+!assets/logo.png

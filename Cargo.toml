@@ -1,0 +1,16 @@
+[package]
+name = "kdsnr_hwp_toolkit"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "kdsnr_hwp_toolkit"
+path = "src_rust/lib.rs"
+crate-type = ["cdylib"]
+
+# Thin PyO3 wrapper over the engine's API crate. All engine logic lives in
+# kdsnr-hwp-engine/api (and the crates it pulls in); this package only adapts it
+# to Python. No rhwp (removed); preview PDF/PNG go through the api crate.
+[dependencies]
+kdsnr-hwp-api = { path = "kdsnr-hwp-engine/api" }
+pyo3 = { version = "0.22", features = ["extension-module", "abi3-py310"] }

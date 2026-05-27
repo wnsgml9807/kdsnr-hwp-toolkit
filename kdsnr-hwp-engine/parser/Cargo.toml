@@ -1,0 +1,33 @@
+[package]
+name = "kdsnr-hwp-parser"
+version = "0.1.0"
+edition = "2021"
+description = "KDSNR HWP/HWPX parser and HWPX serializer."
+license = "MIT"
+
+[lib]
+name = "kdsnr_hwp_parser"
+path = "src/lib.rs"
+# Vendored from kdsnr-hwp-engine-inventory as a self-contained library. Its
+# internal unit tests are pre-existing stale fixtures (reference a non-existent
+# `wasm_api` module, missing sample files) and are not maintained here; the
+# library itself is what the engine consumes.
+test = false
+doctest = false
+
+[dependencies]
+base64 = "0.22"
+byteorder = "1.5"
+cfb = "0.14"
+codepage = "0.1.2"
+embedded-io = "0.7.1"
+encoding_rs = "0.8.35"
+flate2 = "1.0"
+image = { version = "0.25", default-features = false, features = ["bmp", "png"] }
+quick-xml = "0.39"
+serde = { version = "1", features = ["derive"] }
+snafu = "0.9.0"
+strum = { version = "0.28.0", default-features = false, features = ["derive"] }
+unicode-segmentation = "1.12.0"
+unicode-width = "0.2.2"
+zip = { version = "8.5", default-features = false, features = ["deflate"] }

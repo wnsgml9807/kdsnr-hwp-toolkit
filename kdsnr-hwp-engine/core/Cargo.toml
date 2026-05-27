@@ -1,0 +1,10 @@
+[package]
+name = "kdsnr-hwp-core"
+version = "0.1.0"
+edition = "2021"
+description = "Shared native HWP engine types."
+license = "MIT"
+
+[lib]
+name = "kdsnr_hwp_core"
+path = "src/lib.rs"

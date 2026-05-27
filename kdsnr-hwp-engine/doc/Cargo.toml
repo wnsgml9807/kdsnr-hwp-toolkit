@@ -1,0 +1,18 @@
+[package]
+name = "kdsnr-hwp-doc"
+version = "0.1.0"
+edition = "2021"
+description = "Normalized native HWP document model and context resolver."
+license = "MIT"
+
+[lib]
+name = "kdsnr_hwp_doc"
+path = "src/lib.rs"
+
+[dependencies]
+kdsnr-hwp-core = { path = "../core" }
+# Parser model is the normalization input.
+kdsnr-hwp-parser = { path = "../parser" }
+# Unicode → HWP per-script slot (font_ids/ratios/spacings index), shared with
+# the render path so script classification has one source.
+kdsnr-hwp-font = { path = "../font" }

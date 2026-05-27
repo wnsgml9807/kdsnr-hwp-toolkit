@@ -1,0 +1,17 @@
+# Engine workspace: HWP/HWPX -> parse -> layout -> SVG/PNG/PDF, reading Hancom's
+# stored layout geometry. The `api` crate is the public entry; the root cdylib
+# wraps it for Python.
+[workspace]
+resolver = "2"
+members = [
+    "core",
+    "parser",
+    "doc",
+    "layout",
+    "paint",
+    "render",
+    "font",
+    "hft",
+    "equation",
+    "api",
+]

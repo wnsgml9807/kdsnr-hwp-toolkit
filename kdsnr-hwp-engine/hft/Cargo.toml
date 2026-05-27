@@ -1,0 +1,12 @@
+[package]
+name = "kdsnr-hwp-hft"
+version = "0.1.0"
+edition = "2021"
+
+# Hancom HFT font decoder: bitmap + vector outlines, per-glyph advance.
+# Clean-room port from Hancom Office's HncBaseDraw / HncFontLib. Pure Rust,
+# no embedded font data — .HFT files are loaded from a directory at runtime.
+[lib]
+name = "kdsnr_hwp_hft"
+
+[dependencies]

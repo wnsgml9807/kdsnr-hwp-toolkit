@@ -1,0 +1,129 @@
+//! Font preflight: guarantee every font a document needs is present in the font
+//! directory before rendering, so the engine never silently renders with a
+//! wrong/missing face. Required faces map to files via `.fonts/manifest.tsv`
+//! (`FontManifest`). Missing files are collected from an installed Hancom Office
+//! (its bundled TTF directories) on Windows/macOS; anything still missing is a
+//! hard error listing `face -> file`.
+
+use std::collections::BTreeSet;
+use std::path::PathBuf;
+
+use kdsnr_hwp_doc::{normalize, required_faces};
+use kdsnr_hwp_font::FontManifest;
+use kdsnr_hwp_parser::model::document::Document;
+
+use crate::render::font_dir;
+
+/// What a font-preflight pass found and did.
+pub struct FontReport {
+    pub font_dir: PathBuf,
+    /// `"windows" | "macos" | other` (the running OS).
+    pub os: &'static str,
+    /// Distinct font files the documents require.
+    pub required: usize,
+    /// `(face, file)` copied from a Hancom install into the font dir this pass.
+    pub collected: Vec<(String, String)>,
+    /// `(face, file)` still absent after collection.
+    pub missing: Vec<(String, String)>,
+}
+
+/// Missing fonts as `(face, file)`, one entry per distinct missing **file** (a
+/// representative face is kept), since collection and the error report are
+/// per-file. Multiple faces mapping to the same absent file collapse to one row.
+fn missing_in_dir(docs: &[Document], dir: &std::path::Path) -> Vec<(String, String)> {
+    let manifest = FontManifest::load(dir);
+    let mut seen = BTreeSet::new();
+    let mut out = Vec::new();
+    for doc in docs {
+        let model = normalize(doc);
+        let faces: Vec<String> = required_faces(&model).into_iter().collect();
+        for m in manifest.missing_for("", &faces) {
+            if seen.insert(m.file.clone()) {
+                out.push((m.face, m.file));
+            }
+        }
+    }
+    out
+}
+
+/// Total distinct font files the documents require (present or not).
+fn required_count(docs: &[Document], dir: &std::path::Path) -> usize {
+    let manifest = FontManifest::load(dir);
+    let mut files = BTreeSet::new();
+    for doc in docs {
+        let model = normalize(doc);
+        for face in required_faces(&model) {
+            if let Some(file) = manifest.file_for(&face) {
+                files.insert(file.to_string());
+            }
+        }
+    }
+    files.len()
+}
+
+/// Just the gate: `(face, file)` still missing from the font dir (no collection).
+/// Used by `export_preview` so any caller fails without fonts.
+pub fn missing_fonts(docs: &[Document]) -> Vec<(String, String)> {
+    match font_dir() {
+        Some(dir) => missing_in_dir(docs, &dir),
+        // No font dir at all → every required font is missing (report by face).
+        None => docs
+            .iter()
+            .flat_map(|doc| {
+                required_faces(&normalize(doc))
+                    .into_iter()
+                    .map(|face| (face, "(폰트 폴더 없음)".to_string()))
+            })
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect(),
+    }
+}
+
+/// Hancom Office font directories to collect TTFs from, under `HANCOM_DIR`.
+fn hancom_ttf_dirs() -> Vec<PathBuf> {
+    let base = crate::render::hancom_dir();
+    vec![base.join("TTF/Hwp"), base.join("TTF/Install"), base.join("Fonts")]
+}
+
+/// Find `file` (case-insensitive) under any Hancom TTF directory.
+fn find_in_hancom(file: &str) -> Option<PathBuf> {
+    for dir in hancom_ttf_dirs() {
+        let Ok(entries) = std::fs::read_dir(&dir) else { continue };
+        for entry in entries.flatten() {
+            if entry
+                .file_name()
+                .to_str()
+                .is_some_and(|n| n.eq_ignore_ascii_case(file))
+            {
+                return Some(entry.path());
+            }
+        }
+    }
+    None
+}
+
+/// Check the font dir; on Windows/macOS collect any missing files from a Hancom
+/// install into it. Returns what was required, collected, and still missing.
+pub fn collect_fonts(docs: &[Document]) -> FontReport {
+    let os = std::env::consts::OS;
+    let dir = font_dir().unwrap_or_default();
+    let required = required_count(docs, &dir);
+    let missing_before = missing_in_dir(docs, &dir);
+
+    let mut collected = Vec::new();
+    let mut missing = Vec::new();
+    let can_collect = matches!(os, "windows" | "macos") && !dir.as_os_str().is_empty();
+    for (face, file) in missing_before {
+        if can_collect {
+            if let Some(src) = find_in_hancom(&file) {
+                if std::fs::copy(&src, dir.join(&file)).is_ok() {
+                    collected.push((face, file));
+                    continue;
+                }
+            }
+        }
+        missing.push((face, file));
+    }
+    FontReport { font_dir: dir, os, required, collected, missing }
+}

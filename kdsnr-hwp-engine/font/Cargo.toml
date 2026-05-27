@@ -1,0 +1,16 @@
+[package]
+name = "kdsnr-hwp-font"
+version = "0.1.0"
+edition = "2024"
+description = "Hancom-equivalent font resolution + per-char advance (자간/장평) for the render pipeline"
+publish = false
+
+[lib]
+name = "kdsnr_hwp_font"
+path = "src/lib.rs"
+
+[dependencies]
+ttf-parser = "0.25"
+# HFT-typed faces (신명 중명조, 한양신명조, …) take their advance + outline from
+# Hancom's own HFT fonts, not a substitute TTF.
+kdsnr-hwp-hft = { path = "../hft" }

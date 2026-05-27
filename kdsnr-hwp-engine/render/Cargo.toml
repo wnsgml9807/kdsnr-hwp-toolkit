@@ -1,0 +1,21 @@
+[package]
+name = "kdsnr-hwp-render"
+version = "0.1.0"
+edition = "2021"
+description = "Native HWP backend replay."
+license = "MIT"
+
+[lib]
+name = "kdsnr_hwp_render"
+path = "src/lib.rs"
+
+[dependencies]
+kdsnr-hwp-core = { path = "../core" }
+kdsnr-hwp-paint = { path = "../paint" }
+kdsnr-hwp-font = { path = "../font" }
+
+[dev-dependencies]
+kdsnr-hwp-parser = { path = "../parser" }
+kdsnr-hwp-doc = { path = "../doc" }
+kdsnr-hwp-layout = { path = "../layout" }
+kdsnr-hwp-equation = { path = "../equation" }

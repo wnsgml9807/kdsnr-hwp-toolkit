@@ -28,26 +28,24 @@ HWP/HWPX 파싱·직렬화, 레이아웃 조판, 문항 분해, 미리보기 렌
 
 ### 사용자 — 미리 빌드된 wheel (권장)
 
-빌드 도구(Rust 등)가 필요 없습니다. [Releases](https://github.com/wnsgml9807/kdsnr-hwp-toolkit/releases)에서
-운영체제에 맞는 `.whl`을 받은 뒤, 해당 플랫폼 명령으로 설치하세요. wheel은 abi3라
-Python 3.10 이상에서 공통으로 동작합니다.
+OS에 따라 아래 커맨드를 터미널에서 복사하여 실행하세요. 빌드 도구(Rust 등)는 필요 없습니다.
 
 **Windows (x64)**
 
 ```bash
-pip install kdsnr_hwp_toolkit-0.1.2-cp310-abi3-win_amd64.whl
+pip install https://github.com/wnsgml9807/kdsnr-hwp-toolkit/releases/download/v0.1.2/kdsnr_hwp_toolkit-0.1.2-cp310-abi3-win_amd64.whl
 ```
 
 **macOS (Apple Silicon)**
 
 ```bash
-pip install kdsnr_hwp_toolkit-0.1.2-cp310-abi3-macosx_11_0_arm64.whl
+pip install https://github.com/wnsgml9807/kdsnr-hwp-toolkit/releases/download/v0.1.2/kdsnr_hwp_toolkit-0.1.2-cp310-abi3-macosx_11_0_arm64.whl
 ```
 
 **Linux (x64)**
 
 ```bash
-pip install kdsnr_hwp_toolkit-0.1.2-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+pip install https://github.com/wnsgml9807/kdsnr-hwp-toolkit/releases/download/v0.1.2/kdsnr_hwp_toolkit-0.1.2-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 ```
 
 ### 개발자 — 소스 빌드

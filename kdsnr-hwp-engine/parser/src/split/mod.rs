@@ -245,6 +245,28 @@ pub fn detect_units(doc: &Document, subject: Subject) -> Result<Vec<DetectedUnit
     }
 }
 
+/// Crop unit ranges without subject detection: Korean set headers when the
+/// document carries any, else question-number units. Subject detection is
+/// bypassed on purpose so an off-template or already-split sheet still yields
+/// units (the page crop must work on any document, even one that fails subject
+/// recognition). `para_indices` index `doc.sections[0].paragraphs`; memo
+/// paragraphs are excluded, matching the render path's `strip_memos`.
+pub fn detect_units_auto(doc: &Document) -> Vec<DetectedUnit> {
+    let Some(section) = doc.sections.first() else {
+        return Vec::new();
+    };
+    let memo_mask = build_memo_mask(doc);
+    let has_set_header = section.paragraphs.iter().enumerate().any(|(idx, p)| {
+        !memo_mask.get(idx).copied().unwrap_or(false) && set_header_match(&paragraph_text(p)).is_some()
+    });
+    let units = if has_set_header {
+        detect_korean_sets(&section.paragraphs, &memo_mask)
+    } else {
+        detect_questions(&section.paragraphs, &memo_mask)
+    };
+    disambiguate_labels(units)
+}
+
 pub fn split_document_units(
     doc: &Document,
 ) -> Result<(Subject, Vec<QuestionDocument>), SplitError> {
@@ -1393,42 +1415,56 @@ fn has_visual_content(paragraph: &Paragraph) -> bool {
     })
 }
 
+/// True if a paragraph reads as an editing memo (colored text, an Excel-named
+/// style, or an author note like "…빼주세요"), not exam content.
+fn is_memo_paragraph(doc: &Document, p: &Paragraph) -> bool {
+    let cs_id = p
+        .char_shapes
+        .iter()
+        .find(|cs| cs.char_shape_id != u32::MAX)
+        .map(|cs| cs.char_shape_id as usize)
+        .unwrap_or(0);
+    let non_black = doc
+        .doc_info
+        .char_shapes
+        .get(cs_id)
+        .is_some_and(|cs| cs.text_color != 0);
+    let excel_style = doc.doc_info.styles.get(p.style_id as usize).is_some_and(|style| {
+        let name = if style.local_name.is_empty() {
+            &style.english_name
+        } else {
+            &style.local_name
+        };
+        let lower = name.to_ascii_lowercase();
+        lower.starts_with("xl") && lower[2..].chars().all(|ch| ch.is_ascii_digit())
+    });
+    non_black || excel_style || is_review_request_text(&paragraph_text(p))
+}
+
 fn build_memo_mask(doc: &Document) -> Vec<bool> {
     let Some(section) = doc.sections.first() else {
         return Vec::new();
     };
-    section
-        .paragraphs
+    section.paragraphs.iter().map(|p| is_memo_paragraph(doc, p)).collect()
+}
+
+/// Remove editing-memo paragraphs from every section so they are never rendered
+/// (page or crop). Applied in the render path, mirroring the memo filter the
+/// document-level split uses to skip memos when detecting questions.
+pub fn strip_memos(doc: &mut Document) {
+    let masks: Vec<Vec<bool>> = doc
+        .sections
         .iter()
-        .map(|p| {
-            let text = paragraph_text(p);
-            let cs_id = p
-                .char_shapes
-                .iter()
-                .find(|cs| cs.char_shape_id != u32::MAX)
-                .map(|cs| cs.char_shape_id as usize)
-                .unwrap_or(0);
-            let non_black = doc
-                .doc_info
-                .char_shapes
-                .get(cs_id)
-                .is_some_and(|cs| cs.text_color != 0);
-            let excel_style = doc
-                .doc_info
-                .styles
-                .get(p.style_id as usize)
-                .is_some_and(|style| {
-                    let name = if style.local_name.is_empty() {
-                        &style.english_name
-                    } else {
-                        &style.local_name
-                    };
-                    let lower = name.to_ascii_lowercase();
-                    lower.starts_with("xl") && lower[2..].chars().all(|ch| ch.is_ascii_digit())
-                });
-            non_black || excel_style || is_review_request_text(&text)
-        })
-        .collect()
+        .map(|s| s.paragraphs.iter().map(|p| is_memo_paragraph(doc, p)).collect())
+        .collect();
+    for (section, mask) in doc.sections.iter_mut().zip(masks) {
+        let mut i = 0;
+        section.paragraphs.retain(|_| {
+            let keep = !mask[i];
+            i += 1;
+            keep
+        });
+    }
 }
 
 /// True if the text reads as an editing note to the question authors (a memo

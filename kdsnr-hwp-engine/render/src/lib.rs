@@ -114,15 +114,16 @@ pub fn page_to_svg(page: &PaintPage, dpi: f64, fonts: &FontResolver) -> String {
     out
 }
 
-/// Render only the page's body-content ops (`content_range`, excluding the page
-/// background and header/footer/master furniture) onto a canvas of `view` in user
-/// units `(x, y, w, h)`. With `white_bg`, an opaque white rect backs `view`;
-/// without it the canvas is transparent (used to probe the body ink bounds).
-/// Coordinates are absolute, so `view` may be any sub-rect of the page.
-pub fn page_body_svg(
-    page: &PaintPage,
+/// Render a given list of paint ops onto a canvas of `view` in user units
+/// `(x, y, w, h)`. With `white_bg`, an opaque white rect backs `view`; without it
+/// the canvas is transparent (used to probe the ops' ink bounds). Coordinates are
+/// absolute (the ops carry page coords), so `view` may be any sub-rect. The
+/// question crop passes only one unit's ops, so neighbouring content cannot bleed
+/// into the canvas.
+pub fn ops_svg(
     dpi: f64,
     fonts: &FontResolver,
+    ops: &[PaintOp],
     view: (f64, f64, f64, f64),
     white_bg: bool,
 ) -> String {
@@ -137,7 +138,38 @@ pub fn page_body_svg(
             "  <rect x=\"{vx}\" y=\"{vy}\" width=\"{vw}\" height=\"{vh}\" fill=\"#ffffff\"/>\n"
         ));
     }
-    for op in &page.ops[page.content_range.clone()] {
+    for op in ops {
+        render_op(&mut out, op, s, fonts);
+    }
+    out.push_str("</svg>\n");
+    out
+}
+
+/// A list of paint ops rendered as a nested `<svg>` child positioned at `(at_x,
+/// at_y)` (user units) within a parent SVG. `view` is the source sub-rect (user
+/// units, absolute page coords); the child is `view`-sized at 1:1 (no scaling)
+/// and clips to it. Used to stitch a crop unit's fragments (across columns/pages)
+/// into one vertical strip.
+pub fn ops_svg_nested(
+    dpi: f64,
+    fonts: &FontResolver,
+    ops: &[PaintOp],
+    view: (f64, f64, f64, f64),
+    at_x: f64,
+    at_y: f64,
+) -> String {
+    let s = scale_for(dpi);
+    let (vx, vy, vw, vh) = (fmt(view.0), fmt(view.1), fmt(view.2), fmt(view.3));
+    let mut out = String::new();
+    out.push_str(&format!(
+        "<svg x=\"{}\" y=\"{}\" width=\"{vw}\" height=\"{vh}\" viewBox=\"{vx} {vy} {vw} {vh}\">\n",
+        fmt(at_x),
+        fmt(at_y),
+    ));
+    out.push_str(&format!(
+        "  <rect x=\"{vx}\" y=\"{vy}\" width=\"{vw}\" height=\"{vh}\" fill=\"#ffffff\"/>\n"
+    ));
+    for op in ops {
         render_op(&mut out, op, s, fonts);
     }
     out.push_str("</svg>\n");

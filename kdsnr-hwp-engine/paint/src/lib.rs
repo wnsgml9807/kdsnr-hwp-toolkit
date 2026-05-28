@@ -60,6 +60,10 @@ pub struct PaintPage {
     /// background and header/footer/master furniture). Used to crop a question
     /// preview to its content alone.
     pub content_range: std::ops::Range<usize>,
+    /// Body column rectangles (page coords, HWPUNIT), left to right. A question
+    /// crop bands content within a column's x-range; reading order is column by
+    /// column. Empty for a single-column page with no explicit columns.
+    pub columns: Vec<Rect>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -195,6 +199,7 @@ pub fn debug_equation_page(script: &str, font: &str, font_size: u32) -> PaintPag
         paper: Rect::new(0, 0, w + pad * 2, h + pad * 2),
         ops,
         content_range,
+        columns: Vec::new(),
     }
 }
 
@@ -274,6 +279,7 @@ pub fn lower(document: &DocumentModel, pagination: &PaginationResult) -> PaintDo
                 paper: page.paper,
                 ops,
                 content_range,
+                columns: page.columns.iter().map(|c| c.rect).collect(),
             }
         })
         .collect();

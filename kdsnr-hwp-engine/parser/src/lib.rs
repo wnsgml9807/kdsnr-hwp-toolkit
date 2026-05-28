@@ -16,7 +16,7 @@ pub use parser::{parse_document, DocumentParser};
 pub use preservation::{apply_hwpx_preservation_contract, PreservationStats};
 pub use serializer::{serialize_hwpx, SerializeError};
 pub use split::{
-    detect_subject, detect_units, document_text, document_text_eq_marked, is_review_request_text,
-    line_unit_marker, split_document_contract, split_document_units, DetectedUnit, LineMarker,
-    QuestionDocument, SplitError, Subject, UnitContract,
+    detect_subject, detect_units, detect_units_auto, document_text, document_text_eq_marked,
+    is_review_request_text, line_unit_marker, split_document_contract, split_document_units,
+    strip_memos, DetectedUnit, LineMarker, QuestionDocument, SplitError, Subject, UnitContract,
 };

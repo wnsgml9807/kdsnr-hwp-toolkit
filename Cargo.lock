@@ -362,6 +362,7 @@ dependencies = [
 name = "kdsnr-hwp-api"
 version = "0.1.0"
 dependencies = [
+ "kdsnr-hwp-core",
  "kdsnr-hwp-doc",
  "kdsnr-hwp-font",
  "kdsnr-hwp-layout",

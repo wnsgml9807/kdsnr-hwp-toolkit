@@ -16,6 +16,7 @@ Tool-corrupted documents (edited by a non-Hancom tool) raise ``ValueError``.
 from ._native import (
     Document,
     hwp_to_hwpx,
+    hwpx_to_hwp,
     import_file,
     is_corrupt,
     save_file,
@@ -29,6 +30,7 @@ __all__ = [
     "import_file",
     "save_file",
     "hwp_to_hwpx",
+    "hwpx_to_hwp",
     "split_set_to_question",
     "export_preview",
     "is_corrupt",

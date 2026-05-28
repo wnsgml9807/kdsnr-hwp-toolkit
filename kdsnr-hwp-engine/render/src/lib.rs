@@ -114,6 +114,36 @@ pub fn page_to_svg(page: &PaintPage, dpi: f64, fonts: &FontResolver) -> String {
     out
 }
 
+/// Render only the page's body-content ops (`content_range`, excluding the page
+/// background and header/footer/master furniture) onto a canvas of `view` in user
+/// units `(x, y, w, h)`. With `white_bg`, an opaque white rect backs `view`;
+/// without it the canvas is transparent (used to probe the body ink bounds).
+/// Coordinates are absolute, so `view` may be any sub-rect of the page.
+pub fn page_body_svg(
+    page: &PaintPage,
+    dpi: f64,
+    fonts: &FontResolver,
+    view: (f64, f64, f64, f64),
+    white_bg: bool,
+) -> String {
+    let s = scale_for(dpi);
+    let (vx, vy, vw, vh) = (fmt(view.0), fmt(view.1), fmt(view.2), fmt(view.3));
+    let mut out = String::new();
+    out.push_str(&format!(
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{vw}\" height=\"{vh}\" viewBox=\"{vx} {vy} {vw} {vh}\">\n"
+    ));
+    if white_bg {
+        out.push_str(&format!(
+            "  <rect x=\"{vx}\" y=\"{vy}\" width=\"{vw}\" height=\"{vh}\" fill=\"#ffffff\"/>\n"
+        ));
+    }
+    for op in &page.ops[page.content_range.clone()] {
+        render_op(&mut out, op, s, fonts);
+    }
+    out.push_str("</svg>\n");
+    out
+}
+
 /// Render one paint op to SVG. Factored so inline objects (equations woven into
 /// a text line) can be rendered at a computed offset via translated ops.
 fn render_op(out: &mut String, op: &PaintOp, s: f64, fonts: &FontResolver) {

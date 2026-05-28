@@ -958,7 +958,11 @@ fn fill_color(fill: &kdsnr_hwp_parser::model::style::Fill) -> Option<u32> {
 /// Decode a shape border-line style from `ShapeBorderLine.attr` (low byte, set
 /// by the hwpx `lineShape style`: 0=NONE, 1=SOLID, 2=DASH/LONG_DASH, 3=DOT, …).
 fn shape_border_style(line: &kdsnr_hwp_parser::model::style::ShapeBorderLine) -> BorderStyle {
-    match line.attr & 0xFF {
+    // The line type is the low 6 bits (0x3F); bits 6-7 carry other flags. HWP
+    // shapes set those flags on a NONE line (color stored but not drawn), so
+    // masking the full byte made `& 0xFF != 0` fall through to Solid and paint a
+    // phantom border. Match the HWPX serializer, which reads `attr & 0x3F`.
+    match line.attr & 0x3F {
         0 => BorderStyle::None,
         2 | 6 => BorderStyle::Dashed,
         3 => BorderStyle::Dotted,

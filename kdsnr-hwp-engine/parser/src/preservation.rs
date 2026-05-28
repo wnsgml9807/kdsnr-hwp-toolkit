@@ -23,11 +23,16 @@ pub struct PreservationStats {
 /// Apply the HWPX preservation contract in-place.
 ///
 /// Contract currently covered:
-/// - Insert Hancom's implicit default borderFill/numbering resources for HWP
-///   origin documents while preserving source layout records.
+/// - Insert Hancom's implicit default numbering resource for HWP origin documents
+///   while preserving source layout records.
+///
+/// NOTE: the default-borderFill insertion was removed — Hancom's own HWPX export
+/// keeps the source borderFill list and 1-based IDs unchanged (verified against
+/// the original .hwpx corpus: math 9, social 17). Inserting a default at index 0
+/// shifted every ID by one; pageBorderFill refs were not bumped, so the page got
+/// a spurious full border. Keeping source IDs matches Hancom and renders cleanly.
 pub fn apply_hwpx_preservation_contract(doc: &mut Document) -> PreservationStats {
     let mut stats = PreservationStats::default();
-    insert_hancom_default_border_fill_for_hwp(doc, &mut stats);
     insert_hancom_default_numbering_for_hwp(doc, &mut stats);
     stats
 }
@@ -52,6 +57,7 @@ fn insert_hancom_default_numbering_for_hwp(doc: &mut Document, stats: &mut Prese
     stats.hancom_default_numbering_inserted = 1;
 }
 
+#[allow(dead_code)] // retired (see apply_hwpx_preservation_contract); kept for reference
 fn insert_hancom_default_border_fill_for_hwp(doc: &mut Document, stats: &mut PreservationStats) {
     if doc.header.raw_data.is_none() {
         return;

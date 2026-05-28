@@ -661,12 +661,10 @@ fn table_page_break_str(pb: TablePageBreak) -> &'static str {
     }
 }
 
-fn hwpx_border_fill_ref(id: u16, ctx: &SerializeContext) -> u16 {
-    if ctx.in_master_page {
-        id
-    } else {
-        id.saturating_sub(1)
-    }
+fn hwpx_border_fill_ref(id: u16, _ctx: &SerializeContext) -> u16 {
+    // borderFillIDRef is the raw 1-based id, matching the 1-based ids the
+    // borderFills list now writes (no index-0 drop, no shift).
+    id
 }
 
 fn vert_rel_to_str(v: VertRelTo) -> &'static str {

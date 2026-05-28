@@ -72,13 +72,9 @@ fn serialize_paragraph_with_msb(
         &para.char_shapes
     };
 
-    // control_mask 재계산: 실제 controls에서 비트 마스크를 산출한다.
-    // 모델의 control_mask가 controls와 불일치하면 한컴이 파일 손상으로 판단하므로,
-    // 직렬화 시점에 항상 재계산하여 일관성을 보장한다.
-    let actual_control_mask = compute_control_mask(para);
-
-    // PARA_TEXT를 먼저 직렬화하여 실제 char_count를 계산한다.
-    // char_count가 PARA_TEXT code unit 수와 불일치하면 한컴이 파일 손상으로 판단한다.
+    // PARA_TEXT를 먼저 직렬화하여 실제 char_count와 control_mask를 계산한다.
+    // mask/char_count가 PARA_TEXT와 불일치하면 한컴이 파일 손상으로 판단하므로,
+    // 둘 다 직렬화된 code unit 으로부터 직접 산출하여 일관성을 보장한다.
     let has_content = !para.text.is_empty() || !para.controls.is_empty();
     let text_data = if has_content || (para.has_para_text && para.char_count > 1) {
         Some(serialize_para_text(para))
@@ -86,8 +82,11 @@ fn serialize_paragraph_with_msb(
         None
     };
 
+    // control_mask: PARA_TEXT가 있으면 그것이 산출한 mask, 없으면 0.
+    let actual_control_mask = text_data.as_ref().map(|(_, m)| *m).unwrap_or(0);
+
     // char_count 재계산: PARA_TEXT가 있으면 code unit 수, 없으면 모델 값 사용
-    let actual_char_count = if let Some(ref td) = text_data {
+    let actual_char_count = if let Some((ref td, _)) = text_data {
         (td.len() / 2) as u32
     } else {
         para.char_count
@@ -109,12 +108,12 @@ fn serialize_paragraph_with_msb(
     });
 
     // PARA_TEXT
-    if let Some(text_data) = text_data {
+    if let Some((text_bytes, _)) = text_data {
         records.push(Record {
             tag_id: tags::HWPTAG_PARA_TEXT,
             level: base_level + 1,
-            size: text_data.len() as u32,
-            data: text_data,
+            size: text_bytes.len() as u32,
+            data: text_bytes,
         });
     }
 
@@ -162,37 +161,6 @@ fn serialize_paragraph_with_msb(
     }
 }
 
-/// 문단의 control_mask 비트를 계산한다.
-///
-/// 각 컨트롤의 char_code(제어 문자 코드)가 비트 위치에 대응:
-/// - 0x0002 (SectionDef, ColumnDef) → bit 2 = 0x04
-/// - 0x0003 (FIELD_BEGIN) → bit 3 = 0x08
-/// - 0x0004 (FIELD_END) → bit 4 = 0x10
-/// - 0x0009 (TAB) → bit 9 = 0x200
-/// - 0x000B (Table, Shape, Picture) → bit 11 = 0x800
-/// - 0x0010 (Header, Footer) → bit 16 = 0x10000
-/// - etc.
-fn compute_control_mask(para: &Paragraph) -> u32 {
-    let mut mask: u32 = 0;
-    for ctrl in &para.controls {
-        let (char_code, _) = control_char_code_and_id(ctrl);
-        mask |= 1u32 << char_code;
-    }
-    // FIELD_END (0x0004): field_ranges가 있으면 비트 4 설정
-    if !para.field_ranges.is_empty() {
-        mask |= 1u32 << 0x0004;
-    }
-    // TAB (0x0009): text에 탭이 있으면 비트 9 설정
-    if para.text.contains('\t') {
-        mask |= 1u32 << 0x0009;
-    }
-    // LINE_BREAK (0x000A): text에 줄바꿈이 있으면 비트 10 설정
-    if para.text.contains('\n') {
-        mask |= 1u32 << 0x000A;
-    }
-    mask
-}
-
 /// PARA_HEADER 직렬화 (control_mask를 외부에서 전달)
 ///
 /// 레이아웃: char_count(u32) + control_mask(u32) + para_shape_id(u16) + style_id(u8) + break_type(u8)
@@ -238,8 +206,12 @@ fn serialize_para_header_with_mask(
         let extra = &para.raw_header_extra[6..];
         w.write_bytes(extra).unwrap();
     } else {
-        // 새 문단 (raw_header_extra 없음): instanceId(4)만 기록
+        // 새 문단 (raw_header_extra 없음): instanceId(4) + isMergedByTrack(2).
+        // HWP 5.0.3.2+ PARA_HEADER 는 24바이트다. 이 2바이트(trailing u16)를
+        // 빠뜨리면 한컴이 문단마다 2바이트씩 어긋나 파일 손상으로 판단한다.
+        // (HWPX 출처 합성 문단은 raw_header_extra 가 없어 항상 이 경로를 탄다.)
         w.write_u32(0).unwrap();
+        w.write_u16(0).unwrap();
     }
 
     w.into_bytes()
@@ -274,11 +246,17 @@ fn push_extended_ctrl(code_units: &mut Vec<u16>, ctrl_code: u16, ctrl_id: u32) {
 /// 테스트용 public wrapper
 #[cfg(test)]
 pub fn test_serialize_para_text(para: &Paragraph) -> Vec<u8> {
-    serialize_para_text(para)
+    serialize_para_text(para).0
 }
 
-fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
+/// Serialize PARA_TEXT and return the bytes plus the control mask derived from
+/// the codes actually emitted. Computing the mask here (instead of a separate
+/// heuristic) guarantees it always matches the emitted text — Hancom rejects a
+/// paragraph whose mask disagrees with its control chars. Every emitted control
+/// code sets bit[code], except the trailing paragraph terminator (0x0D).
+fn serialize_para_text(para: &Paragraph) -> (Vec<u8>, u32) {
     let mut code_units: Vec<u16> = Vec::new();
+    let mut mask: u32 = 0;
     let text_chars: Vec<char> = para.text.chars().collect();
     let mut ctrl_idx = 0;
     let mut prev_end: u32 = 0;
@@ -328,6 +306,7 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
         while prev_end + 8 <= offset && ctrl_idx < para.controls.len() {
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+            mask |= 1u32 << ctrl_code;
             ctrl_idx += 1;
             prev_end += 8;
         }
@@ -336,14 +315,17 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
         if let Some(ids) = field_ends.get(&i) {
             for &ctrl_id in ids {
                 push_extended_ctrl(&mut code_units, 0x0004, ctrl_id);
+                mask |= 1u32 << 0x0004;
                 prev_end += 8;
             }
         }
 
-        // 텍스트 문자 쓰기
+        // 텍스트 문자 쓰기. 인라인 제어 문자(0x09/0x0A/0x18/0x1E/0x1F 등)는
+        // PARA_TEXT 의 단일 code unit 으로 쓰고 mask 비트를 설정한다.
         match *ch {
             '\t' => {
                 code_units.push(0x0009);
+                mask |= 1u32 << 0x0009;
                 // TAB 확장 데이터 복원 (탭 너비, 종류 등)
                 if tab_idx < para.tab_extended.len() {
                     for &cu in &para.tab_extended[tab_idx] {
@@ -359,10 +341,27 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
             }
             '\n' => {
                 code_units.push(0x000A);
+                mask |= 1u32 << 0x000A;
                 prev_end = offset + 1;
             }
             '\u{00A0}' => {
-                code_units.push(0x0018);
+                code_units.push(0x001E); // 묶음 빈칸 (NO-BREAK SPACE)
+                mask |= 1u32 << 0x001E;
+                prev_end = offset + 1;
+            }
+            '\u{2007}' => {
+                code_units.push(0x001F); // 고정폭 빈칸 (FIGURE SPACE)
+                mask |= 1u32 << 0x001F;
+                prev_end = offset + 1;
+            }
+            '\u{2010}' => {
+                code_units.push(0x0018); // 하이픈 (HYPHEN)
+                mask |= 1u32 << 0x0018;
+                prev_end = offset + 1;
+            }
+            '\u{2011}' => {
+                code_units.push(0x0019); // 묶음표(reserved)
+                mask |= 1u32 << 0x0019;
                 prev_end = offset + 1;
             }
             c => {
@@ -381,11 +380,13 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
     while ctrl_idx < para.controls.len() {
         let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
         push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
+        mask |= 1u32 << ctrl_code;
 
         // 이 컨트롤(FIELD_BEGIN)에 대응하는 trailing FIELD_END 삽입
         if let Some(end_ids) = trailing_end_after_ctrl.remove(&ctrl_idx) {
             for eid in end_ids {
                 push_extended_ctrl(&mut code_units, 0x0004, eid);
+                mask |= 1u32 << 0x0004;
             }
         }
 
@@ -397,10 +398,11 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
     for end_ids in trailing_end_after_ctrl.values() {
         for &eid in end_ids {
             push_extended_ctrl(&mut code_units, 0x0004, eid);
+            mask |= 1u32 << 0x0004;
         }
     }
 
-    // 문단 끝 마커
+    // 문단 끝 마커 (0x0D 는 mask 에 포함하지 않음)
     code_units.push(0x000D);
 
     // UTF-16LE 바이트로 변환
@@ -408,7 +410,7 @@ fn serialize_para_text(para: &Paragraph) -> Vec<u8> {
     for cu in &code_units {
         bytes.extend_from_slice(&cu.to_le_bytes());
     }
-    bytes
+    (bytes, mask)
 }
 
 /// PARA_CHAR_SHAPE 직렬화
@@ -466,6 +468,15 @@ fn serialize_para_range_tag(range_tags: &[RangeTag]) -> Vec<u8> {
 ///   0x0012: 자동번호/새번호 (atno, nwno)
 ///   0x0015: 페이지 컨트롤 (pgnp, pghi)
 ///   0x0016: 책갈피 (bokm)
+/// 자동번호/새번호 컨트롤의 인라인 제어 문자 코드. 페이지 종류는 페이지 컨트롤(0x15).
+fn auto_number_char_code(num_type: crate::model::control::AutoNumberType) -> u16 {
+    use crate::model::control::AutoNumberType::*;
+    match num_type {
+        Page | TotalPage => 0x0015,
+        _ => 0x0012,
+    }
+}
+
 fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
     match ctrl {
         Control::SectionDef(_) => (0x0002, tags::CTRL_SECTION_DEF),
@@ -478,8 +489,11 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         Control::Footer(_) => (0x0010, tags::CTRL_FOOTER),
         Control::Footnote(_) => (0x0011, tags::CTRL_FOOTNOTE),
         Control::Endnote(_) => (0x0011, tags::CTRL_ENDNOTE),
-        Control::AutoNumber(_) => (0x0012, tags::CTRL_AUTO_NUMBER),
-        Control::NewNumber(_) => (0x0012, tags::CTRL_NEW_NUMBER),
+        // PAGE/TOTAL_PAGE 번호는 페이지 컨트롤(0x15)로 인라인 인코딩되고,
+        // 각주/미주/그림/표/수식 번호만 자동번호(0x12)다 (한컴 실측: nwno numType="PAGE" ↔ 0x15).
+        // 컨트롤 레코드 tag(atno/nwno)는 종류와 무관하게 유지된다.
+        Control::AutoNumber(a) => (auto_number_char_code(a.number_type), tags::CTRL_AUTO_NUMBER),
+        Control::NewNumber(n) => (auto_number_char_code(n.number_type), tags::CTRL_NEW_NUMBER),
         Control::PageNumberPos(_) => (0x0015, tags::CTRL_PAGE_NUM_POS),
         Control::PageHide(_) => (0x0015, tags::CTRL_PAGE_HIDE),
         Control::Bookmark(_) => (0x0016, tags::CTRL_BOOKMARK),

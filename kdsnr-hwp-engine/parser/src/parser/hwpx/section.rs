@@ -86,12 +86,10 @@ fn parse_page_pr(e: &quick_xml::events::BytesStart, page: &mut PageDef) {
         match attr.key.as_ref() {
             b"width" => page.width = parse_u32(&attr),
             b"height" => page.height = parse_u32(&attr),
-            // HWPX에서는 landscape 플래그를 false로 유지한다.
-            // HWPX의 width/height는 이미 실제 용지 방향대로 저장되어 있어
-            // 렌더러가 추가로 교환(swap)할 필요가 없다.
-            // HWP 바이너리는 항상 짧은변=width, 긴변=height로 저장하고
-            // landscape=true일 때 렌더러가 교환하지만, HWPX는 다른 규약을 따른다.
-            b"landscape" => { /* 무시: landscape = false 유지 */ }
+            // HWPX의 width/height는 이미 실제 용지 방향대로 저장되어 있어 렌더 시
+            // 교환할 필요가 없으므로 `landscape`(교환 플래그)는 false로 둔다. 단,
+            // 원본 방향 값은 직렬화 라운드트립을 위해 `landscape_widely`에 보존한다.
+            b"landscape" => page.landscape_widely = attr_str(&attr) == "WIDELY",
             _ => {}
         }
     }
@@ -469,9 +467,13 @@ fn parse_sec_pr_children(
 ) -> Result<Option<ColumnDef>, HwpxError> {
     let mut buf = Vec::new();
     let mut col_def: Option<ColumnDef> = None;
+    // Collect every <hp:pageBorderFill> (BOTH/EVEN/ODD = up to 3). Hancom .hwp
+    // secd carries one PAGE_BORDER_FILL record per element; collapsing them into
+    // a single field drops 2, so the from-model .hwp is structurally short.
+    let mut page_fills: Vec<PageBorderFill> = Vec::new();
     loop {
         match reader.read_event_into(&mut buf) {
-            Ok(Event::Start(ref e)) => {
+            Ok(Event::Start(ref e)) | Ok(Event::Empty(ref e)) => {
                 let ename = e.name();
                 let local = local_name(ename.as_ref());
                 match local {
@@ -481,30 +483,14 @@ fn parse_sec_pr_children(
                         col_def = Some(parse_col_pr(e));
                     }
                     b"pageBorderFill" => {
-                        parse_page_border_fill_attrs(e, &mut sec_def.page_border_fill);
+                        let mut f = PageBorderFill::default();
+                        parse_page_border_fill_attrs(e, &mut f);
+                        page_fills.push(f);
                     }
                     b"offset" => {
-                        parse_page_border_offset(e, &mut sec_def.page_border_fill);
-                    }
-                    b"startNum" => parse_start_num(e, sec_def),
-                    b"visibility" => parse_visibility(e, sec_def),
-                    _ => {}
-                }
-            }
-            Ok(Event::Empty(ref e)) => {
-                let ename = e.name();
-                let local = local_name(ename.as_ref());
-                match local {
-                    b"pagePr" => parse_page_pr(e, &mut sec_def.page_def),
-                    b"margin" => parse_page_margin(e, &mut sec_def.page_def),
-                    b"colPr" => {
-                        col_def = Some(parse_col_pr(e));
-                    }
-                    b"pageBorderFill" => {
-                        parse_page_border_fill_attrs(e, &mut sec_def.page_border_fill);
-                    }
-                    b"offset" => {
-                        parse_page_border_offset(e, &mut sec_def.page_border_fill);
+                        if let Some(f) = page_fills.last_mut() {
+                            parse_page_border_offset(e, f);
+                        }
                     }
                     b"startNum" => parse_start_num(e, sec_def),
                     b"visibility" => parse_visibility(e, sec_def),
@@ -522,6 +508,10 @@ fn parse_sec_pr_children(
             _ => {}
         }
         buf.clear();
+    }
+    if let Some(first) = page_fills.first() {
+        sec_def.page_border_fill = first.clone();
+        sec_def.extra_page_border_fills = page_fills[1..].to_vec();
     }
     Ok(col_def)
 }
@@ -3229,6 +3219,11 @@ fn parse_equation(
         }
         buf.clear();
     }
+
+    // 표와 동일하게 CommonObjAttr.attr 을 위치/취급 필드에서 재구성한다.
+    // 빠뜨리면 attr=0 → 수식이 부동개체로 취급되어(treatAsChar 비트 0)
+    // 한컴이 인라인 수식 구조를 못 읽고 문서 전체를 손상 판정한다.
+    common.attr = synthesize_common_obj_attr(&common);
 
     let equation = Equation {
         common,

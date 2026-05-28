@@ -11,9 +11,9 @@ use std::rc::Rc;
 use kdsnr_hwp_doc::normalize;
 use kdsnr_hwp_font::FontResolver;
 use kdsnr_hwp_layout::{measure_document, paginate_document};
-use kdsnr_hwp_paint::{lower, PaintDocument};
+use kdsnr_hwp_paint::{lower, PaintDocument, PaintPage};
 use kdsnr_hwp_parser::model::document::Document;
-use kdsnr_hwp_render::page_to_svg;
+use kdsnr_hwp_render::{page_body_svg, page_to_svg};
 
 use crate::{split_set_to_question, ApiError};
 
@@ -188,6 +188,59 @@ fn svg_to_pdf(svg: &str) -> Result<Vec<u8>, ApiError> {
         .map_err(|e| ApiError::Render(format!("pdf convert: {e}")))
 }
 
+/// DPI for the crop probe/raster; user units == pixels at this DPI.
+const CROP_DPI: f64 = 96.0;
+/// Uniform margin (points) added around the body ink box in a question crop.
+const CROP_MARGIN_PT: f64 = 12.0;
+
+/// Body ink bounding box in SVG user units `(x, y, w, h)`, or `None` if the page
+/// body draws no ink. Rasterizes the body-only (transparent) SVG and scans for
+/// non-transparent pixels, so the box hugs the actual glyph/object extent and
+/// excludes page furniture and background.
+fn body_ink_bbox(page: &PaintPage, fonts: &FontResolver) -> Result<Option<(f64, f64, f64, f64)>, ApiError> {
+    let w = page.paper.width.raw() as f64 * CROP_DPI / 7200.0;
+    let h = page.paper.height.raw() as f64 * CROP_DPI / 7200.0;
+    let (pw, ph) = (w.ceil().max(1.0) as u32, h.ceil().max(1.0) as u32);
+    let svg = page_body_svg(page, CROP_DPI, fonts, (0.0, 0.0, w, h), false);
+    let tree = usvg::Tree::from_str(&svg, &usvg::Options::default())
+        .map_err(|e| ApiError::Render(format!("svg parse: {e}")))?;
+    let mut pixmap = tiny_skia::Pixmap::new(pw, ph)
+        .ok_or_else(|| ApiError::Render(format!("pixmap alloc {pw}x{ph}")))?;
+    resvg::render(&tree, tiny_skia::Transform::identity(), &mut pixmap.as_mut());
+    let data = pixmap.data();
+    let (mut x0, mut y0, mut x1, mut y1) = (pw, ph, 0u32, 0u32);
+    let mut any = false;
+    for y in 0..ph {
+        for x in 0..pw {
+            // Ignore near-transparent anti-alias fringe.
+            if data[((y * pw + x) * 4 + 3) as usize] > 8 {
+                any = true;
+                x0 = x0.min(x);
+                y0 = y0.min(y);
+                x1 = x1.max(x);
+                y1 = y1.max(y);
+            }
+        }
+    }
+    Ok(any.then(|| (x0 as f64, y0 as f64, (x1 - x0 + 1) as f64, (y1 - y0 + 1) as f64)))
+}
+
+/// Body content cropped to its ink box plus a uniform margin, as an SVG with a
+/// white background. `None` when the page body is blank (skip the sheet).
+fn crop_page_svg(page: &PaintPage, fonts: &FontResolver) -> Result<Option<String>, ApiError> {
+    let pw = page.paper.width.raw() as f64 * CROP_DPI / 7200.0;
+    let ph = page.paper.height.raw() as f64 * CROP_DPI / 7200.0;
+    let Some((bx, by, bw, bh)) = body_ink_bbox(page, fonts)? else {
+        return Ok(None);
+    };
+    let m = CROP_MARGIN_PT * CROP_DPI / 72.0;
+    let x = (bx - m).max(0.0);
+    let y = (by - m).max(0.0);
+    let cw = (bx + bw + m).min(pw) - x;
+    let ch = (by + bh + m).min(ph) - y;
+    Ok(Some(page_body_svg(page, CROP_DPI, fonts, (x, y, cw, ch), true)))
+}
+
 /// Write one page in the requested media type to `save_path`, returning the path.
 /// Filename: `{stem}_{kind}{index:02}.{ext}`.
 fn write_page(
@@ -264,14 +317,20 @@ pub fn export_preview(
         let mut index = 1;
         for painted in sheets {
             for page in &painted.pages {
-                let svg = page_to_svg(page, 96.0, &fonts);
+                // Page mode renders the whole sheet; question mode crops to the
+                // body ink box (+margin), skipping a sheet with no body content.
+                let svg = match preview_type {
+                    PreviewType::Page => Some(page_to_svg(page, 96.0, &fonts)),
+                    PreviewType::Question => crop_page_svg(page, &fonts)?,
+                };
+                done += 1;
+                render_progress(done, total_pages);
+                let Some(svg) = svg else { continue };
                 for (slot, &media) in media_types.iter().enumerate() {
                     let p = write_page(&svg, media, scale, save_path, stem, kind, index)?;
                     out[slot].push(p);
                 }
                 index += 1;
-                done += 1;
-                render_progress(done, total_pages);
             }
         }
     }

@@ -27,6 +27,10 @@ pub struct PageDef {
     pub attr: u32,
     /// 용지 방향 (0: 좁게/세로, 1: 넓게/가로)
     pub landscape: bool,
+    /// HWPX `pagePr@landscape` 원본 값 보존 (WIDELY=true). HWPX는 width/height를
+    /// 이미 실제 방향대로 저장하므로 `landscape`(렌더 시 교환 플래그)는 false로 두되,
+    /// 직렬화 라운드트립을 위해 원본 방향 값을 따로 보존한다.
+    pub landscape_widely: bool,
     /// 제책 방법
     pub binding: BindingMethod,
 }

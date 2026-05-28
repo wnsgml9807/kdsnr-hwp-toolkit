@@ -17,6 +17,8 @@
 
 use std::fmt;
 
+pub mod compose;
+
 use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::model::image::Picture;
@@ -54,7 +56,7 @@ pub enum Role {
     Jimun,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AtomKind {
     Balmun,
     BalmunCont,
@@ -254,14 +256,21 @@ pub fn split_document_units(
     let units = detect_units_in_normalized(&normalized, subject)?;
     let out = units
         .into_iter()
-        .map(|unit| QuestionDocument {
-            label: unit.label.clone(),
-            source_para_indices: unit
+        .map(|unit| {
+            let unit_paras: Vec<Paragraph> = unit
                 .para_indices
                 .iter()
-                .filter_map(|&idx| normalized.get(idx).and_then(|p| p.source_idx))
-                .collect(),
-            document: slice_document_from_normalized(doc, &normalized, &unit.para_indices),
+                .filter_map(|&idx| normalized.get(idx).map(|p| p.paragraph.clone()))
+                .collect();
+            QuestionDocument {
+                label: unit.label.clone(),
+                source_para_indices: unit
+                    .para_indices
+                    .iter()
+                    .filter_map(|&idx| normalized.get(idx).and_then(|p| p.source_idx))
+                    .collect(),
+                document: compose::compose_question(doc, subject, &unit_paras),
+            }
         })
         .collect();
     Ok((subject, out))
@@ -506,7 +515,7 @@ fn is_choice_image_table(table: &crate::model::table::Table) -> bool {
     markers >= 3 && has_picture
 }
 
-fn classify_atom(paragraph: &Paragraph, subject: Subject, prev_atom: Option<AtomKind>) -> AtomKind {
+pub(crate) fn classify_atom(paragraph: &Paragraph, subject: Subject, prev_atom: Option<AtomKind>) -> AtomKind {
     if is_empty_atom_paragraph(paragraph) {
         return AtomKind::Empty;
     }
@@ -616,7 +625,7 @@ fn is_empty_atom_paragraph(paragraph: &Paragraph) -> bool {
         && !has_equation(paragraph)
 }
 
-fn first_table(paragraph: &Paragraph) -> Option<&Table> {
+pub(crate) fn first_table(paragraph: &Paragraph) -> Option<&Table> {
     paragraph.controls.iter().find_map(|control| match control {
         Control::Table(table) => Some(table.as_ref()),
         _ => None,
@@ -637,7 +646,7 @@ fn has_equation(paragraph: &Paragraph) -> bool {
         .any(|control| matches!(control, Control::Equation(_)))
 }
 
-fn is_bogi_table(table: &Table) -> bool {
+pub(crate) fn is_bogi_table(table: &Table) -> bool {
     if table.row_count < 3 || table.col_count < 3 {
         return false;
     }
@@ -663,67 +672,6 @@ fn has_explicit_line_break(paragraph: &Paragraph) -> bool {
 fn contains_hangul_or_latin(text: &str) -> bool {
     text.chars()
         .any(|ch| ch.is_ascii_alphabetic() || ('가'..='힣').contains(&ch))
-}
-
-fn slice_document_from_normalized(
-    doc: &Document,
-    normalized: &[NormalizedParagraph],
-    para_indices: &[usize],
-) -> Document {
-    let mut out = doc.clone();
-    let initial_column_def = doc
-        .sections
-        .first()
-        .and_then(initial_section_column_def)
-        .cloned();
-    if let Some(first) = out.sections.first_mut() {
-        first.paragraphs = para_indices
-            .iter()
-            .filter_map(|&idx| normalized.get(idx).map(|p| p.paragraph.clone()))
-            .collect();
-        if let (Some(col), Some(first_para)) = (initial_column_def, first.paragraphs.first_mut()) {
-            let already_has_initial_col = first_para.controls.iter().any(|ctrl| {
-                matches!(
-                    ctrl,
-                    Control::ColumnDef(existing)
-                        if existing.column_count == col.column_count
-                            && existing.spacing == col.spacing
-                            && existing.same_width == col.same_width
-                )
-            });
-            if !already_has_initial_col {
-                // The HWPX serializer emits section-level colPr from the first
-                // ColumnDef it can see in the sliced document. A question slice
-                // must therefore carry the source section's initial column
-                // definition even when the defining paragraph lives before the
-                // question boundary; otherwise cached lineSeg widths are
-                // interpreted under the wrong column context.
-                first_para.controls.insert(0, Control::ColumnDef(col));
-                first_para.ctrl_data_records.insert(0, None);
-            }
-        }
-        first.raw_stream = None;
-    }
-    for section in out.sections.iter_mut().skip(1) {
-        section.paragraphs.clear();
-        section.raw_stream = None;
-    }
-    out.doc_info.raw_stream_dirty = true;
-    out
-}
-
-fn initial_section_column_def(
-    section: &crate::model::document::Section,
-) -> Option<&crate::model::page::ColumnDef> {
-    section.paragraphs.iter().find_map(|paragraph| {
-        paragraph.controls.iter().find_map(|control| {
-            if let Control::ColumnDef(col) = control {
-                Some(col)
-            } else {
-                None
-            }
-        })
-    })
 }
 
 fn normalize_body_for_split(
@@ -1039,7 +987,23 @@ fn coalesce_items(items: Vec<ParagraphItem>) -> Vec<ParagraphItem> {
 }
 
 fn is_block_level_control(control: &Control) -> bool {
-    matches!(control, Control::Table(_))
+    match control {
+        Control::Table(t) => !table_is_embedded(t),
+        _ => false,
+    }
+}
+
+/// A table embedded in its host paragraph's text flow — inline (treat-as-char) or
+/// an anchored object that text wraps around (Square/Tight/Through). Splitting
+/// such a table out of its paragraph drops it and collapses the paragraph's
+/// stored line layout, so it must stay put; only TopAndBottom (and the rare
+/// behind/in-front) tables are standalone blocks.
+fn table_is_embedded(t: &Table) -> bool {
+    t.common.treat_as_char
+        || matches!(
+            t.common.text_wrap,
+            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+        )
 }
 
 fn char_utf16_width(ch: char) -> u32 {
@@ -1079,7 +1043,7 @@ fn document_text(doc: &Document) -> String {
     out
 }
 
-fn paragraph_text(paragraph: &Paragraph) -> String {
+pub(crate) fn paragraph_text(paragraph: &Paragraph) -> String {
     let mut out = ordered_items(paragraph)
         .into_iter()
         .filter_map(|item| match item {

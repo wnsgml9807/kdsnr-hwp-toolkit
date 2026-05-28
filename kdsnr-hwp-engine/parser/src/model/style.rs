@@ -238,7 +238,7 @@ pub struct Numbering {
 }
 
 /// 문단 머리 정보 (표 41)
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct NumberingHead {
     /// 속성 (정렬, 너비 따름, 자동 내어쓰기 등)
     pub attr: u32,
@@ -272,6 +272,31 @@ pub struct Bullet {
     /// 체크 글머리표 문자
     pub check_bullet_char: char,
 }
+
+/// Numbering 비교: raw_data 제외 (논리적 동일성 기준 dedup용)
+impl PartialEq for Numbering {
+    fn eq(&self, other: &Self) -> bool {
+        self.heads == other.heads
+            && self.level_formats == other.level_formats
+            && self.start_number == other.start_number
+            && self.level_start_numbers == other.level_start_numbers
+    }
+}
+impl Eq for Numbering {}
+
+/// Bullet 비교: raw_data 제외
+impl PartialEq for Bullet {
+    fn eq(&self, other: &Self) -> bool {
+        self.attr == other.attr
+            && self.width_adjust == other.width_adjust
+            && self.text_distance == other.text_distance
+            && self.bullet_char == other.bullet_char
+            && self.image_bullet == other.image_bullet
+            && self.image_data == other.image_data
+            && self.check_bullet_char == other.check_bullet_char
+    }
+}
+impl Eq for Bullet {}
 
 /// 텍스트 정렬 방식
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
@@ -352,11 +377,27 @@ pub struct Style {
     pub style_type: u8,
     /// 다음 스타일 ID
     pub next_style_id: u8,
+    /// 언어 ID (LANGID, 예: 1042 한국어)
+    pub lang_id: u16,
     /// 문단 모양 ID 참조
     pub para_shape_id: u16,
     /// 글자 모양 ID 참조
     pub char_shape_id: u16,
 }
+
+/// Style 비교: raw_data 제외
+impl PartialEq for Style {
+    fn eq(&self, other: &Self) -> bool {
+        self.local_name == other.local_name
+            && self.english_name == other.english_name
+            && self.style_type == other.style_type
+            && self.next_style_id == other.next_style_id
+            && self.lang_id == other.lang_id
+            && self.para_shape_id == other.para_shape_id
+            && self.char_shape_id == other.char_shape_id
+    }
+}
+impl Eq for Style {}
 
 /// 테두리/배경 (HWPTAG_BORDER_FILL)
 #[derive(Debug, Clone, Default)]
@@ -373,8 +414,19 @@ pub struct BorderFill {
     pub fill: Fill,
 }
 
+/// BorderFill 비교: raw_data 제외
+impl PartialEq for BorderFill {
+    fn eq(&self, other: &Self) -> bool {
+        self.attr == other.attr
+            && self.borders == other.borders
+            && self.diagonal == other.diagonal
+            && self.fill == other.fill
+    }
+}
+impl Eq for BorderFill {}
+
 /// 테두리선 정보
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct BorderLine {
     /// 선 종류
     pub line_type: BorderLineType,
@@ -428,7 +480,7 @@ pub enum BorderLineType {
 }
 
 /// 대각선 정보
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct DiagonalLine {
     /// 대각선 종류 (0: Slash, 1: BackSlash, 2: Crooked)
     pub diagonal_type: u8,
@@ -439,7 +491,7 @@ pub struct DiagonalLine {
 }
 
 /// 채우기 정보
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Fill {
     /// 채우기 종류
     pub fill_type: FillType,
@@ -464,7 +516,7 @@ pub enum FillType {
 }
 
 /// 단색 채우기
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct SolidFill {
     /// 배경색
     pub background_color: ColorRef,
@@ -475,7 +527,7 @@ pub struct SolidFill {
 }
 
 /// 그러데이션 채우기
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct GradientFill {
     /// 유형 (1: 줄무늬, 2: 원형, 3: 원뿔형, 4: 사각형)
     pub gradient_type: i16,
@@ -494,7 +546,7 @@ pub struct GradientFill {
 }
 
 /// 이미지 채우기
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct ImageFill {
     /// 채우기 유형
     pub fill_mode: ImageFillMode,

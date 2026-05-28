@@ -277,7 +277,13 @@ fn parse_face_name(data: &[u8]) -> Result<Font, DocInfoError> {
         None
     };
 
-    let default_name = if attr & 0x40 != 0 {
+    // bit6 (0x40): PANOSE font-type info (10 bytes) — skip, not modeled.
+    if attr & 0x40 != 0 {
+        let _ = r.read_bytes(10);
+    }
+
+    // bit5 (0x20): substitute/default font name.
+    let default_name = if attr & 0x20 != 0 {
         r.read_hwp_string().ok()
     } else {
         None
@@ -835,7 +841,7 @@ fn parse_style(data: &[u8]) -> Result<Style, DocInfoError> {
 
     let style_type = r.read_u8().unwrap_or(0);
     let next_style_id = r.read_u8().unwrap_or(0);
-    let _lang_id = r.read_u16().unwrap_or(0);
+    let lang_id = r.read_u16().unwrap_or(0);
     let para_shape_id = r.read_u16().unwrap_or(0);
     let char_shape_id = r.read_u16().unwrap_or(0);
 
@@ -845,6 +851,7 @@ fn parse_style(data: &[u8]) -> Result<Style, DocInfoError> {
         english_name,
         style_type,
         next_style_id,
+        lang_id,
         para_shape_id,
         char_shape_id,
     })

@@ -420,7 +420,9 @@ fn color_hex(c: u32) -> String {
 }
 
 fn render_page_pr(page: &PageDef) -> String {
-    let landscape = if page.landscape { "WIDELY" } else { "NARROWLY" };
+    // HWPX stores width/height pre-oriented, so the orientation lives in the
+    // `landscape` attribute alone; preserve the parsed value (`landscape_widely`).
+    let landscape = if page.landscape_widely || page.landscape { "WIDELY" } else { "NARROWLY" };
     let gutter_type = match page.binding {
         BindingMethod::TopFlip => "TOP_ONLY",
         _ => "LEFT_ONLY",

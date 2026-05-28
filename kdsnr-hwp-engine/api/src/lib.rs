@@ -254,6 +254,250 @@ mod tests {
         eprintln!("HWP round-trip: {ok}/{} survived save+reimport+guard", names.len());
     }
 
+    /// Each split question composes into a template, serializes to HWPX, and
+    /// re-imports past the corruption guard with a structural carrier plus
+    /// content.
+    fn check_compose(file: &str) {
+        let (doc, _) = import_file(&original(file)).expect("import");
+        let questions = split_set_to_question(&doc).expect("split");
+        assert!(!questions.is_empty(), "{file}: no questions");
+        for (label, qdoc) in &questions {
+            let sec = qdoc.sections.first().expect("section");
+            assert!(
+                sec.paragraphs.len() >= 2,
+                "{file} {label}: carrier+content expected, got {}",
+                sec.paragraphs.len()
+            );
+            let out = std::env::temp_dir().join(format!("kdsnr_compose_{label}.hwpx"));
+            save_file(qdoc, &out, Some(FileType::Hwpx))
+                .unwrap_or_else(|e| panic!("{file} {label}: save: {e}"));
+            import_file(&out).unwrap_or_else(|e| panic!("{file} {label}: reimport: {e}"));
+            let _ = std::fs::remove_file(&out);
+        }
+    }
+
+    #[test]
+    fn compose_math_questions() {
+        check_compose("math_input_sample.hwpx");
+    }
+
+    #[test]
+    fn compose_social_questions() {
+        check_compose("social_input_sample.hwpx");
+    }
+
+    /// Diagnostic: does the parsed model retain the deeply-nested content of
+    /// the last paragraph (parser completeness), or did the parser drop it?
+    #[test]
+    #[ignore]
+    fn diag_last_paragraph_controls() {
+        use kdsnr_hwp_parser::model::control::Control;
+        let bytes = std::fs::read(original("math_input_sample.hwp")).unwrap();
+        let doc = parse_document(&bytes).unwrap();
+        let sec = &doc.sections[0];
+        eprintln!("section0 top-level paragraphs: {}", sec.paragraphs.len());
+        fn count_paras(ps: &[Paragraph]) -> usize {
+            let mut n = ps.len();
+            for p in ps {
+                for c in &p.controls {
+                    n += match c {
+                        Control::Table(t) => t.cells.iter().map(|cl| count_paras(&cl.paragraphs)).sum(),
+                        Control::Shape(s) => count_shape_paras(s),
+                        Control::Header(h) => count_paras(&h.paragraphs),
+                        Control::Footer(f) => count_paras(&f.paragraphs),
+                        Control::Footnote(f) => count_paras(&f.paragraphs),
+                        Control::Endnote(e) => count_paras(&e.paragraphs),
+                        Control::HiddenComment(h) => count_paras(&h.paragraphs),
+                        _ => 0,
+                    };
+                }
+            }
+            n
+        }
+        fn count_shape_paras(s: &kdsnr_hwp_parser::model::shape::ShapeObject) -> usize {
+            use kdsnr_hwp_parser::model::shape::ShapeObject;
+            match s {
+                ShapeObject::Group(g) => g.children.iter().map(count_shape_paras).sum(),
+                _ => 0,
+            }
+        }
+        let last = sec.paragraphs.last().unwrap();
+        eprintln!("last paragraph: {} controls", last.controls.len());
+        use std::collections::BTreeMap;
+        let mut kinds: BTreeMap<&str, usize> = BTreeMap::new();
+        for c in &last.controls {
+            *kinds.entry(match c {
+                Control::Equation(_) => "Equation",
+                Control::Table(_) => "Table",
+                Control::Shape(_) => "Shape",
+                Control::Picture(_) => "Picture",
+                Control::SectionDef(_) => "SectionDef",
+                Control::ColumnDef(_) => "ColumnDef",
+                _ => "other",
+            }).or_default() += 1;
+        }
+        eprintln!("last paragraph control kinds: {:?}", kinds);
+        eprintln!("total recursive paragraphs in section0: {}", count_paras(&sec.paragraphs));
+    }
+
+    /// Deep-clear bisection: clear ALL raw passthrough recursively (mimics a
+    /// composed HWPX-origin doc which has no HWP raw bytes anywhere), so every
+    /// record is from-model. Byte-compare record sizes to genuine to find any
+    /// remaining missing fixed field in the from-model path.
+    #[test]
+    #[ignore]
+    fn dump_deepclear() {
+        use kdsnr_hwp_parser::model::control::Control;
+        use kdsnr_hwp_parser::model::shape::ShapeObject;
+        fn clear_paras(ps: &mut [Paragraph]) {
+            for p in ps {
+                p.raw_header_extra.clear();
+                for c in &mut p.controls {
+                    match c {
+                        Control::SectionDef(s) => s.raw_ctrl_extra.clear(),
+                        Control::Table(t) => {
+                            t.raw_ctrl_data.clear();
+                            t.raw_table_record_extra.clear();
+                            t.raw_table_record_attr = 0;
+                            t.common.raw_extra.clear();
+                            for cell in &mut t.cells {
+                                clear_paras(&mut cell.paragraphs);
+                            }
+                        }
+                        Control::Equation(e) => {
+                            e.raw_ctrl_data.clear();
+                            e.raw_eqedit_data.clear();
+                            e.common.raw_extra.clear();
+                        }
+                        Control::Shape(s) => {
+                            s.common_mut().raw_extra.clear();
+                            clear_shape(s);
+                        }
+                        Control::Header(h) => { h.raw_ctrl_extra.clear(); clear_paras(&mut h.paragraphs); }
+                        Control::Footer(f) => { f.raw_ctrl_extra.clear(); clear_paras(&mut f.paragraphs); }
+                        Control::Footnote(f) => clear_paras(&mut f.paragraphs),
+                        Control::Endnote(e) => clear_paras(&mut e.paragraphs),
+                        Control::HiddenComment(h) => clear_paras(&mut h.paragraphs),
+                        _ => {}
+                    }
+                }
+            }
+        }
+        fn clear_shape(s: &mut ShapeObject) {
+            if let ShapeObject::Group(g) = s {
+                for ch in &mut g.children { ch.common_mut().raw_extra.clear(); clear_shape(ch); }
+            }
+        }
+        let bytes = std::fs::read(original("social.hwp")).unwrap();
+        let mut doc = parse_document(&bytes).unwrap();
+        doc.doc_info.raw_stream = None;
+        doc.doc_info.raw_stream_dirty = true;
+        doc.doc_properties.raw_data = None;
+        for v in &mut doc.doc_info.font_faces { for f in v { f.raw_data = None; } }
+        for e in &mut doc.doc_info.char_shapes { e.raw_data = None; }
+        for e in &mut doc.doc_info.para_shapes { e.raw_data = None; }
+        for e in &mut doc.doc_info.border_fills { e.raw_data = None; }
+        for e in &mut doc.doc_info.tab_defs { e.raw_data = None; }
+        for e in &mut doc.doc_info.numberings { e.raw_data = None; }
+        for e in &mut doc.doc_info.bullets { e.raw_data = None; }
+        for e in &mut doc.doc_info.styles { e.raw_data = None; }
+        for s in &mut doc.sections {
+            s.raw_stream = None;
+            clear_paras(&mut s.paragraphs);
+        }
+        let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../work/debug/compose_verify");
+        let out = dir.join("_social_deepclear.hwp");
+        std::fs::write(&out, serialize_hwp(&doc).unwrap()).unwrap();
+        eprintln!("wrote {}", out.display());
+    }
+
+    /// Bisection ladder (run with --ignored): from a genuine .hwp produce four
+    /// variants that isolate which serialization layer breaks Hancom load.
+    ///   _bisect_passthrough  : all raw kept (pure CFB/framework + recompress)
+    ///   _bisect_docinfo_fm   : DocInfo from-model, body raw kept
+    ///   _bisect_body_fm      : body from-model, DocInfo raw kept
+    ///   _bisect_all_fm       : everything from-model (== composed path)
+    #[test]
+    #[ignore]
+    fn dump_bisection_ladder() {
+        let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../work/debug/compose_verify");
+        let src = original("math_input_sample.hwp");
+        let write = |doc: &Document, name: &str| {
+            let out = dir.join(name);
+            let bytes = serialize_hwp(doc).expect("serialize");
+            std::fs::write(&out, &bytes).expect("write");
+            eprintln!("wrote {} ({} bytes)", out.display(), bytes.len());
+        };
+        // passthrough
+        let doc = parse_document(&std::fs::read(&src).unwrap()).unwrap();
+        write(&doc, "_bisect_passthrough.hwp");
+        // DocInfo from-model only
+        let mut d = parse_document(&std::fs::read(&src).unwrap()).unwrap();
+        d.doc_info.raw_stream = None;
+        d.doc_info.raw_stream_dirty = true;
+        write(&d, "_bisect_docinfo_fm.hwp");
+        // body from-model only
+        let mut d = parse_document(&std::fs::read(&src).unwrap()).unwrap();
+        for s in &mut d.sections {
+            s.raw_stream = None;
+        }
+        write(&d, "_bisect_body_fm.hwp");
+        // everything from-model
+        let mut d = parse_document(&std::fs::read(&src).unwrap()).unwrap();
+        d.doc_info.raw_stream = None;
+        d.doc_info.raw_stream_dirty = true;
+        for s in &mut d.sections {
+            s.raw_stream = None;
+        }
+        write(&d, "_bisect_all_fm.hwp");
+    }
+
+    #[test]
+    #[ignore]
+    fn dump_from_model_hwp() {
+        let bytes = std::fs::read(original("math_input_sample.hwp")).expect("read");
+        let mut doc = kdsnr_hwp_parser::parse_document(&bytes).expect("parse");
+        doc.doc_info.raw_stream = None;
+        doc.doc_info.raw_stream_dirty = true;
+        // Clear per-record raw_data too, forcing from-model serialization of
+        // every DocInfo catalog entry (mirrors an HWPX-sourced/composed doc,
+        // which has no HWP raw bytes to pass through).
+        doc.doc_properties.raw_data = None;
+        for v in &mut doc.doc_info.font_faces {
+            for f in v {
+                f.raw_data = None;
+            }
+        }
+        for e in &mut doc.doc_info.char_shapes {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.para_shapes {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.border_fills {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.tab_defs {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.numberings {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.bullets {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.styles {
+            e.raw_data = None;
+        }
+        for s in &mut doc.sections {
+            s.raw_stream = None;
+        }
+        let out = kdsnr_hwp_parser::serializer::serialize_hwp(&doc).expect("serialize");
+        std::fs::write("/tmp/frommodel.hwp", &out).expect("write");
+        eprintln!("wrote /tmp/frommodel.hwp ({} bytes)", out.len());
+    }
+
     #[test]
     fn hwpx_round_trip_survives_corruption_guard() {
         // Save a pristine doc back to HWPX and re-import: must parse and pass the

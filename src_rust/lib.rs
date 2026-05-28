@@ -95,6 +95,18 @@ fn hwp_to_hwpx(doc: &Document) -> Document {
     }
 }
 
+/// Tag a document as HWP. The IR is shared between formats, so this only flips
+/// the format tag; the HWP (CFB) container is produced when `save_file` runs.
+#[pyfunction]
+fn hwpx_to_hwp(doc: &Document) -> Document {
+    Document {
+        inner: doc.inner.clone(),
+        source_format: SourceFormat::Hwp,
+        stem: doc.stem.clone(),
+        label: doc.label.clone(),
+    }
+}
+
 /// Split a problem-set document into per-question `Document`s, in order. Each is
 /// a complete document ready to render or save, carrying its question label.
 #[pyfunction]
@@ -116,27 +128,30 @@ fn split_set_to_question(doc: &Document) -> PyResult<Vec<Document>> {
 
 /// Render previews to files under `save_path`. `preview_type` is `"page"` (one
 /// sheet per laid-out page) or `"question"` (split first, then render each
-/// question). `media_types` selects `"svg" | "png" | "pdf"`; `scale` is the PNG
-/// raster multiplier.
+/// question). `media_types` selects `"svg" | "png" | "pdf"`; `dpi` is the PNG
+/// raster resolution (vector-accurate; SVG/PDF ignore it).
 ///
 /// Returns paths grouped by media type: outer list follows `media_types` order,
 /// each inner list holds every path for that extension (all docs/pages flattened,
 /// in render order).
 #[pyfunction]
-#[pyo3(signature = (docs, save_path, preview_type="page", media_types=None, scale=1.5, progress=None))]
+#[pyo3(signature = (docs, save_path, preview_type="page", media_types=None, dpi=200.0, progress=None))]
 fn export_preview(
     py: Python<'_>,
     docs: Vec<Document>,
     save_path: PathBuf,
     preview_type: &str,
     media_types: Option<Vec<String>>,
-    scale: f32,
+    dpi: f32,
     progress: Option<PyObject>,
 ) -> PyResult<Vec<Vec<String>>> {
     let pt = parse_preview_type(preview_type)?;
     let media_types = media_types.unwrap_or_else(|| vec!["png".into()]);
     let media: Vec<MediaType> =
         media_types.iter().map(|s| parse_media_type(s)).collect::<PyResult<_>>()?;
+    // The engine SVG is laid out at 96 DPI; the raster scale is dpi/96 and resvg
+    // renders the vector tree at that scale (so dpi is true resolution, not upscaling).
+    let scale = dpi / 96.0;
 
     let pairs: Vec<(String, api::Document)> = docs
         .iter()
@@ -224,6 +239,7 @@ fn _native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(import_file, m)?)?;
     m.add_function(wrap_pyfunction!(save_file, m)?)?;
     m.add_function(wrap_pyfunction!(hwp_to_hwpx, m)?)?;
+    m.add_function(wrap_pyfunction!(hwpx_to_hwp, m)?)?;
     m.add_function(wrap_pyfunction!(split_set_to_question, m)?)?;
     m.add_function(wrap_pyfunction!(export_preview, m)?)?;
     m.add_function(wrap_pyfunction!(is_corrupt, m)?)?;

@@ -55,10 +55,11 @@ def export_preview(
     save_path,
     preview_type: str = "page",
     media_types=None,
-    scale: float = 1.5,
+    dpi: float = 200.0,
 ):
     """Render previews to ``save_path``; see the native docs for arguments.
 
+    ``dpi`` is the PNG raster resolution (vector-accurate; SVG/PDF ignore it).
     Verifies fonts first (collecting missing ones from a Hancom install on
     Windows/macOS, else raising ``ValueError``). On a cold glyph cache a bar
     tracks glyph decoding; a second bar tracks page rendering.
@@ -82,7 +83,7 @@ def export_preview(
             if total and done >= total:
                 bar.close()
 
-    out = _native.export_preview(docs, save_path, preview_type, media_types, scale, progress)
+    out = _native.export_preview(docs, save_path, preview_type, media_types, dpi, progress)
     n = sum(len(group) for group in out)
     print(f"{_TAG} 파일 {n}개 내보내기 완료.")
     return out

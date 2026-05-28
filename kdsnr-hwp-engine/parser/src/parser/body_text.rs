@@ -373,19 +373,19 @@ fn parse_para_text(
             match ch {
                 0x0018 => {
                     char_offsets.push(code_unit_pos);
-                    text.push('\u{00A0}'); // 묶음 빈칸
-                    item_text.push('\u{00A0}');
+                    text.push('\u{2010}'); // 하이픈 (HYPHEN); distinct from 묶음 빈칸
+                    item_text.push('\u{2010}');
                     char_count += 1;
                 }
                 0x0019 => {
                     char_offsets.push(code_unit_pos);
-                    text.push(' '); // 고정폭 빈칸
-                    item_text.push(' ');
+                    text.push('\u{2011}'); // 묶음표(reserved); distinct from regular space
+                    item_text.push('\u{2011}');
                     char_count += 1;
                 }
                 0x001E => {
                     char_offsets.push(code_unit_pos);
-                    text.push('\u{00A0}'); // 묶음 빈칸
+                    text.push('\u{00A0}'); // 묶음 빈칸 (NO-BREAK SPACE)
                     item_text.push('\u{00A0}');
                     char_count += 1;
                 }
@@ -971,10 +971,12 @@ fn parse_page_def(data: &[u8]) -> PageDef {
     pd.margin_gutter = r.read_u32().unwrap_or(0);
     pd.attr = r.read_u32().unwrap_or(0);
 
-    // HWP binary page-def bit 0 is inverted from the intuitive name used in
-    // older comments here. Hancom's HWP->HWPX export writes attr=0 as
-    // landscape="WIDELY" and attr=1 as landscape="NARROWLY".
-    pd.landscape = pd.attr & 0x01 == 0;
+    // width/height are stored in the actual orientation already (same dims as
+    // Hancom's own HWPX), so the render-time swap flag stays false — deriving it
+    // from attr swapped portrait pages into landscape. attr bit0 is only the
+    // Hancom "WIDELY" hint, preserved separately for HWPX `pagePr@landscape`.
+    pd.landscape = false;
+    pd.landscape_widely = pd.attr & 0x01 == 0;
     pd.binding = match (pd.attr >> 1) & 0x03 {
         1 => BindingMethod::DuplexSided,
         2 => BindingMethod::TopFlip,

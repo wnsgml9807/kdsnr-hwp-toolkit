@@ -445,18 +445,15 @@ fn write_border_fills<W: Write>(
     if doc_info.border_fills.is_empty() {
         return Ok(());
     }
-    let border_fills = if doc_info.border_fills.len() > 1 {
-        &doc_info.border_fills[1..]
-    } else {
-        &doc_info.border_fills[..]
-    };
+    let border_fills = &doc_info.border_fills[..];
     start_tag_attrs(
         w,
         "hh:borderFills",
         &[("itemCnt", &border_fills.len().to_string())],
     )?;
-    // HWPX borderFill의 id는 1부터 시작 (관찰값: ref_empty.hwpx).
-    // 그러나 rhwp parser는 인덱스 기반으로 저장하므로 id는 배열 인덱스 그대로 사용.
+    // borderFill id is 1-based; the model stores them 0-based (id 1 -> [0],
+    // matching the resolver's `get(id - 1)`), so write every entry with
+    // id = index + 1. All borderFillIDRef sites emit the raw 1-based id.
     for (idx, bf) in border_fills.iter().enumerate() {
         write_border_fill(w, idx as u16, bf)?;
     }
@@ -675,7 +672,7 @@ fn write_char_pr<W: Write>(
     } else {
         color_hex(cs.shade_color)
     };
-    let border_fill_id = cs.border_fill_id.saturating_sub(1).to_string();
+    let border_fill_id = cs.border_fill_id.to_string();
     start_tag_attrs(
         w,
         "hh:charPr",
@@ -1416,10 +1413,7 @@ fn write_para_pr<W: Write>(
         w,
         "hh:border",
         &[
-            (
-                "borderFillIDRef",
-                &ps.border_fill_id.saturating_sub(1).to_string(),
-            ),
+            ("borderFillIDRef", &ps.border_fill_id.to_string()),
             ("offsetLeft", &ps.border_spacing[0].to_string()),
             ("offsetRight", &ps.border_spacing[1].to_string()),
             ("offsetTop", &ps.border_spacing[2].to_string()),

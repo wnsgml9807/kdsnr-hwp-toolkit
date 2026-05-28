@@ -10,7 +10,7 @@
 use super::byte_writer::ByteWriter;
 use super::record_writer::write_record;
 
-use crate::model::bin_data::{BinData, BinDataType};
+use crate::model::bin_data::{BinData, BinDataCompression, BinDataStatus, BinDataType};
 use crate::model::document::{DocInfo, DocProperties};
 use crate::model::style::{
     BorderFill, BorderLineType, Bullet, CharShape, FillType, Font, ImageFillMode, Numbering,
@@ -125,6 +125,19 @@ pub fn serialize_doc_info(doc_info: &DocInfo, doc_props: &DocProperties) -> Vec<
         stream.extend(write_record(record.tag_id, record.level, &record.data));
     }
 
+    // COMPATIBLE_DOCUMENT (+ child LAYOUT_COMPATIBILITY): every Hancom .hwp
+    // carries these document-compatibility records. An HWPX-sourced document
+    // has none (extra_records empty), so synthesize the standard zero records
+    // to keep the DocInfo structure complete. (target program 0 = Hancom.)
+    let has_compat = doc_info
+        .extra_records
+        .iter()
+        .any(|r| r.tag_id == tags::HWPTAG_COMPATIBLE_DOCUMENT);
+    if !has_compat {
+        stream.extend(write_record(tags::HWPTAG_COMPATIBLE_DOCUMENT, 0, &[0u8; 4]));
+        stream.extend(write_record(tags::HWPTAG_LAYOUT_COMPATIBILITY, 1, &[0u8; 20]));
+    }
+
     stream
 }
 
@@ -189,13 +202,39 @@ pub fn serialize_id_mappings(doc_info: &DocInfo) -> Vec<u8> {
     w.write_u32(doc_info.styles.len() as u32).unwrap();
     // memo_shape_count (5.0.2.x 이후, 파싱 시 보존된 값 사용)
     w.write_u32(doc_info.memo_shape_count).unwrap();
+    // track_change_count + track_change_author_count (HWP 5.0.2.1+: the
+    // ID_MAPPINGS array is 18 entries. Hancom reads a fixed 18 and rejects a
+    // 16-entry record as damaged. We carry no track-change data, so write 0.)
+    w.write_u32(0).unwrap();
+    w.write_u32(0).unwrap();
 
     w.into_bytes()
 }
 
 pub fn serialize_bin_data(bin_data: &BinData) -> Vec<u8> {
     let mut w = ByteWriter::new();
-    w.write_u16(bin_data.attr).unwrap();
+    // Reconstruct attr from the semantic fields rather than the stored raw
+    // value: HWPX-sourced/composed items carry data_type=Embedding but a
+    // default attr=0 (=Link), which makes Hancom parse the embedding body as
+    // link paths and reject the file. type=bits0-3, compress=bits4-5, status=bits8-9.
+    let type_bits: u16 = match bin_data.data_type {
+        BinDataType::Link => 0,
+        BinDataType::Embedding => 1,
+        BinDataType::Storage => 2,
+    };
+    let comp_bits: u16 = match bin_data.compression {
+        BinDataCompression::Default => 0,
+        BinDataCompression::Compress => 1,
+        BinDataCompression::NoCompress => 2,
+    };
+    let status_bits: u16 = match bin_data.status {
+        BinDataStatus::NotAccessed => 0,
+        BinDataStatus::Success => 1,
+        BinDataStatus::Error => 2,
+        BinDataStatus::Ignored => 3,
+    };
+    let attr = type_bits | (comp_bits << 4) | (status_bits << 8);
+    w.write_u16(attr).unwrap();
 
     match bin_data.data_type {
         BinDataType::Link => {
@@ -226,13 +265,15 @@ pub fn serialize_bin_data(bin_data: &BinData) -> Vec<u8> {
 pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
-    // attr 바이트 재구성
+    // attr 바이트 재구성. 하위 비트 = 글꼴 종류(0 unknown/1 TTF/2 HFT).
+    // bit7(0x80)=대체 글꼴, bit5(0x20)=기본 글꼴. (bit6 0x40 은 PANOSE 로,
+    // 기본 글꼴에 쓰면 한컴이 10바이트 PANOSE 를 기대해 레코드가 어긋난다.)
     let mut attr = font.alt_type & 0x03;
     if font.alt_name.is_some() {
         attr |= 0x80;
     }
     if font.default_name.is_some() {
-        attr |= 0x40;
+        attr |= 0x20;
     }
     w.write_u8(attr).unwrap();
 
@@ -595,6 +636,9 @@ pub fn serialize_para_shape(ps: &ParaShape) -> Vec<u8> {
     w.write_u32(ps.attr3).unwrap();
     // 줄 간격 (5.0.2.5 이상)
     w.write_u32(ps.line_spacing_v2).unwrap();
+    // 5.0.3.x 이후 추가된 trailing u32 (실측: 0). 빠뜨리면 레코드가 4바이트
+    // 짧아져 DocInfo 스트림이 어긋난다.
+    w.write_u32(0).unwrap();
     w.into_bytes()
 }
 
@@ -604,8 +648,11 @@ pub fn serialize_style(style: &Style) -> Vec<u8> {
     w.write_hwp_string(&style.english_name).unwrap();
     w.write_u8(style.style_type).unwrap();
     w.write_u8(style.next_style_id).unwrap();
+    w.write_u16(style.lang_id).unwrap();
     w.write_u16(style.para_shape_id).unwrap();
     w.write_u16(style.char_shape_id).unwrap();
+    // trailing u16 (실측: 0). 빠뜨리면 레코드가 2바이트 짧아진다.
+    w.write_u16(0).unwrap();
     w.into_bytes()
 }
 

@@ -9,6 +9,7 @@ pub mod cfb_writer;
 pub mod control;
 pub mod doc_info;
 pub mod header;
+pub mod hwp_aux;
 pub mod hwpx;
 pub mod mini_cfb;
 pub mod record_writer;

@@ -22,8 +22,20 @@ use super::SerializeError;
 
 /// Document IR을 HWP 5.0 CFB 바이너리로 직렬화
 pub fn serialize_hwp(doc: &Document) -> Result<Vec<u8>, SerializeError> {
+    // HWP 5.x output is always compressed: Hancom does not reliably load the
+    // uncompressed variant, so force the flag and stream compression regardless
+    // of source (an hwpx import carries compressed=false). A genuine .hwp source
+    // is already compressed, so this is a no-op for it.
+    let mut header = doc.header.clone();
+    if !header.compressed {
+        header.compressed = true;
+        header.flags |= 0x01;
+        header.raw_data = None; // rebuild the 256-byte header with the set flag
+    }
+    let compressed = header.compressed;
+
     // 1. FileHeader 직렬화
-    let header_bytes = serialize_file_header(&doc.header);
+    let header_bytes = serialize_file_header(&header);
 
     // 2. DocInfo 직렬화
     let doc_info_bytes = serialize_doc_info(&doc.doc_info, &doc.doc_properties);
@@ -34,9 +46,6 @@ pub fn serialize_hwp(doc: &Document) -> Result<Vec<u8>, SerializeError> {
         let section_bytes = serialize_section(section);
         section_bytes_list.push(section_bytes);
     }
-
-    // 4. 압축 여부 결정
-    let compressed = doc.header.compressed;
 
     // 5. CFB 컨테이너 조립
     write_hwp_cfb(
@@ -137,6 +146,14 @@ fn write_hwp_cfb(
         streams.push((path.clone(), data.clone()));
     }
 
+    // 7. 필수 보조 스트림 — 없으면 합성 (HWPX 원본은 이 스트림이 없어서
+    //    Hancom이 손상으로 거부한다). 위 extra_streams가 이미 가졌으면 보존.
+    use crate::serializer::hwp_aux;
+    ensure_stream(&mut streams, "/\u{0005}HwpSummaryInformation", hwp_aux::summary_information);
+    ensure_stream(&mut streams, "/DocOptions/_LinkDoc", hwp_aux::link_doc);
+    ensure_stream(&mut streams, "/Scripts/DefaultJScript", hwp_aux::default_jscript);
+    ensure_stream(&mut streams, "/Scripts/JScriptVersion", hwp_aux::jscript_version);
+
     // mini_cfb로 CFB 컨테이너 조립 (WASM 호환)
     let named_streams: Vec<(&str, &[u8])> = streams
         .iter()
@@ -144,6 +161,16 @@ fn write_hwp_cfb(
         .collect();
 
     mini_cfb::build_cfb(&named_streams).map_err(|e| SerializeError::CfbError(e))
+}
+
+/// Push a synthesized stream only when no stream with that name (ignoring the
+/// leading `/`) is already present.
+fn ensure_stream(streams: &mut Vec<(String, Vec<u8>)>, path: &str, synth: fn() -> Vec<u8>) {
+    let name = path.trim_start_matches('/');
+    if streams.iter().any(|(p, _)| p.trim_start_matches('/') == name) {
+        return;
+    }
+    streams.push((path.to_string(), synth()));
 }
 
 /// BinDataContent에 대응하는 BinData 정보(storage_id, extension, should_compress) 찾기

@@ -178,9 +178,15 @@ fn serialize_section_def(sd: &SectionDef, level: u16, records: &mut Vec<Record>)
     w.write_u16(sd.picture_num).unwrap();
     w.write_u16(sd.table_num).unwrap();
     w.write_u16(sd.equation_num).unwrap();
-    // 원본 추가 바이트 복원 (라운드트립용)
+    // 구역 정의 CTRL_HEADER 의 나머지 고정 필드(기본 언어/격자/예약, 19바이트).
+    // 정품은 본문 43바이트(=ctrl_id 제외) 구조다. HWPX 출처 합성 구역은
+    // raw_ctrl_extra 가 없어 이 19바이트가 빠지면 secd 가 짧아져(28B) 첫 컨트롤부터
+    // 어긋나 문서 전체가 손상으로 판정된다. 전 정품(math/social/science)에서 이 꼬리는
+    // `0000` + u16 + 0×15 구조이며 science 는 전부 0(유효) — 합성은 0×19 로 기록.
     if !sd.raw_ctrl_extra.is_empty() {
         w.write_bytes(&sd.raw_ctrl_extra).unwrap();
+    } else {
+        w.write_bytes(&[0u8; 19]).unwrap();
     }
 
     records.push(make_ctrl_record(
@@ -345,17 +351,15 @@ fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
 // ============================================================
 
 fn serialize_table(table: &Table, level: u16, records: &mut Vec<Record>) {
-    // CTRL_HEADER: raw_ctrl_data는 CommonObjAttr 전체 (attr 포함)
-    // Task 271에서 파싱 변경: ctrl_data 전체 = CommonObjAttr
-    records.push(make_ctrl_record(
-        tags::CTRL_TABLE,
-        level,
-        if !table.raw_ctrl_data.is_empty() {
-            &table.raw_ctrl_data
-        } else {
-            &[]
-        },
-    ));
+    // CTRL_HEADER: ctrl_data 전체 = CommonObjAttr. HWPX 출처 합성 표는
+    // raw_ctrl_data 가 없으므로 common 필드에서 재구성한다 — 빈 바이트로 두면
+    // CTRL_HEADER 가 ctrl_id(4B)뿐이라 한컴이 표 컨트롤을 못 읽고 손상 판정한다.
+    let table_ctrl_data = if !table.raw_ctrl_data.is_empty() {
+        table.raw_ctrl_data.clone()
+    } else {
+        serialize_common_obj_attr(&table.common)
+    };
+    records.push(make_ctrl_record(tags::CTRL_TABLE, level, &table_ctrl_data));
 
     // 캡션 (TABLE 이전, level+1)
     if let Some(ref caption) = table.caption {
@@ -383,10 +387,12 @@ fn serialize_table_record(table: &Table) -> Vec<u8> {
     let attr = if table.raw_table_record_attr != 0 {
         table.raw_table_record_attr
     } else {
+        // 쪽 나눔(bit0-1): 한컴 실측 — CELL=2, TABLE/ROW=1, NONE=0.
+        // (정품 머리말 표 HWPX pageBreak="CELL" ↔ .hwp attr&3==2 로 확정)
         let mut a: u32 = 0;
         match table.page_break {
-            TablePageBreak::CellBreak => a |= 0x01,
-            TablePageBreak::RowBreak => a |= 0x02,
+            TablePageBreak::CellBreak => a |= 0x02,
+            TablePageBreak::RowBreak => a |= 0x01,
             TablePageBreak::None => {}
         }
         if table.repeat_header {
@@ -406,14 +412,31 @@ fn serialize_table_record(table: &Table) -> Vec<u8> {
     w.write_i16(table.padding.top).unwrap();
     w.write_i16(table.padding.bottom).unwrap();
 
-    // 행별 셀 수 (HWP 스펙: UINT16[NRows])
-    for &h in &table.row_sizes {
-        w.write_i16(h).unwrap();
+    // 행별 셀 수 (HWP 스펙 표60: UINT16[NRows] = 각 행의 셀 개수).
+    // .hwp 파서는 이 배열을 row_sizes 에 담지만 HWPX 임포트는 같은 필드에
+    // 행 높이를 채워 의미가 어긋난다. 셀 개수는 셀에서 직접 세는 것이 정공법
+    // — 높이는 각 셀 height 필드에 별도 저장되므로 손실 없음.
+    for r in 0..table.row_count {
+        let count = table.cells.iter().filter(|c| c.row == r).count() as u16;
+        w.write_u16(count).unwrap();
     }
 
     w.write_u16(table.border_fill_id).unwrap();
 
-    // 원본 추가 바이트 복원 (라운드트립용)
+    // 영역 속성: UINT16 nZones + TableZone[nZones]. 파서가 이 카운트를 항상
+    // 소비하므로(영역이 없으면 0) 반드시 다시 써야 한다 — 빠뜨리면 레코드가
+    // 2바이트 짧아져 한컴이 이후 레코드를 어긋나게 읽고 손상 판정한다.
+    // (필드 순서는 파서와 동일: start_row, start_col, end_row, end_col, bf_id.)
+    w.write_u16(table.zones.len() as u16).unwrap();
+    for zone in &table.zones {
+        w.write_u16(zone.start_row).unwrap();
+        w.write_u16(zone.start_col).unwrap();
+        w.write_u16(zone.end_row).unwrap();
+        w.write_u16(zone.end_col).unwrap();
+        w.write_u16(zone.border_fill_id).unwrap();
+    }
+
+    // 영역 뒤 원본 추가 바이트 복원 (라운드트립용)
     if !table.raw_table_record_extra.is_empty() {
         w.write_bytes(&table.raw_table_record_extra).unwrap();
     }
@@ -451,8 +474,12 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
     w.write_i16(cell.padding.bottom).unwrap();
     w.write_u16(cell.border_fill_id).unwrap();
 
-    // 원본 추가 바이트 복원 (라운드트립용)
-    if !cell.raw_list_extra.is_empty() {
+    // 셀 list_header 꼬리(13B): textWidth(u32)=셀 폭 + 예약 9B.
+    // HWPX 출처 셀은 raw_list_extra 가 비어 34B 로 잘리므로 한컴 형식대로 재구성한다.
+    if cell.raw_list_extra.is_empty() {
+        w.write_u32(cell.width).unwrap();
+        w.write_bytes(&[0u8; 9]).unwrap();
+    } else {
         w.write_bytes(&cell.raw_list_extra).unwrap();
     }
 
@@ -531,11 +558,19 @@ fn serialize_header_control(header: &Header, level: u16, records: &mut Vec<Recor
     w.write_u32(attr).unwrap();
     if !header.raw_ctrl_extra.is_empty() {
         w.write_bytes(&header.raw_ctrl_extra).unwrap();
+    } else {
+        // 머리말 CTRL_HEADER 본문은 attr(4) + createId(4) = 8바이트. HWPX 출처
+        // 합성은 raw_ctrl_extra 가 없어 이 4바이트가 빠지면 짧아져 손상된다.
+        w.write_u32(0).unwrap();
     }
     records.push(make_ctrl_record(tags::CTRL_HEADER, level, w.as_bytes()));
 
     // LIST_HEADER + 문단
-    serialize_list_header_with_paragraphs(&header.paragraphs, level + 1, records);
+    serialize_list_header_with_paragraphs(
+        &header.paragraphs, level + 1,
+        header.text_width, header.text_height, header.text_ref, header.num_ref,
+        header.vertical_align, records,
+    );
 }
 
 fn serialize_footer_control(footer: &Footer, level: u16, records: &mut Vec<Record>) {
@@ -552,10 +587,17 @@ fn serialize_footer_control(footer: &Footer, level: u16, records: &mut Vec<Recor
     w.write_u32(attr).unwrap();
     if !footer.raw_ctrl_extra.is_empty() {
         w.write_bytes(&footer.raw_ctrl_extra).unwrap();
+    } else {
+        // 꼬리말 CTRL_HEADER 본문 = attr(4) + createId(4) = 8바이트.
+        w.write_u32(0).unwrap();
     }
     records.push(make_ctrl_record(tags::CTRL_FOOTER, level, w.as_bytes()));
 
-    serialize_list_header_with_paragraphs(&footer.paragraphs, level + 1, records);
+    serialize_list_header_with_paragraphs(
+        &footer.paragraphs, level + 1,
+        footer.text_width, footer.text_height, footer.text_ref, footer.num_ref,
+        footer.vertical_align, records,
+    );
 }
 
 // ============================================================
@@ -563,19 +605,37 @@ fn serialize_footer_control(footer: &Footer, level: u16, records: &mut Vec<Recor
 // ============================================================
 
 fn serialize_footnote(fn_: &Footnote, level: u16, records: &mut Vec<Record>) {
+    // 각주 CTRL_HEADER 본문 = 16바이트: number(2) + 예약(4) + suffix(2) + 예약(4)
+    // + inst_id(4). 파서 오프셋(0,6,12)과 일치. HWPX 출처 합성은 number(2)만 쓰면
+    // 14바이트 짧아 손상되므로 전체 구조를 기록한다.
     let mut w = ByteWriter::new();
     w.write_u16(fn_.number).unwrap();
+    w.write_u32(0).unwrap();
+    w.write_u16(fn_.suffix_char).unwrap();
+    w.write_u32(0).unwrap();
+    w.write_u32(fn_.inst_id).unwrap();
     records.push(make_ctrl_record(tags::CTRL_FOOTNOTE, level, w.as_bytes()));
 
-    serialize_list_header_with_paragraphs(&fn_.paragraphs, level + 1, records);
+    serialize_list_header_with_paragraphs(
+        &fn_.paragraphs, level + 1, 0, 0, 0, 0,
+        crate::model::table::VerticalAlign::Top, records,
+    );
 }
 
 fn serialize_endnote(en: &Endnote, level: u16, records: &mut Vec<Record>) {
+    // 미주 CTRL_HEADER 본문 = 16바이트 (각주와 동일 레이아웃).
     let mut w = ByteWriter::new();
     w.write_u16(en.number).unwrap();
+    w.write_u32(0).unwrap();
+    w.write_u16(en.suffix_char).unwrap();
+    w.write_u32(0).unwrap();
+    w.write_u32(en.inst_id).unwrap();
     records.push(make_ctrl_record(tags::CTRL_ENDNOTE, level, w.as_bytes()));
 
-    serialize_list_header_with_paragraphs(&en.paragraphs, level + 1, records);
+    serialize_list_header_with_paragraphs(
+        &en.paragraphs, level + 1, 0, 0, 0, 0,
+        crate::model::table::VerticalAlign::Top, records,
+    );
 }
 
 // ============================================================
@@ -584,7 +644,10 @@ fn serialize_endnote(en: &Endnote, level: u16, records: &mut Vec<Record>) {
 
 fn serialize_hidden_comment(comment: &HiddenComment, level: u16, records: &mut Vec<Record>) {
     records.push(make_ctrl_record(tags::CTRL_HIDDEN_COMMENT, level, &[]));
-    serialize_list_header_with_paragraphs(&comment.paragraphs, level + 1, records);
+    serialize_list_header_with_paragraphs(
+        &comment.paragraphs, level + 1, 0, 0, 0, 0,
+        crate::model::table::VerticalAlign::Top, records,
+    );
 }
 
 // ============================================================
@@ -1683,14 +1746,37 @@ fn serialize_shape_fill(w: &mut ByteWriter, fill: &Fill) {
 }
 
 /// LIST_HEADER(간단) + 문단 목록 직렬화
+/// 머리말/꼬리말/각주/미주/숨은설명의 LIST_HEADER + 문단 직렬화.
+/// LIST_HEADER 는 정품에서 34바이트(nPara2 + attr4 + widthRef2 + textWidth4 +
+/// textHeight4 + textRef1 + numRef1 + 예약16)이다. count+attr(6바이트)만 쓰면
+/// 28바이트 짧아져 한컴이 이후 레코드를 어긋나게 읽어 손상 판정한다.
+/// (parse_list_header_layout 의 필드 순서와 일치.)
+#[allow(clippy::too_many_arguments)]
 fn serialize_list_header_with_paragraphs(
     paragraphs: &[crate::model::paragraph::Paragraph],
     level: u16,
+    text_width: u32,
+    text_height: u32,
+    text_ref: u8,
+    num_ref: u8,
+    v_align: crate::model::table::VerticalAlign,
     records: &mut Vec<Record>,
 ) {
+    use crate::model::table::VerticalAlign;
     let mut w = ByteWriter::new();
     w.write_u16(paragraphs.len() as u16).unwrap();
-    w.write_u32(0).unwrap(); // list_attr
+    let v_align_code: u32 = match v_align {
+        VerticalAlign::Top => 0,
+        VerticalAlign::Center => 1,
+        VerticalAlign::Bottom => 2,
+    };
+    w.write_u32(v_align_code << 21).unwrap(); // list_attr (vertical align in bits 21-22)
+    w.write_u16(0).unwrap(); // width_ref
+    w.write_u32(text_width).unwrap();
+    w.write_u32(text_height).unwrap();
+    w.write_u8(text_ref).unwrap();
+    w.write_u8(num_ref).unwrap();
+    w.write_bytes(&[0u8; 16]).unwrap(); // 예약 (정품 34바이트까지 채움)
 
     records.push(Record {
         tag_id: tags::HWPTAG_LIST_HEADER,
@@ -1699,7 +1785,10 @@ fn serialize_list_header_with_paragraphs(
         data: w.into_bytes(),
     });
 
-    serialize_paragraph_list(paragraphs, level + 1, records);
+    // 원본 HWP 에서는 리스트의 문단이 LIST_HEADER 와 같은 레벨이다
+    // (serialize_cell 과 동일 규약). level+1 로 emit 하면 한 단계 깊어져
+    // 한컴 트리 파싱이 어긋난다.
+    serialize_paragraph_list(paragraphs, level, records);
 }
 
 // ============================================================
@@ -1718,28 +1807,39 @@ fn serialize_equation_control(eq: &Equation, level: u16, records: &mut Vec<Recor
     };
     records.push(make_ctrl_record(tags::CTRL_EQUATION, level, &ctrl_data));
 
-    // HWPTAG_EQEDIT 자식 레코드
-    let mut w = ByteWriter::new();
-    // attr: u32
-    w.write_u32(0).unwrap();
-    // script: HWP string (length-prefixed UTF-16LE)
-    w.write_hwp_string(&eq.script).unwrap();
-    // font_size: u32
-    w.write_u32(eq.font_size).unwrap();
-    // color: u32
-    w.write_u32(eq.color).unwrap();
-    // baseline: i16
-    w.write_i16(eq.baseline).unwrap();
-    // version_info: HWP string
-    w.write_hwp_string(&eq.version_info).unwrap();
-    // font_name: HWP string
-    w.write_hwp_string(&eq.font_name).unwrap();
+    // HWPTAG_EQEDIT 자식 레코드. 원본 바이트가 있으면 그대로 보존 (정확한
+    // 라운드트립). 없으면(HWPX 원본 등) 필드에서 재구성한다.
+    let data = if !eq.raw_eqedit_data.is_empty() {
+        eq.raw_eqedit_data.clone()
+    } else {
+        let mut w = ByteWriter::new();
+        // attr: u32
+        w.write_u32(0).unwrap();
+        // script: HWP string (length-prefixed UTF-16LE)
+        w.write_hwp_string(&eq.script).unwrap();
+        // font_size: u32
+        w.write_u32(eq.font_size).unwrap();
+        // color: u32
+        w.write_u32(eq.color).unwrap();
+        // baseline: i16
+        w.write_i16(eq.baseline).unwrap();
+        // EQEDIT carries three trailing strings: an (empty) equation-font slot,
+        // the version string, then the math font. The parser folds the empty
+        // leading slot into version_info via a swap heuristic, so re-emit it
+        // here or Hancom reads a malformed record (2 bytes short).
+        w.write_hwp_string("").unwrap();
+        // version_info: HWP string
+        w.write_hwp_string(&eq.version_info).unwrap();
+        // font_name: HWP string
+        w.write_hwp_string(&eq.font_name).unwrap();
+        w.into_bytes()
+    };
 
     records.push(Record {
         tag_id: tags::HWPTAG_EQEDIT,
         level: level + 1,
         size: 0,
-        data: w.into_bytes(),
+        data,
     });
 }
 

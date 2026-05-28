@@ -56,6 +56,10 @@ pub struct PaintPage {
     pub paper: Rect,
     /// Paint operations in back-to-front order.
     pub ops: Vec<PaintOp>,
+    /// Index range of body-content ops within `ops` (excludes the page
+    /// background and header/footer/master furniture). Used to crop a question
+    /// preview to its content alone.
+    pub content_range: std::ops::Range<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -186,9 +190,11 @@ pub fn debug_equation_page(script: &str, font: &str, font_size: u32) -> PaintPag
         SourceRef::Page(kdsnr_hwp_core::PageId(0)),
         &mut ops,
     );
+    let content_range = 0..ops.len();
     PaintPage {
         paper: Rect::new(0, 0, w + pad * 2, h + pad * 2),
         ops,
+        content_range,
     }
 }
 
@@ -235,6 +241,8 @@ pub fn lower(document: &DocumentModel, pagination: &PaginationResult) -> PaintDo
                     }
                 }
             }
+            // Body content begins here (after the page background and furniture).
+            let body_start = ops.len();
             // Paragraph border boxes: fill behind the body, edges on top.
             let boxes = paragraph_border_boxes(&page.items, &lookup);
             for b in &boxes {
@@ -261,9 +269,11 @@ pub fn lower(document: &DocumentModel, pagination: &PaginationResult) -> PaintDo
                 push_edge(&mut ops, &b.border.left, x, y, x, y + h);
                 push_edge(&mut ops, &b.border.right, x + w, y, x + w, y + h);
             }
+            let content_range = body_start..ops.len();
             PaintPage {
                 paper: page.paper,
                 ops,
+                content_range,
             }
         })
         .collect();

@@ -7,7 +7,8 @@
 ![version](https://img.shields.io/badge/version-0.1.2-blue)
 
 시험지 형식의 HWP 파일을 한컴 COM API 없이 가공하는 도구입니다.
-HWP/HWPX 파일을 읽어 문항으로 분해하고, 웹 뷰어에서 쓸 수 있는 미리보기(SVG/PNG/PDF)를 반환합니다.
+HWP/HWPX 파일을 읽어 문항으로 분해하고, 수식과 이미지까지 정확히 읽어내 AI(LLM)에 바로 넣을 수 있는
+JSON으로 추출하거나, 웹 뷰어에서 쓸 수 있는 미리보기(SVG/PNG/PDF)로 반환합니다.
 Windows/MacOS/Linux 등 다양한 환경에서 사용할 수 있습니다.
 
 - 제작 : (주)강남대성수능연구소
@@ -18,6 +19,9 @@ HWP/HWPX 파싱·직렬화, 레이아웃 조판, 문항 분해, 미리보기 렌
 
 - HWP 시험지 파일을 HWPX로 변환
 - 시험지 형태의 한글 파일을 개별 문항으로 분해
+- 한글 수식을 AI가 정확하게 읽을 수 있는 LaTeX로 변환
+- 문항 속 이미지를 그대로 추출해 base64로 임베드
+- 문항을 (수식·이미지 포함) AI 입력용 JSON으로 추출
 - 페이지/문항 단위 미리보기를 SVG/PNG/PDF로 반환
 - 한컴이 아닌 툴로 손상된 문서 자동 감지
 
@@ -212,3 +216,40 @@ paths = k.export_preview(
 # 반환: 확장자별 경로 리스트 (바깥 = media_types 순서)
 pngs, pdfs = paths
 ```
+
+### 5. 문항 JSON 추출 (AI 입력용)
+
+**`extract_questions(doc, image_max_px=1024)`** — 시험지를 문항별 JSON으로 추출합니다.
+
+각 문항을 `{label, subject, text, images}` 딕셔너리로 돌려줍니다. 본문의 수식은 LaTeX(`$...$`)로
+변환되어 제 위치에 들어가고, 문항 안의 이미지는 축소되어 base64 `data:` URI로 담깁니다.
+`json.dumps`로 직렬화해 LLM 입력으로 쓸 수 있습니다.
+
+| 인자 | 타입 | 설명 |
+| --- | --- | --- |
+| `doc` | `Document` | 시험지 한 부 |
+| `image_max_px` | `int` | 이미지 최대 변 길이(px). 더 길면 비율 유지하며 축소 (기본 1024) |
+| **반환** | `list[dict]` | 문항별 `{label, subject, text, images}` |
+
+| 키 | 타입 | 설명 |
+| --- | --- | --- |
+| `label` | `str` | 문항 라벨 (예: `"Q01"`) |
+| `subject` | `str` | `"math" \| "science" \| "social"` |
+| `text` | `str` | 문항 본문. 수식은 `$LaTeX$`로 인라인 변환 |
+| `images` | `list[str]` | 문항 내 이미지의 base64 `data:` URI 목록 |
+
+```python
+import json
+
+questions = k.extract_questions(doc)        # -> list[dict]
+for q in questions:
+    print(q["label"], q["subject"], len(q["images"]))
+    print(q["text"])                        # 수식이 $LaTeX$로 들어간 본문
+
+json.dumps(questions, ensure_ascii=False)   # LLM 입력으로
+
+# 국어 시험지:
+# ValueError("[KDSNR-HWP-TOOLKIT] 국어 과목은 문항별 분할과 미리보기를 지원하지 않습니다. (다음 버전 예정)")
+```
+
+분해·미리보기와 동일하게 수학/과학/사회를 지원하며, 국어는 `ValueError`(다음 버전 예정)를 반환합니다.

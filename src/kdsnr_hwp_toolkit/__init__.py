@@ -36,8 +36,9 @@ from ._native import (
     save_file,
     split_set_to_question,
 )
-# export_preview is wrapped Python-side to show the one-time glyph-cache bar.
-from .api import export_preview
+# export_preview shows the glyph-cache bar; extract_questions converts equations
+# to LaTeX and images to resized base64 — both wrapped Python-side.
+from .api import export_preview, extract_questions
 
 __all__ = [
     "Document",
@@ -46,6 +47,7 @@ __all__ = [
     "hwp_to_hwpx",
     "hwpx_to_hwp",
     "split_set_to_question",
+    "extract_questions",
     "export_preview",
     "is_corrupt",
 ]

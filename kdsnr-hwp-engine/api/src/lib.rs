@@ -191,6 +191,65 @@ pub fn split_set_to_question(doc: &Document) -> Result<Vec<(String, Document)>, 
     Ok(units.into_iter().map(|q| (q.label, q.document)).collect())
 }
 
+/// One question extracted for AI/dataset consumption. In `text`, each equation
+/// script sits at its inline position wrapped in STX (`\u{2}`) / ETX (`\u{3}`)
+/// sentinels — the Python wrapper turns those spans into LaTeX. `images` is each
+/// embedded raster's bytes and source extension.
+pub struct QuestionItem {
+    pub label: String,
+    pub subject: String,
+    pub text: String,
+    pub images: Vec<(Vec<u8>, String)>,
+}
+
+/// Every embedded raster in the document (paragraph objects and table cells),
+/// in document order, as `(bytes, ext)`. Resolved via `normalize`, which decodes
+/// each picture's stored binary — no fonts needed.
+fn collect_images(doc: &Document) -> Vec<(Vec<u8>, String)> {
+    fn walk(para: &kdsnr_hwp_doc::ParagraphModel, out: &mut Vec<(Vec<u8>, String)>) {
+        for obj in &para.objects {
+            if let kdsnr_hwp_doc::ObjectContent::Image { data, ext } = &obj.content {
+                out.push((data.as_ref().clone(), ext.clone()));
+            }
+        }
+        for table in &para.tables {
+            for cell in &table.cells {
+                for p in &cell.paragraphs {
+                    walk(p, out);
+                }
+            }
+        }
+    }
+    let model = kdsnr_hwp_doc::normalize(doc);
+    let mut out = Vec::new();
+    for section in &model.sections {
+        for para in &section.paragraphs {
+            walk(para, &mut out);
+        }
+    }
+    out
+}
+
+/// Extract a problem set's questions, ready to serialize as JSON for a language
+/// model: plain text, the equation scripts it contains, and its embedded images.
+/// Korean is gated — like `split_set_to_question`, it returns `UnsupportedKorean`.
+pub fn extract_questions(doc: &Document) -> Result<Vec<QuestionItem>, ApiError> {
+    let (subject, units) = split_document_units(doc).map_err(|e| match e {
+        SplitError::UnsupportedKorean => ApiError::UnsupportedKorean,
+        other => ApiError::Split(format!("{other:?}")),
+    })?;
+    let subject = subject.as_str().to_string();
+    Ok(units
+        .into_iter()
+        .map(|q| QuestionItem {
+            label: q.label,
+            subject: subject.clone(),
+            text: kdsnr_hwp_parser::document_text_eq_marked(&q.document),
+            images: collect_images(&q.document),
+        })
+        .collect())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

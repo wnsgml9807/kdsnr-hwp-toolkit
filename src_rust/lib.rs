@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use pyo3::types::{PyBytes, PyDict};
 
 use kdsnr_hwp_api as api;
 use kdsnr_hwp_api::render::{export_preview as core_export_preview, MediaType, PreviewType};
@@ -139,6 +139,32 @@ fn split_set_to_question(doc: &Document) -> PyResult<Vec<Document>> {
         .collect())
 }
 
+/// Raw per-question extraction, in order. Each dict is `{"label", "subject",
+/// "text", "images"}`: `text` has equation scripts inline wrapped in STX/ETX
+/// sentinels, `images` is a list of `(bytes, ext)`. The Python `extract_questions`
+/// wrapper converts the sentinel spans to LaTeX and the images to resized base64.
+/// Korean raises `ValueError`.
+#[pyfunction]
+fn extract_questions(py: Python<'_>, doc: &Document) -> PyResult<Vec<PyObject>> {
+    let items = api::extract_questions(&doc.inner).map_err(value_err)?;
+    items
+        .into_iter()
+        .map(|it| {
+            let images: Vec<(Bound<'_, PyBytes>, String)> = it
+                .images
+                .into_iter()
+                .map(|(data, ext)| (PyBytes::new_bound(py, &data), ext))
+                .collect();
+            let d = PyDict::new_bound(py);
+            d.set_item("label", it.label)?;
+            d.set_item("subject", it.subject)?;
+            d.set_item("text", it.text)?;
+            d.set_item("images", images)?;
+            Ok(d.into())
+        })
+        .collect()
+}
+
 /// Render previews to files under `save_path`. `preview_type` is `"page"` (one
 /// sheet per laid-out page) or `"question"` (split first, then render each
 /// question). `media_types` selects `"svg" | "png" | "pdf"`; `dpi` is the PNG
@@ -254,6 +280,7 @@ fn _native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(hwp_to_hwpx, m)?)?;
     m.add_function(wrap_pyfunction!(hwpx_to_hwp, m)?)?;
     m.add_function(wrap_pyfunction!(split_set_to_question, m)?)?;
+    m.add_function(wrap_pyfunction!(extract_questions, m)?)?;
     m.add_function(wrap_pyfunction!(export_preview, m)?)?;
     m.add_function(wrap_pyfunction!(is_corrupt, m)?)?;
     m.add_function(wrap_pyfunction!(prepare_fonts, m)?)?;

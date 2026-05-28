@@ -7,8 +7,9 @@ name = "kdsnr-hwp-toolkit"
 version = "0.1.2"
 description = "KSAT HWP/HWPX import, conversion, splitting, and preview rendering"
 requires-python = ">=3.10"
-# tqdm drives the one-time glyph-cache loading bar; everything else is native.
-dependencies = ["tqdm>=4.66"]
+# tqdm drives the one-time glyph-cache loading bar; Pillow downscales the images
+# extract_questions embeds as base64. Everything else is native.
+dependencies = ["tqdm>=4.66", "Pillow>=10"]
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: 3",

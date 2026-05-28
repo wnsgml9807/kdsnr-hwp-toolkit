@@ -1033,7 +1033,9 @@ fn contains_unsupported_korean_marker(text: &str, compact: &str) -> bool {
         || compact.contains("다음글을읽고")
 }
 
-fn document_text(doc: &Document) -> String {
+/// Plain text of the whole document (all sections/paragraphs joined), control
+/// markers stripped. Used for subject detection and JSON question export.
+pub fn document_text(doc: &Document) -> String {
     let mut out = String::new();
     for section in &doc.sections {
         for paragraph in &section.paragraphs {
@@ -1062,6 +1064,58 @@ fn collect_paragraph_text(paragraph: &Paragraph, out: &mut String, include_neste
     }
     for control in &paragraph.controls {
         collect_control_text(control, out);
+    }
+}
+
+/// Like [`document_text`] but each equation script is emitted at its true inline
+/// position wrapped in STX (`\u{2}`) / ETX (`\u{3}`) sentinels, so a caller can
+/// convert exactly those spans to LaTeX without fragile substring matching.
+pub fn document_text_eq_marked(doc: &Document) -> String {
+    let mut out = String::new();
+    for section in &doc.sections {
+        for paragraph in &section.paragraphs {
+            collect_paragraph_inline(paragraph, &mut out);
+        }
+    }
+    out
+}
+
+fn collect_paragraph_inline(paragraph: &Paragraph, out: &mut String) {
+    for item in ordered_items(paragraph) {
+        match item {
+            ParagraphItem::Text(text) => {
+                out.extend(text.chars().filter(|c| !is_control_marker(*c)));
+            }
+            ParagraphItem::Control(idx) => {
+                if let Some(control) = paragraph.controls.get(idx) {
+                    collect_control_inline(control, out);
+                }
+            }
+        }
+    }
+}
+
+fn collect_control_inline(control: &Control, out: &mut String) {
+    match control {
+        Control::Equation(eq) => {
+            out.push('\u{2}');
+            out.push_str(&eq.script);
+            out.push('\u{3}');
+        }
+        Control::Table(table) => {
+            for cell in &table.cells {
+                for p in &cell.paragraphs {
+                    collect_paragraph_inline(p, out);
+                }
+            }
+        }
+        Control::Header(c) => c.paragraphs.iter().for_each(|p| collect_paragraph_inline(p, out)),
+        Control::Footer(c) => c.paragraphs.iter().for_each(|p| collect_paragraph_inline(p, out)),
+        Control::Footnote(c) => c.paragraphs.iter().for_each(|p| collect_paragraph_inline(p, out)),
+        Control::Endnote(c) => c.paragraphs.iter().for_each(|p| collect_paragraph_inline(p, out)),
+        Control::HiddenComment(c) => c.paragraphs.iter().for_each(|p| collect_paragraph_inline(p, out)),
+        Control::Field(field) => out.push_str(&field.command),
+        _ => {}
     }
 }
 
@@ -1103,6 +1157,27 @@ fn collect_control_text(control: &Control, out: &mut String) {
         Control::Equation(eq) => out.push_str(&eq.script),
         _ => {}
     }
+}
+
+/// A unit-start marker found at the start of a laid-out paragraph, for
+/// page-level question/set cropping (independent of subject detection).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LineMarker {
+    /// A question paragraph: `"12. …"` → the question number.
+    Question(u32),
+    /// A Korean set header: `"[1～3] …"` → the (start, end) question range.
+    SetHeader(u32, u32),
+}
+
+/// Classify a paragraph's leading text as a unit-start marker, if any. Set
+/// headers take precedence over question numbers (a Korean set header line may
+/// also carry following digits). Used to detect crop units on a rendered page
+/// without a document-level subject classification.
+pub fn line_unit_marker(text: &str) -> Option<LineMarker> {
+    if let Some((a, b)) = set_header_match(text) {
+        return Some(LineMarker::SetHeader(a, b));
+    }
+    balmun_number(text.trim_start()).map(LineMarker::Question)
 }
 
 fn classify_paragraph(text: &str, korean: bool) -> ParaKind {
@@ -1356,7 +1431,10 @@ fn build_memo_mask(doc: &Document) -> Vec<bool> {
         .collect()
 }
 
-fn is_review_request_text(text: &str) -> bool {
+/// True if the text reads as an editing note to the question authors (a memo
+/// overlaid on the sheet), not exam content. Used to skip memos in both the
+/// document-level split and page-level crop detection.
+pub fn is_review_request_text(text: &str) -> bool {
     let trimmed = text.trim();
     if trimmed.is_empty() {
         return false;

@@ -7,8 +7,8 @@
 ![version](https://img.shields.io/badge/version-0.1.2-blue)
 
 시험지 형식의 HWP 파일을 한컴 COM API 없이 가공하는 도구입니다.
-HWP/HWPX 파일을 읽어 문항으로 분해하고, 수식과 이미지까지 정확히 읽어내 AI(LLM)에 바로 넣을 수 있는
-JSON으로 추출하거나, 웹 뷰어에서 쓸 수 있는 미리보기(SVG/PNG/PDF)로 반환합니다.
+HWP/HWPX 파일을 열어 문항으로 분해하고, 수식과 이미지를 AI(LLM)에 넣을 수 있는 JSON으로 추출하거나,
+웹 뷰어에서 쓸 수 있는 미리보기(SVG/PNG/PDF)로 반환합니다.
 Windows/MacOS/Linux 등 다양한 환경에서 사용할 수 있습니다.
 
 - 제작 : (주)강남대성수능연구소

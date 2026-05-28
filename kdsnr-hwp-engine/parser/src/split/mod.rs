@@ -5,7 +5,7 @@
 //! Python-side template/layout code can disturb source paragraph geometry.
 //!
 //! Current scope:
-//! - subject detection and Korean rejection
+//! - subject detection
 //! - question/set boundary detection
 //! - wrapper/meta table unwrapping and mixed paragraph splitting needed by
 //!   the observed `templet/original` exam inputs
@@ -26,7 +26,7 @@ use crate::model::paragraph::{CharShapeRef, Paragraph, ParagraphItem};
 use crate::model::shape::{ShapeObject, TextWrap};
 use crate::model::table::Table;
 
-const UNSUPPORTED_KOREAN_MESSAGE: &str = "국어 과목은 아직 지원하지 않습니다";
+const UNSUPPORTED_KOREAN_MESSAGE: &str = "지원하지 않는 국어 입력입니다";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Subject {
@@ -197,8 +197,8 @@ pub fn detect_subject(doc: &Document) -> Result<Subject, SplitError> {
 
 pub fn detect_subject_from_text(text: &str) -> Result<Subject, SplitError> {
     let compact = compact_text(text);
-    if contains_unsupported_korean_marker(text, &compact) {
-        return Err(SplitError::UnsupportedKorean);
+    if is_korean_marker(text, &compact) {
+        return Ok(Subject::Korean);
     }
     if compact.contains("과학탐구") || compact.contains("통합과학") {
         return Ok(Subject::Science);
@@ -257,7 +257,8 @@ pub fn detect_units_auto(doc: &Document) -> Vec<DetectedUnit> {
     };
     let memo_mask = build_memo_mask(doc);
     let has_set_header = section.paragraphs.iter().enumerate().any(|(idx, p)| {
-        !memo_mask.get(idx).copied().unwrap_or(false) && set_header_match(&paragraph_text(p)).is_some()
+        !memo_mask.get(idx).copied().unwrap_or(false)
+            && set_header_match(&paragraph_text(p)).is_some()
     });
     let units = if has_set_header {
         detect_korean_sets(&section.paragraphs, &memo_mask)
@@ -271,9 +272,6 @@ pub fn split_document_units(
     doc: &Document,
 ) -> Result<(Subject, Vec<QuestionDocument>), SplitError> {
     let subject = detect_subject(doc)?;
-    if subject == Subject::Korean {
-        return Err(SplitError::UnsupportedKorean);
-    }
     let normalized = normalize_body_for_split(doc, subject)?;
     let units = detect_units_in_normalized(&normalized, subject)?;
     let out = units
@@ -300,9 +298,6 @@ pub fn split_document_units(
 
 pub fn split_document_contract(doc: &Document) -> Result<(Subject, Vec<UnitContract>), SplitError> {
     let subject = detect_subject(doc)?;
-    if subject == Subject::Korean {
-        return Err(SplitError::UnsupportedKorean);
-    }
     split_document_contract_inner(doc, subject)
 }
 
@@ -537,7 +532,11 @@ fn is_choice_image_table(table: &crate::model::table::Table) -> bool {
     markers >= 3 && has_picture
 }
 
-pub(crate) fn classify_atom(paragraph: &Paragraph, subject: Subject, prev_atom: Option<AtomKind>) -> AtomKind {
+pub(crate) fn classify_atom(
+    paragraph: &Paragraph,
+    subject: Subject,
+    prev_atom: Option<AtomKind>,
+) -> AtomKind {
     if is_empty_atom_paragraph(paragraph) {
         return AtomKind::Empty;
     }
@@ -1042,7 +1041,7 @@ fn compact_text(text: &str) -> String {
     text.chars().filter(|ch| !ch.is_whitespace()).collect()
 }
 
-fn contains_unsupported_korean_marker(text: &str, compact: &str) -> bool {
+fn is_korean_marker(text: &str, compact: &str) -> bool {
     const MARKERS: &[&str] = &[
         "국어 영역",
         "다음 글을 읽고",
@@ -1131,11 +1130,26 @@ fn collect_control_inline(control: &Control, out: &mut String) {
                 }
             }
         }
-        Control::Header(c) => c.paragraphs.iter().for_each(|p| collect_paragraph_inline(p, out)),
-        Control::Footer(c) => c.paragraphs.iter().for_each(|p| collect_paragraph_inline(p, out)),
-        Control::Footnote(c) => c.paragraphs.iter().for_each(|p| collect_paragraph_inline(p, out)),
-        Control::Endnote(c) => c.paragraphs.iter().for_each(|p| collect_paragraph_inline(p, out)),
-        Control::HiddenComment(c) => c.paragraphs.iter().for_each(|p| collect_paragraph_inline(p, out)),
+        Control::Header(c) => c
+            .paragraphs
+            .iter()
+            .for_each(|p| collect_paragraph_inline(p, out)),
+        Control::Footer(c) => c
+            .paragraphs
+            .iter()
+            .for_each(|p| collect_paragraph_inline(p, out)),
+        Control::Footnote(c) => c
+            .paragraphs
+            .iter()
+            .for_each(|p| collect_paragraph_inline(p, out)),
+        Control::Endnote(c) => c
+            .paragraphs
+            .iter()
+            .for_each(|p| collect_paragraph_inline(p, out)),
+        Control::HiddenComment(c) => c
+            .paragraphs
+            .iter()
+            .for_each(|p| collect_paragraph_inline(p, out)),
         Control::Field(field) => out.push_str(&field.command),
         _ => {}
     }
@@ -1418,6 +1432,19 @@ fn has_visual_content(paragraph: &Paragraph) -> bool {
 /// True if a paragraph reads as an editing memo (colored text, an Excel-named
 /// style, or an author note like "…빼주세요"), not exam content.
 fn is_memo_paragraph(doc: &Document, p: &Paragraph) -> bool {
+    if p.controls
+        .iter()
+        .any(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+    {
+        return false;
+    }
+    let text = paragraph_text(p);
+    if text.trim().is_empty() {
+        return false;
+    }
+    if set_header_match(&text).is_some() {
+        return false;
+    }
     let cs_id = p
         .char_shapes
         .iter()
@@ -1429,23 +1456,31 @@ fn is_memo_paragraph(doc: &Document, p: &Paragraph) -> bool {
         .char_shapes
         .get(cs_id)
         .is_some_and(|cs| cs.text_color != 0);
-    let excel_style = doc.doc_info.styles.get(p.style_id as usize).is_some_and(|style| {
-        let name = if style.local_name.is_empty() {
-            &style.english_name
-        } else {
-            &style.local_name
-        };
-        let lower = name.to_ascii_lowercase();
-        lower.starts_with("xl") && lower[2..].chars().all(|ch| ch.is_ascii_digit())
-    });
-    non_black || excel_style || is_review_request_text(&paragraph_text(p))
+    let excel_style = doc
+        .doc_info
+        .styles
+        .get(p.style_id as usize)
+        .is_some_and(|style| {
+            let name = if style.local_name.is_empty() {
+                &style.english_name
+            } else {
+                &style.local_name
+            };
+            let lower = name.to_ascii_lowercase();
+            lower.starts_with("xl") && lower[2..].chars().all(|ch| ch.is_ascii_digit())
+        });
+    non_black || excel_style || is_review_request_text(&text)
 }
 
 fn build_memo_mask(doc: &Document) -> Vec<bool> {
     let Some(section) = doc.sections.first() else {
         return Vec::new();
     };
-    section.paragraphs.iter().map(|p| is_memo_paragraph(doc, p)).collect()
+    section
+        .paragraphs
+        .iter()
+        .map(|p| is_memo_paragraph(doc, p))
+        .collect()
 }
 
 /// Remove editing-memo paragraphs from every section so they are never rendered
@@ -1455,7 +1490,12 @@ pub fn strip_memos(doc: &mut Document) {
     let masks: Vec<Vec<bool>> = doc
         .sections
         .iter()
-        .map(|s| s.paragraphs.iter().map(|p| is_memo_paragraph(doc, p)).collect())
+        .map(|s| {
+            s.paragraphs
+                .iter()
+                .map(|p| is_memo_paragraph(doc, p))
+                .collect()
+        })
         .collect();
     for (section, mask) in doc.sections.iter_mut().zip(masks) {
         let mut i = 0;
@@ -1542,10 +1582,10 @@ mod tests {
             detect_subject_from_text("통합과학 탐구").unwrap(),
             Subject::Science
         );
-        assert!(matches!(
-            detect_subject_from_text("국어 영역 다음 글을 읽고"),
-            Err(SplitError::UnsupportedKorean)
-        ));
+        assert_eq!(
+            detect_subject_from_text("국어 영역 다음 글을 읽고").unwrap(),
+            Subject::Korean
+        );
     }
 
     #[test]

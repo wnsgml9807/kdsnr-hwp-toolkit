@@ -18,5 +18,6 @@ pub use serializer::{serialize_hwpx, SerializeError};
 pub use split::{
     detect_subject, detect_units, detect_units_auto, document_text, document_text_eq_marked,
     is_review_request_text, line_unit_marker, split_document_contract, split_document_units,
-    strip_memos, DetectedUnit, LineMarker, QuestionDocument, SplitError, Subject, UnitContract,
+    strip_memos, DetectedUnit, LineMarker, QuestionDocument, Role, SplitError, Subject,
+    UnitContract,
 };

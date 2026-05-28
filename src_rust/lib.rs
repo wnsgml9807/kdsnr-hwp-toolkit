@@ -55,7 +55,10 @@ impl Document {
             "Document(source_format='{}', sections={}{})",
             self.source_format.as_str(),
             self.inner.sections.len(),
-            self.label.as_deref().map(|l| format!(", label='{l}'")).unwrap_or_default(),
+            self.label
+                .as_deref()
+                .map(|l| format!(", label='{l}'"))
+                .unwrap_or_default(),
         )
     }
 }
@@ -67,7 +70,12 @@ impl Document {
 fn import_file(path: PathBuf) -> PyResult<Document> {
     let (inner, source_format) = api::import_file(&path).map_err(value_err)?;
     let stem = path.file_stem().and_then(|s| s.to_str()).map(String::from);
-    Ok(Document { inner, source_format, stem, label: None })
+    Ok(Document {
+        inner,
+        source_format,
+        stem,
+        label: None,
+    })
 }
 
 /// Save `doc` to `path`. `file_type` is `"hwp"`, `"hwpx"`, or `None` to infer
@@ -134,7 +142,12 @@ fn split_set_to_question(doc: &Document) -> PyResult<Vec<Document>> {
                 Some(s) => format!("{s}_q{:02}", i + 1),
                 None => format!("q{:02}", i + 1),
             };
-            Document { inner, source_format: SourceFormat::Hwpx, stem: Some(stem), label: Some(label) }
+            Document {
+                inner,
+                source_format: SourceFormat::Hwpx,
+                stem: Some(stem),
+                label: Some(label),
+            }
         })
         .collect())
 }
@@ -143,7 +156,6 @@ fn split_set_to_question(doc: &Document) -> PyResult<Vec<Document>> {
 /// "text", "images"}`: `text` has equation scripts inline wrapped in STX/ETX
 /// sentinels, `images` is a list of `(bytes, ext)`. The Python `extract_questions`
 /// wrapper converts the sentinel spans to LaTeX and the images to resized base64.
-/// Korean raises `ValueError`.
 #[pyfunction]
 fn extract_questions(py: Python<'_>, doc: &Document) -> PyResult<Vec<PyObject>> {
     let items = api::extract_questions(&doc.inner).map_err(value_err)?;
@@ -186,8 +198,10 @@ fn export_preview(
 ) -> PyResult<Vec<Vec<String>>> {
     let pt = parse_preview_type(preview_type)?;
     let media_types = media_types.unwrap_or_else(|| vec!["png".into()]);
-    let media: Vec<MediaType> =
-        media_types.iter().map(|s| parse_media_type(s)).collect::<PyResult<_>>()?;
+    let media: Vec<MediaType> = media_types
+        .iter()
+        .map(|s| parse_media_type(s))
+        .collect::<PyResult<_>>()?;
     // The engine SVG is laid out at 96 DPI; the raster scale is dpi/96 and resvg
     // renders the vector tree at that scale (so dpi is true resolution, not upscaling).
     let scale = dpi / 96.0;
@@ -195,7 +209,12 @@ fn export_preview(
     let pairs: Vec<(String, api::Document)> = docs
         .iter()
         .enumerate()
-        .map(|(i, d)| (d.stem.clone().unwrap_or_else(|| format!("doc{}", i + 1)), d.inner.clone()))
+        .map(|(i, d)| {
+            (
+                d.stem.clone().unwrap_or_else(|| format!("doc{}", i + 1)),
+                d.inner.clone(),
+            )
+        })
         .collect();
 
     // Progress forwarded to an optional Python callable `progress(phase, done, total)`,
@@ -210,9 +229,16 @@ fn export_preview(
             let _ = cb.call1(py, ("render", done, total));
         }
     };
-    let out =
-        core_export_preview(&pairs, &save_path, pt, &media, scale, &mut glyph_cb, &mut render_cb)
-            .map_err(value_err)?;
+    let out = core_export_preview(
+        &pairs,
+        &save_path,
+        pt,
+        &media,
+        scale,
+        &mut glyph_cb,
+        &mut render_cb,
+    )
+    .map_err(value_err)?;
     Ok(out
         .into_iter()
         .map(|group| group.into_iter().map(|p| p.display().to_string()).collect())
@@ -247,7 +273,9 @@ fn parse_file_type(s: &str) -> PyResult<FileType> {
     match s.to_ascii_lowercase().as_str() {
         "hwp" => Ok(FileType::Hwp),
         "hwpx" => Ok(FileType::Hwpx),
-        _ => Err(PyValueError::new_err(format!("unknown file_type '{s}' (expected 'hwp'|'hwpx')"))),
+        _ => Err(PyValueError::new_err(format!(
+            "unknown file_type '{s}' (expected 'hwp'|'hwpx')"
+        ))),
     }
 }
 

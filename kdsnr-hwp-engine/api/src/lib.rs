@@ -15,10 +15,10 @@ use std::path::{Path, PathBuf};
 
 pub use kdsnr_hwp_parser::model::document::Document;
 use kdsnr_hwp_parser::model::paragraph::Paragraph;
-use kdsnr_hwp_parser::parser::{detect_format, FileFormat};
-use kdsnr_hwp_parser::split::{split_document_units, SplitError};
-use kdsnr_hwp_parser::serializer::{serialize_hwp, serialize_hwpx};
 use kdsnr_hwp_parser::parse_document;
+use kdsnr_hwp_parser::parser::{detect_format, FileFormat};
+use kdsnr_hwp_parser::serializer::{serialize_hwp, serialize_hwpx};
+use kdsnr_hwp_parser::split::{split_document_units, SplitError};
 
 /// The message surfaced (as a Python `ValueError`) when a document is rejected
 /// as tool-corrupted. Verbatim per product copy.
@@ -57,9 +57,9 @@ impl std::fmt::Display for ApiError {
             ApiError::Serialize(e) => write!(f, "serialize failed: {e}"),
             ApiError::UnknownFormat(e) => write!(f, "unknown file format: {e}"),
             ApiError::Split(e) => write!(f, "split failed: {e}"),
-            ApiError::UnsupportedKorean => {
-                f.write_str("국어 과목은 문항별 분할과 미리보기를 지원하지 않습니다. (다음 버전 예정)")
-            }
+            ApiError::UnsupportedKorean => f.write_str(
+                "국어 과목은 문항별 분할과 미리보기를 지원하지 않습니다. (다음 버전 예정)",
+            ),
             ApiError::FontsMissing(rows) => {
                 f.write_str(
                     "[KDSNR-HWP-TOOLKIT] 일부 폰트 파일을 찾을 수 없습니다. 폰트 폴더(FONT_DIR)를 확인하세요.\n# 누락 폰트",
@@ -112,7 +112,12 @@ pub enum FileType {
 impl FileType {
     /// Infer from a path extension (case-insensitive). `None` when unrecognized.
     fn from_extension(path: &Path) -> Option<Self> {
-        match path.extension().and_then(|e| e.to_str())?.to_ascii_lowercase().as_str() {
+        match path
+            .extension()
+            .and_then(|e| e.to_str())?
+            .to_ascii_lowercase()
+            .as_str()
+        {
             "hwp" => Some(FileType::Hwp),
             "hwpx" => Some(FileType::Hwpx),
             _ => None,
@@ -232,7 +237,6 @@ fn collect_images(doc: &Document) -> Vec<(Vec<u8>, String)> {
 
 /// Extract a problem set's questions, ready to serialize as JSON for a language
 /// model: plain text, the equation scripts it contains, and its embedded images.
-/// Korean is gated — like `split_set_to_question`, it returns `UnsupportedKorean`.
 pub fn extract_questions(doc: &Document) -> Result<Vec<QuestionItem>, ApiError> {
     let (subject, units) = split_document_units(doc).map_err(|e| match e {
         SplitError::UnsupportedKorean => ApiError::UnsupportedKorean,
@@ -255,7 +259,9 @@ mod tests {
     use super::*;
 
     fn original(name: &str) -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../templet/original").join(name)
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../templet/original")
+            .join(name)
     }
 
     #[test]
@@ -271,8 +277,13 @@ mod tests {
     #[test]
     fn accepts_pristine_originals() {
         for name in [
-            "science.hwpx", "math.hwpx", "math_input_sample.hwpx", "math_input_sample_2.hwpx",
-            "social.hwpx", "social_input_sample.hwpx", "korean.hwpx",
+            "science.hwpx",
+            "math.hwpx",
+            "math_input_sample.hwpx",
+            "math_input_sample_2.hwpx",
+            "social.hwpx",
+            "social_input_sample.hwpx",
+            "korean.hwpx",
         ] {
             import_file(&original(name))
                 .unwrap_or_else(|e| panic!("{name}: pristine doc rejected: {e:?}"));
@@ -281,8 +292,14 @@ mod tests {
 
     #[test]
     fn file_type_inferred_from_extension() {
-        assert_eq!(FileType::from_extension(Path::new("a.hwp")), Some(FileType::Hwp));
-        assert_eq!(FileType::from_extension(Path::new("a.HWPX")), Some(FileType::Hwpx));
+        assert_eq!(
+            FileType::from_extension(Path::new("a.hwp")),
+            Some(FileType::Hwp)
+        );
+        assert_eq!(
+            FileType::from_extension(Path::new("a.HWPX")),
+            Some(FileType::Hwpx)
+        );
         assert_eq!(FileType::from_extension(Path::new("a.txt")), None);
     }
 
@@ -293,8 +310,13 @@ mod tests {
     #[ignore]
     fn probe_hwp_round_trip() {
         let names = [
-            "science.hwpx", "math.hwpx", "math_input_sample.hwpx", "math_input_sample_2.hwpx",
-            "social.hwpx", "social_input_sample.hwpx", "korean.hwpx",
+            "science.hwpx",
+            "math.hwpx",
+            "math_input_sample.hwpx",
+            "math_input_sample_2.hwpx",
+            "social.hwpx",
+            "social_input_sample.hwpx",
+            "korean.hwpx",
         ];
         let mut ok = 0;
         for name in names {
@@ -310,13 +332,64 @@ mod tests {
             }
             let _ = std::fs::remove_file(&out);
         }
-        eprintln!("HWP round-trip: {ok}/{} survived save+reimport+guard", names.len());
+        eprintln!(
+            "HWP round-trip: {ok}/{} survived save+reimport+guard",
+            names.len()
+        );
     }
 
     /// Each split question composes into a template, serializes to HWPX, and
     /// re-imports past the corruption guard with a structural carrier plus
     /// content.
-    fn check_compose(file: &str) {
+    fn assert_carrier_advance(file: &str, label: &str, doc: &Document, keep_spacer: bool) {
+        let sec = doc.sections.first().expect("section");
+        let carrier = sec.paragraphs.first().expect("carrier");
+        let advance = carrier
+            .line_segs
+            .first()
+            .map(|s| s.text_height + s.line_spacing)
+            .unwrap_or(0);
+        if keep_spacer {
+            assert!(
+                advance > 0,
+                "{file} {label}: carrier spacer should be visible, got {advance}"
+            );
+        } else {
+            assert_eq!(
+                advance, 0,
+                "{file} {label}: Korean carrier spacer should be zero-height"
+            );
+        }
+    }
+
+    fn assert_korean_set_header_spacer(file: &str, label: &str, doc: &Document) {
+        let sec = doc.sections.first().expect("section");
+        let header_idx = sec
+            .paragraphs
+            .iter()
+            .position(|p| p.text.contains('[') && p.text.contains(']'))
+            .unwrap_or_else(|| panic!("{file} {label}: no Korean set header"));
+        let spacer = sec
+            .paragraphs
+            .get(header_idx + 1)
+            .unwrap_or_else(|| panic!("{file} {label}: no paragraph after set header"));
+        assert!(
+            spacer.text.trim().is_empty(),
+            "{file} {label}: expected spacer after set header, got {:?}",
+            spacer.text
+        );
+        let advance = spacer
+            .line_segs
+            .first()
+            .map(|s| s.text_height + s.line_spacing)
+            .unwrap_or(0);
+        assert!(
+            advance > 0,
+            "{file} {label}: set header spacer should have positive advance"
+        );
+    }
+
+    fn check_compose(file: &str, carrier_spacer: Option<bool>) {
         let (doc, _) = import_file(&original(file)).expect("import");
         let questions = split_set_to_question(&doc).expect("split");
         assert!(!questions.is_empty(), "{file}: no questions");
@@ -327,22 +400,45 @@ mod tests {
                 "{file} {label}: carrier+content expected, got {}",
                 sec.paragraphs.len()
             );
+            if let Some(keep_spacer) = carrier_spacer {
+                assert_carrier_advance(file, label, qdoc, keep_spacer);
+            }
+            if file == "korean.hwpx" {
+                assert_korean_set_header_spacer(file, label, qdoc);
+            }
             let out = std::env::temp_dir().join(format!("kdsnr_compose_{label}.hwpx"));
             save_file(qdoc, &out, Some(FileType::Hwpx))
                 .unwrap_or_else(|e| panic!("{file} {label}: save: {e}"));
-            import_file(&out).unwrap_or_else(|e| panic!("{file} {label}: reimport: {e}"));
+            let (re, _) =
+                import_file(&out).unwrap_or_else(|e| panic!("{file} {label}: reimport: {e}"));
+            if let Some(keep_spacer) = carrier_spacer {
+                assert_carrier_advance(file, label, &re, keep_spacer);
+            }
+            if file == "korean.hwpx" {
+                assert_korean_set_header_spacer(file, label, &re);
+            }
             let _ = std::fs::remove_file(&out);
         }
     }
 
     #[test]
     fn compose_math_questions() {
-        check_compose("math_input_sample.hwpx");
+        check_compose("math_input_sample.hwpx", Some(true));
+    }
+
+    #[test]
+    fn compose_science_questions() {
+        check_compose("science.hwpx", None);
     }
 
     #[test]
     fn compose_social_questions() {
-        check_compose("social_input_sample.hwpx");
+        check_compose("social_input_sample.hwpx", None);
+    }
+
+    #[test]
+    fn compose_korean_sets() {
+        check_compose("korean.hwpx", Some(false));
     }
 
     /// Diagnostic: does the parsed model retain the deeply-nested content of
@@ -360,7 +456,9 @@ mod tests {
             for p in ps {
                 for c in &p.controls {
                     n += match c {
-                        Control::Table(t) => t.cells.iter().map(|cl| count_paras(&cl.paragraphs)).sum(),
+                        Control::Table(t) => {
+                            t.cells.iter().map(|cl| count_paras(&cl.paragraphs)).sum()
+                        }
                         Control::Shape(s) => count_shape_paras(s),
                         Control::Header(h) => count_paras(&h.paragraphs),
                         Control::Footer(f) => count_paras(&f.paragraphs),
@@ -385,18 +483,23 @@ mod tests {
         use std::collections::BTreeMap;
         let mut kinds: BTreeMap<&str, usize> = BTreeMap::new();
         for c in &last.controls {
-            *kinds.entry(match c {
-                Control::Equation(_) => "Equation",
-                Control::Table(_) => "Table",
-                Control::Shape(_) => "Shape",
-                Control::Picture(_) => "Picture",
-                Control::SectionDef(_) => "SectionDef",
-                Control::ColumnDef(_) => "ColumnDef",
-                _ => "other",
-            }).or_default() += 1;
+            *kinds
+                .entry(match c {
+                    Control::Equation(_) => "Equation",
+                    Control::Table(_) => "Table",
+                    Control::Shape(_) => "Shape",
+                    Control::Picture(_) => "Picture",
+                    Control::SectionDef(_) => "SectionDef",
+                    Control::ColumnDef(_) => "ColumnDef",
+                    _ => "other",
+                })
+                .or_default() += 1;
         }
         eprintln!("last paragraph control kinds: {:?}", kinds);
-        eprintln!("total recursive paragraphs in section0: {}", count_paras(&sec.paragraphs));
+        eprintln!(
+            "total recursive paragraphs in section0: {}",
+            count_paras(&sec.paragraphs)
+        );
     }
 
     /// Deep-clear bisection: clear ALL raw passthrough recursively (mimics a
@@ -432,8 +535,14 @@ mod tests {
                             s.common_mut().raw_extra.clear();
                             clear_shape(s);
                         }
-                        Control::Header(h) => { h.raw_ctrl_extra.clear(); clear_paras(&mut h.paragraphs); }
-                        Control::Footer(f) => { f.raw_ctrl_extra.clear(); clear_paras(&mut f.paragraphs); }
+                        Control::Header(h) => {
+                            h.raw_ctrl_extra.clear();
+                            clear_paras(&mut h.paragraphs);
+                        }
+                        Control::Footer(f) => {
+                            f.raw_ctrl_extra.clear();
+                            clear_paras(&mut f.paragraphs);
+                        }
                         Control::Footnote(f) => clear_paras(&mut f.paragraphs),
                         Control::Endnote(e) => clear_paras(&mut e.paragraphs),
                         Control::HiddenComment(h) => clear_paras(&mut h.paragraphs),
@@ -444,7 +553,10 @@ mod tests {
         }
         fn clear_shape(s: &mut ShapeObject) {
             if let ShapeObject::Group(g) = s {
-                for ch in &mut g.children { ch.common_mut().raw_extra.clear(); clear_shape(ch); }
+                for ch in &mut g.children {
+                    ch.common_mut().raw_extra.clear();
+                    clear_shape(ch);
+                }
             }
         }
         let bytes = std::fs::read(original("social.hwp")).unwrap();
@@ -452,19 +564,38 @@ mod tests {
         doc.doc_info.raw_stream = None;
         doc.doc_info.raw_stream_dirty = true;
         doc.doc_properties.raw_data = None;
-        for v in &mut doc.doc_info.font_faces { for f in v { f.raw_data = None; } }
-        for e in &mut doc.doc_info.char_shapes { e.raw_data = None; }
-        for e in &mut doc.doc_info.para_shapes { e.raw_data = None; }
-        for e in &mut doc.doc_info.border_fills { e.raw_data = None; }
-        for e in &mut doc.doc_info.tab_defs { e.raw_data = None; }
-        for e in &mut doc.doc_info.numberings { e.raw_data = None; }
-        for e in &mut doc.doc_info.bullets { e.raw_data = None; }
-        for e in &mut doc.doc_info.styles { e.raw_data = None; }
+        for v in &mut doc.doc_info.font_faces {
+            for f in v {
+                f.raw_data = None;
+            }
+        }
+        for e in &mut doc.doc_info.char_shapes {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.para_shapes {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.border_fills {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.tab_defs {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.numberings {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.bullets {
+            e.raw_data = None;
+        }
+        for e in &mut doc.doc_info.styles {
+            e.raw_data = None;
+        }
         for s in &mut doc.sections {
             s.raw_stream = None;
             clear_paras(&mut s.paragraphs);
         }
-        let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../work/debug/compose_verify");
+        let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../work/debug/compose_verify");
         let out = dir.join("_social_deepclear.hwp");
         std::fs::write(&out, serialize_hwp(&doc).unwrap()).unwrap();
         eprintln!("wrote {}", out.display());

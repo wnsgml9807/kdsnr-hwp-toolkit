@@ -62,7 +62,7 @@ def extract_questions(doc, image_max_px: int = 1024):
     ``text`` are converted to LaTeX (``$...$``); ``images`` are the question's
     embedded rasters, downscaled (longest side ``<= image_max_px``) and base64
     ``data:`` URIs — feed straight to a vision language model via ``json.dumps``.
-    Korean raises ``ValueError`` (per-question support is a later version).
+    Korean is returned by set (set header, passage, and attached questions).
     """
     out = []
     for it in _native.extract_questions(doc):

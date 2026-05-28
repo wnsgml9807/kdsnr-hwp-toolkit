@@ -31,6 +31,17 @@ use super::utils::{
 };
 use super::HwpxError;
 
+const OBJ_POS_FLOW_WITH_TEXT: u32 = 0x2000;
+const OBJ_POS_ALLOW_OVERLAP: u32 = 0x4000;
+
+fn set_common_attr_bit(attr: &mut u32, bit: u32, on: bool) {
+    if on {
+        *attr |= bit;
+    } else {
+        *attr &= !bit;
+    }
+}
+
 /// HWPX 인라인 탭(`<hp:tab>`)을 정품 HWP 의 인라인 탭 블록(0x0009 뒤 7 code unit)으로
 /// 변환한다: `[width_lo, width_hi, attr, 0, 0, 0, 0x0009]`, `attr = (type<<8) | leader`.
 /// (정품 12개 탭 샘플 + hwpx leader/type 상관 검증: leader=0·type=1 → 0x100. 끝 0x0009 는
@@ -376,7 +387,8 @@ fn parse_paragraph(
                                 _ => {}
                             }
                         }
-                        para.tab_extended.push(hwpx_tab_ext(width, leader, tab_type));
+                        para.tab_extended
+                            .push(hwpx_tab_ext(width, leader, tab_type));
                     }
                     b"lineseg" => {
                         // 단독 lineseg (linesegarray 밖에 나올 경우)
@@ -855,6 +867,20 @@ fn parse_table(
                                 }
                                 b"horzOffset" => {
                                     table.common.horizontal_offset = parse_i32(&attr) as u32;
+                                }
+                                b"flowWithText" => {
+                                    set_common_attr_bit(
+                                        &mut table.common.attr,
+                                        OBJ_POS_FLOW_WITH_TEXT,
+                                        parse_bool(&attr),
+                                    );
+                                }
+                                b"allowOverlap" => {
+                                    set_common_attr_bit(
+                                        &mut table.common.attr,
+                                        OBJ_POS_ALLOW_OVERLAP,
+                                        parse_bool(&attr),
+                                    );
                                 }
                                 _ => {}
                             }
@@ -1420,6 +1446,20 @@ fn parse_picture(
                                 }
                                 b"vertOffset" => common.vertical_offset = parse_i32(&attr) as u32,
                                 b"horzOffset" => common.horizontal_offset = parse_i32(&attr) as u32,
+                                b"flowWithText" => {
+                                    set_common_attr_bit(
+                                        &mut common.attr,
+                                        OBJ_POS_FLOW_WITH_TEXT,
+                                        parse_bool(&attr),
+                                    );
+                                }
+                                b"allowOverlap" => {
+                                    set_common_attr_bit(
+                                        &mut common.attr,
+                                        OBJ_POS_ALLOW_OVERLAP,
+                                        parse_bool(&attr),
+                                    );
+                                }
                                 _ => {}
                             }
                         }
@@ -1681,6 +1721,20 @@ fn parse_object_layout_child(
                     }
                     b"vertOffset" => common.vertical_offset = parse_i32(&attr) as u32,
                     b"horzOffset" => common.horizontal_offset = parse_i32(&attr) as u32,
+                    b"flowWithText" => {
+                        set_common_attr_bit(
+                            &mut common.attr,
+                            OBJ_POS_FLOW_WITH_TEXT,
+                            parse_bool(&attr),
+                        );
+                    }
+                    b"allowOverlap" => {
+                        set_common_attr_bit(
+                            &mut common.attr,
+                            OBJ_POS_ALLOW_OVERLAP,
+                            parse_bool(&attr),
+                        );
+                    }
                     _ => {}
                 }
             }
@@ -3609,6 +3663,20 @@ fn parse_common_shape_children(
                                 b"vertOffset" => common.vertical_offset = parse_u32(&attr),
                                 b"horzOffset" => common.horizontal_offset = parse_u32(&attr),
                                 b"treatAsChar" => common.treat_as_char = parse_bool(&attr),
+                                b"flowWithText" => {
+                                    set_common_attr_bit(
+                                        &mut common.attr,
+                                        OBJ_POS_FLOW_WITH_TEXT,
+                                        parse_bool(&attr),
+                                    );
+                                }
+                                b"allowOverlap" => {
+                                    set_common_attr_bit(
+                                        &mut common.attr,
+                                        OBJ_POS_ALLOW_OVERLAP,
+                                        parse_bool(&attr),
+                                    );
+                                }
                                 _ => {}
                             }
                         }
@@ -3837,5 +3905,70 @@ mod tests {
         let xml = r#"<?xml version="1.0"?><hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"/>"#;
         let section = parse_hwpx_section(xml).unwrap();
         assert!(section.paragraphs.is_empty());
+    }
+
+    #[test]
+    fn test_parse_master_page_polygon_keeps_position_flags_and_points() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<masterPage xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
+            xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core"
+            id="masterpage0" type="BOTH" pageNumber="0" pageDuplicate="0" pageFront="0">
+  <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP"
+              linkListIDRef="0" linkListNextIDRef="0" textWidth="42520"
+              textHeight="72852" hasTextRef="0" hasNumRef="0">
+    <hp:p id="1" paraPrIDRef="0" styleIDRef="0">
+      <hp:run charPrIDRef="0">
+        <hp:polygon id="1" zOrder="0" numberingType="NONE"
+                    textWrap="BEHIND_TEXT" textFlow="BOTH_SIDES"
+                    lock="0" dropcapstyle="None" href="" groupLevel="0" instid="1">
+          <hp:orgSz width="84" height="91976"/>
+          <hp:curSz width="88" height="95612"/>
+          <hp:lineShape color="#000000" width="0" style="SOLID"
+                        endCap="FLAT" headStyle="NORMAL" tailStyle="NORMAL"
+                        headfill="1" tailfill="1" headSz="SMALL_SMALL"
+                        tailSz="SMALL_SMALL" outlineStyle="NORMAL" alpha="0"/>
+          <hc:fillBrush><hc:winBrush faceColor="#000000" hatchColor="#000000"
+                                     alpha="0"/></hc:fillBrush>
+          <hc:pt x="0" y="0"/>
+          <hc:pt x="84" y="0"/>
+          <hc:pt x="84" y="91976"/>
+          <hc:pt x="0" y="91976"/>
+          <hc:pt x="0" y="0"/>
+          <hp:sz width="88" height="95612" widthRelTo="ABSOLUTE"
+                 heightRelTo="ABSOLUTE" protect="0"/>
+          <hp:pos treatAsChar="0" affectLSpacing="0" flowWithText="1"
+                  allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PAGE"
+                  horzRelTo="PAGE" vertAlign="TOP" horzAlign="LEFT"
+                  vertOffset="4294966236" horzOffset="33308"/>
+          <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+        </hp:polygon>
+      </hp:run>
+      <hp:linesegarray><hp:lineseg textpos="0" vertpos="0" vertsize="1000"
+          textheight="1000" baseline="850" spacing="600" horzpos="0"
+          horzsize="42520" flags="393216"/></hp:linesegarray>
+    </hp:p>
+  </hp:subList>
+</masterPage>"##;
+
+        let mp = parse_hwpx_master_page(xml).unwrap();
+        assert_eq!(mp.paragraphs.len(), 1);
+        let poly = match &mp.paragraphs[0].controls[0] {
+            Control::Shape(shape) => match shape.as_ref() {
+                ShapeObject::Polygon(poly) => poly,
+                other => panic!("expected polygon, got {other:?}"),
+            },
+            other => panic!("expected shape control, got {other:?}"),
+        };
+        assert_eq!(poly.points.len(), 5);
+        assert_eq!(poly.points[2].y, 91976);
+        assert_eq!(poly.common.width, 88);
+        assert_eq!(poly.common.height, 95612);
+        assert_eq!(poly.common.vertical_offset as i32, -1060);
+        assert_eq!(poly.common.horizontal_offset, 33308);
+        assert_eq!(poly.common.vert_rel_to, VertRelTo::Page);
+        assert_eq!(poly.common.horz_rel_to, HorzRelTo::Page);
+        assert_eq!(poly.common.text_wrap, TextWrap::BehindText);
+        assert_ne!(poly.common.attr & OBJ_POS_FLOW_WITH_TEXT, 0);
+        assert_eq!(poly.common.attr & OBJ_POS_ALLOW_OVERLAP, 0);
     }
 }

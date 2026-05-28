@@ -14,7 +14,7 @@ use kdsnr_hwp_font::FontResolver;
 use kdsnr_hwp_layout::{measure_document, paginate_document};
 use kdsnr_hwp_paint::{lower, PaintDocument, PaintOp, PaintPage};
 use kdsnr_hwp_parser::model::document::Document;
-use kdsnr_hwp_parser::{detect_units_auto, DetectedUnit};
+use kdsnr_hwp_parser::{detect_units_auto, DetectedUnit, Role};
 use kdsnr_hwp_render::{ops_svg, ops_svg_nested, page_to_svg};
 
 use crate::ApiError;
@@ -61,8 +61,9 @@ impl PreviewType {
 /// HFT-typed faces load their outlines from the Hancom install (`HANCOM_DIR`)
 /// when present; otherwise they fall back to TTF substitutes.
 pub fn build_resolver() -> Result<FontResolver, ApiError> {
-    let fonts = font_dir()
-        .ok_or_else(|| ApiError::Render("폰트 폴더를 찾을 수 없습니다 (FONT_DIR 설정 필요).".into()))?;
+    let fonts = font_dir().ok_or_else(|| {
+        ApiError::Render("폰트 폴더를 찾을 수 없습니다 (FONT_DIR 설정 필요).".into())
+    })?;
     let hftinfo = fonts.join("hftinfo.dat");
     let fontmap = fonts.join("FontMap.dat");
     let extra_map = fonts.join("extra_fontmap.ini");
@@ -89,31 +90,34 @@ pub fn build_resolver() -> Result<FontResolver, ApiError> {
 /// and font collection. Distinct from `FONT_DIR` (the managed font folder).
 /// Defaults to the per-OS install path.
 pub(crate) fn hancom_dir() -> PathBuf {
-    std::env::var("HANCOM_PATH").map(PathBuf::from).unwrap_or_else(|_| {
-        match std::env::consts::OS {
-            "macos" => PathBuf::from(
-                "/Applications/Hancom Office HWP.app/Contents/Resources/Hnc/Shared",
-            ),
-            // Hancom Office installs under `Hnc\Office <year>\HOffice<ver>\Shared`
-            // (e.g. Office 2024 → HOffice130). Discover it; fall back to the
-            // legacy layout if nothing matches.
-            "windows" => find_windows_hancom_shared()
-                .unwrap_or_else(|| PathBuf::from("C:/Program Files (x86)/Hnc/Office/Shared")),
-            _ => PathBuf::new(),
-        }
-    })
+    std::env::var("HANCOM_PATH")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| {
+            match std::env::consts::OS {
+                "macos" => PathBuf::from(
+                    "/Applications/Hancom Office HWP.app/Contents/Resources/Hnc/Shared",
+                ),
+                // Hancom Office installs under `Hnc\Office <year>\HOffice<ver>\Shared`
+                // (e.g. Office 2024 → HOffice130). Discover it; fall back to the
+                // legacy layout if nothing matches.
+                "windows" => find_windows_hancom_shared()
+                    .unwrap_or_else(|| PathBuf::from("C:/Program Files (x86)/Hnc/Office/Shared")),
+                _ => PathBuf::new(),
+            }
+        })
 }
 
 /// Locate `…\Hnc\Office*\HOffice*\Shared` under the common Program Files roots.
 #[cfg(target_os = "windows")]
 fn find_windows_hancom_shared() -> Option<PathBuf> {
-    for root in [
-        "C:/Program Files (x86)/Hnc",
-        "C:/Program Files/Hnc",
-    ] {
-        let Ok(offices) = std::fs::read_dir(root) else { continue };
+    for root in ["C:/Program Files (x86)/Hnc", "C:/Program Files/Hnc"] {
+        let Ok(offices) = std::fs::read_dir(root) else {
+            continue;
+        };
         for office in offices.flatten().filter(|e| e.path().is_dir()) {
-            let Ok(versions) = std::fs::read_dir(office.path()) else { continue };
+            let Ok(versions) = std::fs::read_dir(office.path()) else {
+                continue;
+            };
             for ver in versions.flatten() {
                 let shared = ver.path().join("Shared");
                 if shared.is_dir() {
@@ -140,14 +144,20 @@ fn glyph_cache_dir() -> Option<PathBuf> {
     }
     let sub = "kdsnr-hwp-toolkit/glyphcache";
     match std::env::consts::OS {
-        "windows" => std::env::var("LOCALAPPDATA").ok().map(|p| PathBuf::from(p).join(sub)),
-        "macos" => {
-            std::env::var("HOME").ok().map(|h| PathBuf::from(h).join("Library/Caches").join(sub))
-        }
+        "windows" => std::env::var("LOCALAPPDATA")
+            .ok()
+            .map(|p| PathBuf::from(p).join(sub)),
+        "macos" => std::env::var("HOME")
+            .ok()
+            .map(|h| PathBuf::from(h).join("Library/Caches").join(sub)),
         _ => std::env::var("XDG_CACHE_HOME")
             .ok()
             .map(PathBuf::from)
-            .or_else(|| std::env::var("HOME").ok().map(|h| PathBuf::from(h).join(".cache")))
+            .or_else(|| {
+                std::env::var("HOME")
+                    .ok()
+                    .map(|h| PathBuf::from(h).join(".cache"))
+            })
             .map(|c| c.join(sub)),
     }
 }
@@ -195,9 +205,12 @@ fn paint(
     // unit detection and the painted pages share one paragraph indexing).
     let model = normalize(doc);
     let faces: Vec<String> = kdsnr_hwp_doc::required_faces(&model).into_iter().collect();
-    resolver.borrow_mut().ensure_hft_faces_with_progress(&faces, progress);
+    resolver
+        .borrow_mut()
+        .ensure_hft_faces_with_progress(&faces, progress);
     let measured = measure_document(&model);
-    let pagination = paginate_document(&measured).map_err(|e| ApiError::Render(format!("{e:?}")))?;
+    let pagination =
+        paginate_document(&measured).map_err(|e| ApiError::Render(format!("{e:?}")))?;
     Ok(lower(&model, &pagination))
 }
 
@@ -210,16 +223,26 @@ fn svg_to_png(svg: &str, scale: f32) -> Result<Vec<u8>, ApiError> {
     let h = (size.height() * scale).ceil().max(1.0) as u32;
     let mut pixmap = tiny_skia::Pixmap::new(w, h)
         .ok_or_else(|| ApiError::Render(format!("pixmap alloc {w}x{h}")))?;
-    resvg::render(&tree, tiny_skia::Transform::from_scale(scale, scale), &mut pixmap.as_mut());
-    pixmap.encode_png().map_err(|e| ApiError::Render(format!("png encode: {e}")))
+    resvg::render(
+        &tree,
+        tiny_skia::Transform::from_scale(scale, scale),
+        &mut pixmap.as_mut(),
+    );
+    pixmap
+        .encode_png()
+        .map_err(|e| ApiError::Render(format!("png encode: {e}")))
 }
 
 /// Convert an engine SVG to a single-page PDF.
 fn svg_to_pdf(svg: &str) -> Result<Vec<u8>, ApiError> {
     let tree = usvg::Tree::from_str(svg, &usvg::Options::default())
         .map_err(|e| ApiError::Render(format!("svg parse: {e}")))?;
-    svg2pdf::to_pdf(&tree, svg2pdf::ConversionOptions::default(), svg2pdf::PageOptions::default())
-        .map_err(|e| ApiError::Render(format!("pdf convert: {e}")))
+    svg2pdf::to_pdf(
+        &tree,
+        svg2pdf::ConversionOptions::default(),
+        svg2pdf::PageOptions::default(),
+    )
+    .map_err(|e| ApiError::Render(format!("pdf convert: {e}")))
 }
 
 /// DPI for the crop probe/raster; user units == pixels at this DPI.
@@ -254,10 +277,19 @@ struct Frag {
     ops: Vec<PaintOp>,
 }
 
-/// A detected crop unit — one question (math/science/social) or one Korean set —
-/// as the ordered fragments it spans across columns and pages.
+/// How a detected unit is emitted in question preview mode.
+#[derive(Clone, Copy)]
+enum CropEmit {
+    /// Math/science/social questions: stitch page/column fragments into one image.
+    StitchedQuestion,
+    /// Korean sets: emit each page fragment separately.
+    PagedSet,
+}
+
+/// A detected crop unit with the fragments it spans across columns and pages.
 struct CropUnit {
     frags: Vec<Frag>,
+    emit: CropEmit,
 }
 
 /// Ink bounding box (absolute crop user units `(x, y, w, h)`) of `ops`, or `None`
@@ -269,14 +301,23 @@ fn ops_ink_bbox(
     page: &PaintPage,
     fonts: &FontResolver,
 ) -> Result<Option<(f64, f64, f64, f64)>, ApiError> {
-    let view = (0.0, 0.0, u(page.paper.width.raw()), u(page.paper.height.raw()));
+    let view = (
+        0.0,
+        0.0,
+        u(page.paper.width.raw()),
+        u(page.paper.height.raw()),
+    );
     let (pw, ph) = (view.2.ceil().max(1.0) as u32, view.3.ceil().max(1.0) as u32);
     let svg = ops_svg(CROP_DPI, fonts, ops, view, false);
     let tree = usvg::Tree::from_str(&svg, &usvg::Options::default())
         .map_err(|e| ApiError::Render(format!("svg parse: {e}")))?;
     let mut pixmap = tiny_skia::Pixmap::new(pw, ph)
         .ok_or_else(|| ApiError::Render(format!("pixmap alloc {pw}x{ph}")))?;
-    resvg::render(&tree, tiny_skia::Transform::identity(), &mut pixmap.as_mut());
+    resvg::render(
+        &tree,
+        tiny_skia::Transform::identity(),
+        &mut pixmap.as_mut(),
+    );
     let data = pixmap.data();
     let (mut x0, mut y0, mut x1, mut y1) = (pw, ph, 0u32, 0u32);
     let mut any = false;
@@ -292,7 +333,14 @@ fn ops_ink_bbox(
             }
         }
     }
-    Ok(any.then(|| (x0 as f64, y0 as f64, (x1 - x0 + 1) as f64, (y1 - y0 + 1) as f64)))
+    Ok(any.then(|| {
+        (
+            x0 as f64,
+            y0 as f64,
+            (x1 - x0 + 1) as f64,
+            (y1 - y0 + 1) as f64,
+        )
+    }))
 }
 
 /// Numeric layout box (crop user-unit corners `(x0, y0, x1, y1)`) of `ops` from
@@ -314,9 +362,12 @@ fn ops_layout_box(ops: &[PaintOp]) -> Option<(f64, f64, f64, f64)> {
                 rect.x.raw() + rect.width.raw(),
                 rect.y.raw() + rect.height.raw(),
             ),
-            PaintOp::Line { x1, y1, x2, y2, .. } => {
-                ((*x1).min(*x2), (*y1).min(*y2), (*x1).max(*x2), (*y1).max(*y2))
-            }
+            PaintOp::Line { x1, y1, x2, y2, .. } => (
+                (*x1).min(*x2),
+                (*y1).min(*y2),
+                (*x1).max(*x2),
+                (*y1).max(*y2),
+            ),
         };
         x0 = x0.min(ax0);
         y0 = y0.min(ay0);
@@ -379,11 +430,17 @@ fn sourceless_extent(op: &PaintOp, cols: &[Rect]) -> Option<(usize, i32, i32)> {
 /// images) join by geometry within the unit's text span in their column. Because
 /// a question's paragraphs end at its choices, content between questions (section
 /// labels like "5지선다형", trailing blank space) belongs to no unit and is
-/// dropped. Ops keep their paint order and split into one fragment per page+column
-/// the unit occupies, in reading order.
+/// dropped. A question splits into page+column fragments; a Korean set keeps one
+/// fragment per page with both columns together.
 fn build_crop_units(painted: &PaintDocument, units: &[DetectedUnit]) -> Vec<CropUnit> {
     let mut out = Vec::new();
     for unit in units {
+        let is_set = unit.roles.first() == Some(&Role::SetHeader);
+        let emit = if is_set {
+            CropEmit::PagedSet
+        } else {
+            CropEmit::StitchedQuestion
+        };
         let want: std::collections::HashSet<usize> = unit.para_indices.iter().copied().collect();
         let mut frags: Vec<Frag> = Vec::new();
         for (pi, page) in painted.pages.iter().enumerate() {
@@ -435,15 +492,31 @@ fn build_crop_units(painted: &PaintDocument, units: &[DetectedUnit]) -> Vec<Crop
                     frag_ops[c].push(op.clone());
                 }
             }
-            for (c, ops) in frag_ops.into_iter().enumerate() {
-                if span[c].1 >= span[c].0 && !ops.is_empty() {
-                    frags.push(Frag { page: pi, col: c, ops });
+            let has_text = span.iter().any(|&(mn, mx)| mx >= mn);
+            if is_set {
+                let ops: Vec<PaintOp> = frag_ops.into_iter().flatten().collect();
+                if has_text && !ops.is_empty() {
+                    frags.push(Frag {
+                        page: pi,
+                        col: 0,
+                        ops,
+                    });
+                }
+            } else {
+                for (c, ops) in frag_ops.into_iter().enumerate() {
+                    if span[c].1 >= span[c].0 && !ops.is_empty() {
+                        frags.push(Frag {
+                            page: pi,
+                            col: c,
+                            ops,
+                        });
+                    }
                 }
             }
         }
         frags.sort_by_key(|f| (f.page, f.col));
         if !frags.is_empty() {
-            out.push(CropUnit { frags });
+            out.push(CropUnit { frags, emit });
         }
     }
     out
@@ -459,20 +532,20 @@ struct FragView {
     y_bottom: f64,
 }
 
-/// Render each fragment and stitch them top-to-bottom into one white-backed SVG.
-/// Every fragment shares one horizontal window (the union of fragment ink, at
-/// absolute page-x), so text columns and box borders line up across the seam; the
-/// vertical extent is each fragment's layout box, so consecutive fragments meet at
-/// exactly one line height (no glyphs butting, no double gap). A uniform blank
-/// margin wraps the strip. `None` if every fragment is blank.
-fn render_crop_unit(
+/// Render `frags` and stitch them top-to-bottom into one white-backed SVG. Each
+/// fragment is normalised to its own left edge, so columns from different page-x
+/// positions stack flush-left as one continuous column; the vertical extent is
+/// each fragment's layout box, so consecutive fragments meet at exactly one line
+/// height (no glyphs butting, no double gap). A uniform blank margin wraps the
+/// strip. `None` if every fragment is blank.
+fn stitch_frags(
     painted: &PaintDocument,
-    unit: &CropUnit,
+    frags: &[Frag],
     fonts: &FontResolver,
 ) -> Result<Option<String>, ApiError> {
     let m = CROP_MARGIN_PT * CROP_DPI / 72.0;
     let mut fvs: Vec<FragView> = Vec::new();
-    for (fi, frag) in unit.frags.iter().enumerate() {
+    for (fi, frag) in frags.iter().enumerate() {
         let page = &painted.pages[frag.page];
         // Render 1 (ink probe): tight horizontal bounds + blank-fragment skip.
         let Some((ix, iy, iw, ih)) = ops_ink_bbox(&frag.ops, page, fonts)? else {
@@ -495,10 +568,11 @@ fn render_crop_unit(
     if fvs.is_empty() {
         return Ok(None);
     }
-    // Each fragment is normalised to its own left edge (a column's content-left),
-    // so columns from different page-x positions stack flush-left as one continuous
-    // column; the strip width is the widest fragment.
-    let content_w = fvs.iter().map(|f| f.x1 - f.x0).fold(0.0_f64, f64::max).max(1.0);
+    let content_w = fvs
+        .iter()
+        .map(|f| f.x1 - f.x0)
+        .fold(0.0_f64, f64::max)
+        .max(1.0);
     let content_h: f64 = fvs.iter().map(|f| f.y_bottom - f.y_top).sum();
     let total_w = content_w + 2.0 * m;
     let total_h = content_h + 2.0 * m;
@@ -519,11 +593,41 @@ fn render_crop_unit(
     for f in &fvs {
         let h = f.y_bottom - f.y_top;
         let view = (f.x0, f.y_top, content_w, h);
-        svg.push_str(&ops_svg_nested(CROP_DPI, fonts, &unit.frags[f.fi].ops, view, m, y_off));
+        svg.push_str(&ops_svg_nested(
+            CROP_DPI,
+            fonts,
+            &frags[f.fi].ops,
+            view,
+            m,
+            y_off,
+        ));
         y_off += h;
     }
     svg.push_str("</svg>\n");
     Ok(Some(svg))
+}
+
+/// Render one unit. Questions produce one stitched image; Korean sets produce
+/// one image per page.
+fn render_crop_unit(
+    painted: &PaintDocument,
+    unit: &CropUnit,
+    fonts: &FontResolver,
+) -> Result<Vec<String>, ApiError> {
+    match unit.emit {
+        CropEmit::StitchedQuestion => Ok(stitch_frags(painted, &unit.frags, fonts)?
+            .into_iter()
+            .collect()),
+        CropEmit::PagedSet => {
+            let mut out = Vec::new();
+            for frag in &unit.frags {
+                if let Some(svg) = stitch_frags(painted, std::slice::from_ref(frag), fonts)? {
+                    out.push(svg);
+                }
+            }
+            Ok(out)
+        }
+    }
 }
 
 /// Write one page in the requested media type to `save_path`, returning the path.
@@ -550,10 +654,8 @@ fn write_page(
 
 /// Render previews of `docs` to files under `save_path`. In `Page` mode each
 /// laid-out page is one sheet (`{stem}_p01..`). In `Question` mode the document
-/// is scanned page by page for unit markers — question numbers, or Korean set
-/// headers when present — and each unit is cropped to its content (stitched
-/// across column/page breaks) into one image (`{stem}_q01..`). Works on a full
-/// set or an already-split document alike; no re-splitting.
+/// is scanned page by page for unit markers. Math/science/social questions are
+/// stitched into one image; Korean sets are emitted page by page.
 ///
 /// Returns paths grouped by media type: the outer list follows `media_types`
 /// order, each inner list holds every path for that extension (all docs and
@@ -599,7 +701,11 @@ pub fn export_preview(
     }
 
     let fonts = resolver.borrow();
-    let write_all = |svg: &str, stem: &str, index: usize, out: &mut Vec<Vec<PathBuf>>| -> Result<(), ApiError> {
+    let write_all = |svg: &str,
+                     stem: &str,
+                     index: usize,
+                     out: &mut Vec<Vec<PathBuf>>|
+     -> Result<(), ApiError> {
         for (slot, &media) in media_types.iter().enumerate() {
             out[slot].push(write_page(svg, media, scale, save_path, stem, kind, index)?);
         }
@@ -635,7 +741,7 @@ pub fn export_preview(
             for (stem, painted, units) in &doc_units {
                 let mut index = 1;
                 for unit in units {
-                    if let Some(svg) = render_crop_unit(painted, unit, &fonts)? {
+                    for svg in render_crop_unit(painted, unit, &fonts)? {
                         write_all(&svg, stem, index, &mut out)?;
                         index += 1;
                     }
@@ -654,7 +760,9 @@ mod tests {
     use crate::import_file;
 
     fn original(name: &str) -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../templet/original").join(name)
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../templet/original")
+            .join(name)
     }
 
     #[test]
@@ -699,8 +807,14 @@ mod tests {
             ("social_input_sample.hwpx", PreviewType::Page),
         ] {
             let (doc, _) = import_file(&original(file)).expect("import");
-            let tag = if matches!(mode, PreviewType::Page) { "page" } else { "q" };
-            let dir = std::env::temp_dir().join("kdsnr_crop_units").join(format!("{file}.{tag}"));
+            let tag = if matches!(mode, PreviewType::Page) {
+                "page"
+            } else {
+                "q"
+            };
+            let dir = std::env::temp_dir()
+                .join("kdsnr_crop_units")
+                .join(format!("{file}.{tag}"));
             let _ = std::fs::remove_dir_all(&dir);
             let out = export_preview(
                 &[(file.trim_end_matches(".hwpx").into(), doc)],

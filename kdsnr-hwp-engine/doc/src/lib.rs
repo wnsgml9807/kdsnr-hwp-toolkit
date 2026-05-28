@@ -188,16 +188,37 @@ pub enum ObjectKind {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ObjectContent {
     /// Embedded raster; `ext` is the source extension (png/jpg/bmp/gif), a mime hint.
-    Image { data: std::rc::Rc<Vec<u8>>, ext: String },
+    Image {
+        data: std::rc::Rc<Vec<u8>>,
+        ext: String,
+    },
     /// Filled/stroked rectangle spanning the object box. `border` is None for a
     /// `style="NONE"` outline (an invisible guide rect Hancom does not draw).
-    Rect { fill: Option<u32>, border_color: u32, border_width: i32, border: BorderStyle },
+    Rect {
+        fill: Option<u32>,
+        border_color: u32,
+        border_width: i32,
+        border: BorderStyle,
+    },
     /// Straight line; endpoints are offsets within the object box (HWPUNIT).
     /// `style` is None for a `style="NONE"` (invisible) line.
-    Line { x1: i32, y1: i32, x2: i32, y2: i32, color: u32, width: i32, style: BorderStyle },
+    Line {
+        x1: i32,
+        y1: i32,
+        x2: i32,
+        y2: i32,
+        color: u32,
+        width: i32,
+        style: BorderStyle,
+    },
     /// Equation: the Hancom script plus its font/size/color. Lowered to glyph
     /// primitives at paint time; glyphs resolve via the font crate (HANCOM_FONT_DIR).
-    Equation { script: String, font: String, color: u32, font_size: u32 },
+    Equation {
+        script: String,
+        font: String,
+        color: u32,
+        font_size: u32,
+    },
     /// Not yet renderable (drawText, group, ole, …).
     None,
 }
@@ -381,7 +402,11 @@ impl TableInfo {
         let gap = self.height.raw() - rows.iter().sum::<i32>();
         if gap > 0 {
             let auto: Vec<usize> = (0..n).filter(|&i| rows[i] == 0).collect();
-            let targets: Vec<usize> = if auto.is_empty() { (0..n).collect() } else { auto };
+            let targets: Vec<usize> = if auto.is_empty() {
+                (0..n).collect()
+            } else {
+                auto
+            };
             if let Some(&last) = targets.last() {
                 let each = gap / targets.len() as i32;
                 for &i in &targets {
@@ -460,8 +485,15 @@ fn edge_of(b: &kdsnr_hwp_parser::model::style::BorderLine) -> BorderEdge {
         }
         _ => BorderStyle::Solid,
     };
-    let mm = BORDER_WIDTH_MM.get(b.width as usize).copied().unwrap_or(0.1);
-    BorderEdge { style, width: EngineUnit::new(mm_to_hwp(mm)), color: b.color }
+    let mm = BORDER_WIDTH_MM
+        .get(b.width as usize)
+        .copied()
+        .unwrap_or(0.1);
+    BorderEdge {
+        style,
+        width: EngineUnit::new(mm_to_hwp(mm)),
+        color: b.color,
+    }
 }
 
 /// Resolve a `borderFillIDRef` (1-based; 0 = none) into render-ready edges/fill.
@@ -614,7 +646,15 @@ fn furniture_paragraphs(
     paras
         .iter()
         .enumerate()
-        .map(|(i, p)| normalize_paragraph(doc, section, base + i, p, &mut std::collections::HashMap::new()))
+        .map(|(i, p)| {
+            normalize_paragraph(
+                doc,
+                section,
+                base + i,
+                p,
+                &mut std::collections::HashMap::new(),
+            )
+        })
         .collect()
 }
 
@@ -669,7 +709,13 @@ fn collect_endnotes(
                 Control::Endnote(e) => {
                     for p in &e.paragraphs {
                         let idx = 400_000 + out.len();
-                        out.push(normalize_paragraph(doc, section_id, idx, p, &mut std::collections::HashMap::new()));
+                        out.push(normalize_paragraph(
+                            doc,
+                            section_id,
+                            idx,
+                            p,
+                            &mut std::collections::HashMap::new(),
+                        ));
                     }
                 }
                 Control::Table(t) => {
@@ -754,7 +800,11 @@ fn table_info(doc: &Document, section: SectionId, p_idx: usize, t: &Table) -> Ta
             // A cell stores line segments relative to its inner margin. When the
             // cell sets no own margin it inherits the table default, so the
             // effective inset (content origin) must pick the right one.
-            let m = if c.apply_inner_margin { &c.padding } else { &t.padding };
+            let m = if c.apply_inner_margin {
+                &c.padding
+            } else {
+                &t.padding
+            };
             CellInfo {
                 row: c.row,
                 col: c.col,
@@ -777,7 +827,15 @@ fn table_info(doc: &Document, section: SectionId, p_idx: usize, t: &Table) -> Ta
                 paragraphs: c
                     .paragraphs
                     .iter()
-                    .map(|p| normalize_paragraph(doc, section, p_idx, p, &mut std::collections::HashMap::new()))
+                    .map(|p| {
+                        normalize_paragraph(
+                            doc,
+                            section,
+                            p_idx,
+                            p,
+                            &mut std::collections::HashMap::new(),
+                        )
+                    })
                     .collect(),
             }
         })
@@ -916,7 +974,15 @@ fn shape_text_box(
     let paragraphs = tb
         .paragraphs
         .iter()
-        .map(|p| normalize_paragraph(doc, section, p_idx, p, &mut std::collections::HashMap::new()))
+        .map(|p| {
+            normalize_paragraph(
+                doc,
+                section,
+                p_idx,
+                p,
+                &mut std::collections::HashMap::new(),
+            )
+        })
         .collect();
     use kdsnr_hwp_parser::model::table::VerticalAlign;
     Some(ObjectTextBox {
@@ -990,13 +1056,87 @@ fn shape_content(shape: &kdsnr_hwp_parser::model::shape::ShapeObject) -> ObjectC
             width: l.drawing.border_line.width,
             style: shape_border_style(&l.drawing.border_line),
         },
+        ShapeObject::Polygon(p) => thin_polygon_line(p).unwrap_or(ObjectContent::None),
         _ => ObjectContent::None,
     }
 }
 
+fn thin_polygon_line(p: &kdsnr_hwp_parser::model::shape::PolygonShape) -> Option<ObjectContent> {
+    let first = p.points.first()?;
+    let org_w = p.drawing.shape_attr.original_width.max(1) as i64;
+    let org_h = p.drawing.shape_attr.original_height.max(1) as i64;
+    let cur_w = p
+        .drawing
+        .shape_attr
+        .current_width
+        .max(p.common.width)
+        .max(1) as i64;
+    let cur_h = p
+        .drawing
+        .shape_attr
+        .current_height
+        .max(p.common.height)
+        .max(1) as i64;
+    let scale = |pt: &kdsnr_hwp_parser::model::Point| -> (i32, i32) {
+        (
+            (pt.x as i64 * cur_w / org_w) as i32,
+            (pt.y as i64 * cur_h / org_h) as i32,
+        )
+    };
+    let (first_x, first_y) = scale(first);
+    let (mut min_x, mut max_x) = (first_x, first_x);
+    let (mut min_y, mut max_y) = (first_y, first_y);
+    for pt in &p.points {
+        let (x, y) = scale(pt);
+        min_x = min_x.min(x);
+        max_x = max_x.max(x);
+        min_y = min_y.min(y);
+        max_y = max_y.max(y);
+    }
+    let w = max_x - min_x;
+    let h = max_y - min_y;
+    if w <= 0 || h <= 0 {
+        return None;
+    }
+    let fill = fill_color(&p.drawing.fill);
+    let border = shape_border_style(&p.drawing.border_line);
+    if fill.is_none() && border == BorderStyle::None {
+        return None;
+    }
+    let color = fill.unwrap_or(p.drawing.border_line.color);
+    if w <= 1_000 && h > w * 8 {
+        let x = min_x + w / 2;
+        return Some(ObjectContent::Line {
+            x1: x,
+            y1: min_y,
+            x2: x,
+            y2: max_y,
+            color,
+            width: w.max(p.drawing.border_line.width).max(1),
+            style: BorderStyle::Solid,
+        });
+    }
+    if h <= 1_000 && w > h * 8 {
+        let y = min_y + h / 2;
+        return Some(ObjectContent::Line {
+            x1: min_x,
+            y1: y,
+            x2: max_x,
+            y2: y,
+            color,
+            width: h.max(p.drawing.border_line.width).max(1),
+            style: BorderStyle::Solid,
+        });
+    }
+    None
+}
+
 /// Resolve the char-shape id active at `utf16_index` from a paragraph's
 /// `char_shapes` ranges (each `CharShapeRef` applies from its `start_pos`).
-fn char_shape_at(refs: &[kdsnr_hwp_parser::model::paragraph::CharShapeRef], utf16_index: u32) -> u32 {
+fn char_shape_at(
+    refs: &[kdsnr_hwp_parser::model::paragraph::CharShapeRef],
+    utf16_index: u32,
+) -> u32 {
     let mut chosen = refs.first().map(|r| r.char_shape_id).unwrap_or(0);
     for r in refs {
         if r.start_pos <= utf16_index {
@@ -1199,7 +1339,9 @@ fn normalize_paragraph(
     // paragraphs into one region (the HWPX `<hh:border connect>`). When set, the
     // box is the outline of the connected run's union; otherwise each paragraph
     // is its own closed box.
-    let border_connect = para_shape.map(|ps| ps.attr1 & (1 << 28) != 0).unwrap_or(false);
+    let border_connect = para_shape
+        .map(|ps| ps.attr1 & (1 << 28) != 0)
+        .unwrap_or(false);
     // border_spacing = [left, right, top, bottom], plain HWPUNIT (outside switch).
     let border_offsets = para_shape
         .map(|ps| Insets {
@@ -1343,9 +1485,13 @@ fn normalize_paragraph(
         .enumerate()
         .filter_map(|(i, c)| {
             let mut obj = match c {
-                Control::Picture(p) => {
-                    object_info(ObjectKind::Picture, i, &p.common, picture_content(doc, p), None)
-                }
+                Control::Picture(p) => object_info(
+                    ObjectKind::Picture,
+                    i,
+                    &p.common,
+                    picture_content(doc, p),
+                    None,
+                ),
                 Control::Shape(s) => object_info(
                     ObjectKind::Shape,
                     i,
@@ -1389,7 +1535,11 @@ fn normalize_paragraph(
                 .iter()
                 .enumerate()
                 .any(|(i, &o)| o != i as u32);
-            if has_gap { para.char_offsets.clone() } else { Vec::new() }
+            if has_gap {
+                para.char_offsets.clone()
+            } else {
+                Vec::new()
+            }
         },
         spacing,
         break_before: break_before(para.column_type),
@@ -1399,7 +1549,9 @@ fn normalize_paragraph(
         first_line_indent,
         space_before,
         space_after,
-        align: para_shape.map(|ps| align_of(ps.alignment)).unwrap_or_default(),
+        align: para_shape
+            .map(|ps| align_of(ps.alignment))
+            .unwrap_or_default(),
         border: resolve_border_fill(doc, border_fill_id),
         border_fill_id,
         border_connect,
@@ -1418,7 +1570,10 @@ fn compute_auto_number(
 ) -> Option<String> {
     use kdsnr_hwp_parser::model::style::HeadType;
     let numbering = match ps.head_type {
-        HeadType::Number => doc.doc_info.numberings.get(ps.numbering_id.checked_sub(1)? as usize)?,
+        HeadType::Number => doc
+            .doc_info
+            .numberings
+            .get(ps.numbering_id.checked_sub(1)? as usize)?,
         // Bullet/Outline: not generated yet (bullet char glyph is a later step).
         _ => return None,
     };
@@ -1444,7 +1599,10 @@ fn compute_auto_number(
         let val = if k == lvl + 1 {
             current
         } else {
-            state.get(&(ps.numbering_id, (k - 1) as u8)).copied().unwrap_or(1)
+            state
+                .get(&(ps.numbering_id, (k - 1) as u8))
+                .copied()
+                .unwrap_or(1)
         };
         let fmt = numbering.heads[k - 1].number_format;
         out = out.replace(&token, &format_number(val, fmt));
@@ -1455,16 +1613,22 @@ fn compute_auto_number(
 /// Format a counter per an HWP number-format code (spec table 43); the sample-active set
 /// is DIGIT, with Hangul/circled/roman supported for completeness.
 fn format_number(n: u32, fmt: u8) -> String {
-    const HANGUL: [char; 14] =
-        ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하'];
-    const JAMO: [char; 14] =
-        ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+    const HANGUL: [char; 14] = [
+        '가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하',
+    ];
+    const JAMO: [char; 14] = [
+        'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
+    ];
     let cyc = |arr: &[char; 14]| arr[((n.max(1) - 1) % 14) as usize].to_string();
     match fmt {
-        1 if (1..=20).contains(&n) => char::from_u32(0x245F + n).map(String::from).unwrap_or_default(), // ①..⑳
+        1 if (1..=20).contains(&n) => char::from_u32(0x245F + n)
+            .map(String::from)
+            .unwrap_or_default(), // ①..⑳
         3 => roman_small(n),
         8 => cyc(&HANGUL),
-        9 if (1..=14).contains(&n) => char::from_u32(0x326E + n - 1).map(String::from).unwrap_or_else(|| cyc(&HANGUL)), // ㉮..
+        9 if (1..=14).contains(&n) => char::from_u32(0x326E + n - 1)
+            .map(String::from)
+            .unwrap_or_else(|| cyc(&HANGUL)), // ㉮..
         10 => cyc(&JAMO),
         _ => n.to_string(), // DIGIT (0) and unsupported
     }
@@ -1472,8 +1636,19 @@ fn format_number(n: u32, fmt: u8) -> String {
 
 fn roman_small(mut n: u32) -> String {
     const VALS: [(u32, &str); 13] = [
-        (1000, "m"), (900, "cm"), (500, "d"), (400, "cd"), (100, "c"), (90, "xc"),
-        (50, "l"), (40, "xl"), (10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i"),
+        (1000, "m"),
+        (900, "cm"),
+        (500, "d"),
+        (400, "cd"),
+        (100, "c"),
+        (90, "xc"),
+        (50, "l"),
+        (40, "xl"),
+        (10, "x"),
+        (9, "ix"),
+        (5, "v"),
+        (4, "iv"),
+        (1, "i"),
     ];
     let mut s = String::new();
     for (v, sym) in VALS {

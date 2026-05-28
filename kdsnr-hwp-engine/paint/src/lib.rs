@@ -14,11 +14,11 @@
 use std::collections::HashMap;
 
 use kdsnr_hwp_core::{Rect, SourceRef};
+pub use kdsnr_hwp_doc::{Align, BorderEdge, BorderFillInfo, BorderStyle};
 use kdsnr_hwp_doc::{
     Anchor, AnchorAlign, AnchorRel, CellInfo, CellVAlign, DocumentModel, ObjectContent, ObjectInfo,
     ParagraphModel, SectionModel, TableInfo,
 };
-pub use kdsnr_hwp_doc::{Align, BorderEdge, BorderFillInfo, BorderStyle};
 use kdsnr_hwp_layout::{BlockKind, PaginatedItem, PaginationResult};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -30,14 +30,39 @@ pub struct Color {
 }
 
 impl Color {
-    pub const BLACK: Color = Color { r: 0, g: 0, b: 0, a: 255 };
-    pub const WHITE: Color = Color { r: 255, g: 255, b: 255, a: 255 };
-    pub const GRID: Color = Color { r: 120, g: 120, b: 120, a: 255 };
-    pub const PLACEHOLDER: Color = Color { r: 235, g: 235, b: 235, a: 255 };
+    pub const BLACK: Color = Color {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 255,
+    };
+    pub const WHITE: Color = Color {
+        r: 255,
+        g: 255,
+        b: 255,
+        a: 255,
+    };
+    pub const GRID: Color = Color {
+        r: 120,
+        g: 120,
+        b: 120,
+        a: 255,
+    };
+    pub const PLACEHOLDER: Color = Color {
+        r: 235,
+        g: 235,
+        b: 235,
+        a: 255,
+    };
 
     /// HWP ColorRef (0x00BBGGRR) → opaque Color.
     pub fn from_ref(c: u32) -> Color {
-        Color { r: (c & 0xFF) as u8, g: ((c >> 8) & 0xFF) as u8, b: ((c >> 16) & 0xFF) as u8, a: 255 }
+        Color {
+            r: (c & 0xFF) as u8,
+            g: ((c >> 8) & 0xFF) as u8,
+            b: ((c >> 16) & 0xFF) as u8,
+            a: 255,
+        }
     }
 }
 
@@ -71,12 +96,28 @@ pub enum PaintOp {
     /// Solid fill (page background, cell shading).
     FillRect { rect: Rect, color: Color },
     /// Rectangle outline (table cell, object placeholder).
-    StrokeRect { rect: Rect, color: Color, width: i32 },
+    StrokeRect {
+        rect: Rect,
+        color: Color,
+        width: i32,
+    },
     /// A single straight border edge (cell/char/paragraph border).
-    Line { x1: i32, y1: i32, x2: i32, y2: i32, color: Color, width: i32, style: BorderStyle },
+    Line {
+        x1: i32,
+        y1: i32,
+        x2: i32,
+        y2: i32,
+        color: Color,
+        width: i32,
+        style: BorderStyle,
+    },
     /// Embedded raster placed in a box (object picture). `data` is the source
     /// file bytes, `ext` the format hint (png/jpg/bmp/gif).
-    Image { rect: Rect, data: std::rc::Rc<Vec<u8>>, ext: String },
+    Image {
+        rect: Rect,
+        data: std::rc::Rc<Vec<u8>>,
+        ext: String,
+    },
     /// One stored text line: its baseline origin and runs of constant font.
     TextLine(TextLine),
 }
@@ -85,7 +126,10 @@ pub enum PaintOp {
 fn push_edge(ops: &mut Vec<PaintOp>, e: &BorderEdge, x1: i32, y1: i32, x2: i32, y2: i32) {
     if e.style != BorderStyle::None {
         ops.push(PaintOp::Line {
-            x1, y1, x2, y2,
+            x1,
+            y1,
+            x2,
+            y2,
             color: Color::from_ref(e.color),
             width: e.width.raw().max(1),
             style: e.style,
@@ -176,7 +220,11 @@ pub struct TextRun {
 /// equation layout in isolation. `font_size` is in HWPUNIT (e.g. 1000 = 10pt).
 pub fn debug_equation_page(script: &str, font: &str, font_size: u32) -> PaintPage {
     use kdsnr_hwp_equation::lower_equation_primitives;
-    let base = if font_size > 0 { font_size as f64 } else { 1000.0 };
+    let base = if font_size > 0 {
+        font_size as f64
+    } else {
+        1000.0
+    };
     let frag = lower_equation_primitives(script, base);
     let pad = (base * 0.5).round() as i32;
     let w = frag.natural_width.round() as i32;
@@ -224,26 +272,9 @@ pub fn lower(document: &DocumentModel, pagination: &PaginationResult) -> PaintDo
             });
             // Master furniture is drawn first (behind), then body, then header
             // and footer furniture on top, matching paint order.
-            // A master column-divider line is stored full-height, but only spans
-            // the page's multi-column region: above it (e.g. a full-width title
-            // block on page 1) there is one column and no divider. Clip the
-            // divider's top to where right-column content begins on this page.
-            let gap_xs = column_gap_centers(&page.columns);
-            let multicol_top = page
-                .items
-                .iter()
-                .filter(|it| it.column >= 1)
-                .map(|it| it.rect.y.raw())
-                .min();
             for placement in &page.furniture {
-                let start = ops.len();
                 for item in &placement.items {
                     lower_item(item, &lookup, &frame, &mut ops);
-                }
-                if placement.role == kdsnr_hwp_layout::FurnitureRole::MasterPage {
-                    if let Some(top) = multicol_top {
-                        clip_column_dividers(&mut ops[start..], &gap_xs, top);
-                    }
                 }
             }
             // Body content begins here (after the page background and furniture).
@@ -252,7 +283,10 @@ pub fn lower(document: &DocumentModel, pagination: &PaginationResult) -> PaintDo
             let boxes = paragraph_border_boxes(&page.items, &lookup);
             for b in &boxes {
                 if let Some(c) = b.border.fill {
-                    ops.push(PaintOp::FillRect { rect: Rect::new(b.x, b.y, b.w, b.h), color: Color::from_ref(c) });
+                    ops.push(PaintOp::FillRect {
+                        rect: Rect::new(b.x, b.y, b.w, b.h),
+                        color: Color::from_ref(c),
+                    });
                 }
             }
             for item in &page.items {
@@ -284,36 +318,6 @@ pub fn lower(document: &DocumentModel, pagination: &PaginationResult) -> PaintDo
         })
         .collect();
     PaintDocument { pages }
-}
-
-/// Midpoint x of each gap between consecutive columns — where a column divider sits.
-fn column_gap_centers(columns: &[kdsnr_hwp_layout::PageColumn]) -> Vec<i32> {
-    columns
-        .windows(2)
-        .map(|w| (w[0].rect.x.raw() + w[0].rect.width.raw() + w[1].rect.x.raw()) / 2)
-        .collect()
-}
-
-/// Raise the top endpoint of any near-vertical, tall divider line sitting in a
-/// column gap to `top`, so it does not extend above the page's multi-column
-/// region (into a single-column area such as a page-1 title block).
-fn clip_column_dividers(ops: &mut [PaintOp], gap_xs: &[i32], top: i32) {
-    const X_TOL: i32 = 600; // ~6pt: divider centred on the gap
-    for op in ops {
-        if let PaintOp::Line { x1, y1, x2, y2, .. } = op {
-            let vertical = (*x1 - *x2).abs() < 50;
-            let tall = (*y1 - *y2).abs() > 20_000;
-            let near_gap = gap_xs.iter().any(|g| (*x1 - *g).abs() < X_TOL);
-            if vertical && tall && near_gap && top < (*y1).max(*y2) {
-                if *y1 < top {
-                    *y1 = top;
-                }
-                if *y2 < top {
-                    *y2 = top;
-                }
-            }
-        }
-    }
 }
 
 /// Serialize the paint document's components as JSON, for measurement against a
@@ -351,11 +355,24 @@ pub fn components_json(document: &PaintDocument) -> String {
                 out.push_str(",\"line_height\":");
                 out.push_str(&line.line_height.to_string());
                 out.push_str(",\"size_pt\":");
-                out.push_str(&line.runs.first().map(|r| r.size_pt).unwrap_or(0.0).to_string());
+                out.push_str(
+                    &line
+                        .runs
+                        .first()
+                        .map(|r| r.size_pt)
+                        .unwrap_or(0.0)
+                        .to_string(),
+                );
                 out.push_str(",\"font\":\"");
-                out.push_str(&json_escape(line.runs.first().map(|r| r.font.as_str()).unwrap_or("")));
+                out.push_str(&json_escape(
+                    line.runs.first().map(|r| r.font.as_str()).unwrap_or(""),
+                ));
                 out.push_str("\",\"bold\":");
-                out.push_str(if line.runs.first().map(|r| r.bold).unwrap_or(false) { "true" } else { "false" });
+                out.push_str(if line.runs.first().map(|r| r.bold).unwrap_or(false) {
+                    "true"
+                } else {
+                    "false"
+                });
                 out.push_str(",\"text\":\"");
                 out.push_str(&json_escape(&text));
                 out.push_str("\"}");
@@ -367,7 +384,9 @@ pub fn components_json(document: &PaintDocument) -> String {
             let (role, rect) = match op {
                 PaintOp::StrokeRect { rect, .. } => ("box", rect),
                 // Skip the page-background fill; report only placeholder fills.
-                PaintOp::FillRect { rect, color } if *color == Color::PLACEHOLDER => ("object", rect),
+                PaintOp::FillRect { rect, color } if *color == Color::PLACEHOLDER => {
+                    ("object", rect)
+                }
                 _ => continue,
             };
             if !first_box {
@@ -419,7 +438,12 @@ fn paragraph_lookup(section: &SectionModel) -> HashMap<usize, &ParagraphModel> {
         .chain(section.endnotes.iter())
         .chain(section.headers.iter().flat_map(|h| h.paragraphs.iter()))
         .chain(section.footers.iter().flat_map(|f| f.paragraphs.iter()))
-        .chain(section.master_pages.iter().flat_map(|m| m.paragraphs.iter()));
+        .chain(
+            section
+                .master_pages
+                .iter()
+                .flat_map(|m| m.paragraphs.iter()),
+        );
     for p in lists {
         map.insert(p.id.index, p);
     }
@@ -462,7 +486,9 @@ fn bordered_paragraph<'a>(
     if item.kind != BlockKind::Paragraph {
         return None;
     }
-    let SourceRef::Paragraph(id) = item.source else { return None };
+    let SourceRef::Paragraph(id) = item.source else {
+        return None;
+    };
     let p = *lookup.get(&id.index)?;
     bordered_visible(p).then_some((p, p.border_fill_id))
 }
@@ -578,17 +604,49 @@ fn align_axis(align: AnchorAlign, base: i32, ref_len: i32, size: i32, offset: i3
 ///   instead of collapsing to the left. Vertically the object hangs from the
 ///   paragraph top (`rel_y + v_offset`); column/para vertical alignment is TOP in
 ///   practice and a reliable flow height is not available.
-fn anchor_xy(a: &Anchor, w: i32, h: i32, rel_x: i32, rel_y: i32, flow_w: i32, frame: &Frame) -> (i32, i32) {
+fn anchor_xy(
+    a: &Anchor,
+    w: i32,
+    h: i32,
+    rel_x: i32,
+    rel_y: i32,
+    flow_w: i32,
+    frame: &Frame,
+) -> (i32, i32) {
     let ho = a.h_offset.raw();
     let x = match a.horz_rel {
-        AnchorRel::Paper => align_axis(a.horz_align, frame.paper.x.raw(), frame.paper.width.raw(), w, ho),
-        AnchorRel::Page => align_axis(a.horz_align, frame.page.x.raw(), frame.page.width.raw(), w, ho),
+        AnchorRel::Paper => align_axis(
+            a.horz_align,
+            frame.paper.x.raw(),
+            frame.paper.width.raw(),
+            w,
+            ho,
+        ),
+        AnchorRel::Page => align_axis(
+            a.horz_align,
+            frame.page.x.raw(),
+            frame.page.width.raw(),
+            w,
+            ho,
+        ),
         AnchorRel::Column | AnchorRel::Para => align_axis(a.horz_align, rel_x, flow_w, w, ho),
     };
     let vo = a.v_offset.raw();
     let y = match a.vert_rel {
-        AnchorRel::Paper => align_axis(a.vert_align, frame.paper.y.raw(), frame.paper.height.raw(), h, vo),
-        AnchorRel::Page => align_axis(a.vert_align, frame.page.y.raw(), frame.page.height.raw(), h, vo),
+        AnchorRel::Paper => align_axis(
+            a.vert_align,
+            frame.paper.y.raw(),
+            frame.paper.height.raw(),
+            h,
+            vo,
+        ),
+        AnchorRel::Page => align_axis(
+            a.vert_align,
+            frame.page.y.raw(),
+            frame.page.height.raw(),
+            h,
+            vo,
+        ),
         AnchorRel::Column | AnchorRel::Para => rel_y + vo,
     };
     (x, y)
@@ -598,8 +656,7 @@ fn anchor_xy(a: &Anchor, w: i32, h: i32, rel_x: i32, rel_y: i32, flow_w: i32, fr
 /// its stored segment width (the column/para content width). Falls back to the
 /// page area width when no segment is stored.
 fn para_flow_width(para: &ParagraphModel, frame: &Frame) -> i32 {
-    para
-        .stored_line_segs
+    para.stored_line_segs
         .first()
         .map(|s| s.segment_width.raw())
         .filter(|w| *w > 0)
@@ -643,11 +700,38 @@ fn lower_item(
                     // Anchored objects ride with their paragraph; emit once (first
                     // fragment). Behind-text layer below the text, others above.
                     if first == 0 {
-                        emit_objects(&para.objects, origin_x, obj_y, flow_w, true, item.source, frame, ops);
+                        emit_objects(
+                            &para.objects,
+                            origin_x,
+                            obj_y,
+                            flow_w,
+                            true,
+                            item.source,
+                            frame,
+                            ops,
+                        );
                     }
-                    emit_paragraph_lines(para, origin_x, origin_y, first, last, item.source, frame, ops);
+                    emit_paragraph_lines(
+                        para,
+                        origin_x,
+                        origin_y,
+                        first,
+                        last,
+                        item.source,
+                        frame,
+                        ops,
+                    );
                     if first == 0 {
-                        emit_objects(&para.objects, origin_x, obj_y, flow_w, false, item.source, frame, ops);
+                        emit_objects(
+                            &para.objects,
+                            origin_x,
+                            obj_y,
+                            flow_w,
+                            false,
+                            item.source,
+                            frame,
+                            ops,
+                        );
                         // Para/Column-anchored floating tables that reserve no band
                         // ride with the paragraph (Square/Tight/Through wrap): they
                         // hang from the paragraph's flowed top like floating objects.
@@ -655,8 +739,9 @@ fn lower_item(
                         // as their own blocks instead — see measure_blocks.)
                         for table in &para.tables {
                             if let Some(a) = &table.anchor {
-                                let rides = !matches!(a.vert_rel, AnchorRel::Paper | AnchorRel::Page)
-                                    && !table.reserves_vertical_band;
+                                let rides =
+                                    !matches!(a.vert_rel, AnchorRel::Paper | AnchorRel::Page)
+                                        && !table.reserves_vertical_band;
                                 if rides {
                                     let (tx, ty) = anchor_xy(
                                         a,
@@ -753,7 +838,14 @@ fn emit_objects(
 /// placement (relative x,y, then translated to the in-line position).
 /// Returns the content baseline offset from the box top (HWPUNIT) when meaningful
 /// for inline alignment (equations); `None` for box-aligned objects.
-fn emit_object_content(obj: &ObjectInfo, x: i32, y: i32, source: SourceRef, frame: &Frame, ops: &mut Vec<PaintOp>) -> Option<i32> {
+fn emit_object_content(
+    obj: &ObjectInfo,
+    x: i32,
+    y: i32,
+    source: SourceRef,
+    frame: &Frame,
+    ops: &mut Vec<PaintOp>,
+) -> Option<i32> {
     let (w, h) = (obj.width.raw(), obj.height.raw());
     let mut inline_baseline = None;
     match &obj.content {
@@ -764,7 +856,12 @@ fn emit_object_content(obj: &ObjectInfo, x: i32, y: i32, source: SourceRef, fram
                 ext: ext.clone(),
             });
         }
-        ObjectContent::Rect { fill, border_color, border_width, border } => {
+        ObjectContent::Rect {
+            fill,
+            border_color,
+            border_width,
+            border,
+        } => {
             if let Some(c) = fill {
                 ops.push(PaintOp::FillRect {
                     rect: Rect::new(x, y, w, h),
@@ -784,18 +881,36 @@ fn emit_object_content(obj: &ObjectInfo, x: i32, y: i32, source: SourceRef, fram
                 push_edge(ops, &edge, x + w, y, x + w, y + h);
             }
         }
-        ObjectContent::Line { x1, y1, x2, y2, color, width, style } => {
+        ObjectContent::Line {
+            x1,
+            y1,
+            x2,
+            y2,
+            color,
+            width,
+            style,
+        } => {
             if *style != BorderStyle::None {
                 ops.push(PaintOp::Line {
-                    x1: x + x1, y1: y + y1, x2: x + x2, y2: y + y2,
+                    x1: x + x1,
+                    y1: y + y1,
+                    x2: x + x2,
+                    y2: y + y2,
                     color: Color::from_ref(*color),
                     width: (*width).max(1),
                     style: *style,
                 });
             }
         }
-        ObjectContent::Equation { script, font, color, font_size } => {
-            inline_baseline = Some(emit_equation(script, font, *color, *font_size, x, y, w, h, source, ops));
+        ObjectContent::Equation {
+            script,
+            font,
+            color,
+            font_size,
+        } => {
+            inline_baseline = Some(emit_equation(
+                script, font, *color, *font_size, x, y, w, h, source, ops,
+            ));
         }
         ObjectContent::None => {}
     }
@@ -866,7 +981,11 @@ fn emit_equation(
     ops: &mut Vec<PaintOp>,
 ) -> i32 {
     use kdsnr_hwp_equation::{lower_equation_primitives, EquationPrimitive};
-    let base = if font_size > 0 { font_size as f64 } else { 1000.0 };
+    let base = if font_size > 0 {
+        font_size as f64
+    } else {
+        1000.0
+    };
     let frag = lower_equation_primitives(script, base);
     if frag.natural_height <= 0.0 {
         return h;
@@ -883,7 +1002,14 @@ fn emit_equation(
     let _ = (w, h);
     for prim in &frag.primitives {
         match prim {
-            EquationPrimitive::Text { x: px, baseline, text, font_size: fs, x_scale, .. } => {
+            EquationPrimitive::Text {
+                x: px,
+                baseline,
+                text,
+                font_size: fs,
+                x_scale,
+                ..
+            } => {
                 if text == "\u{0009}" {
                     continue; // alignment tab marker — not drawn
                 }
@@ -901,7 +1027,11 @@ fn emit_equation(
                     // those render from the Hangul font, like the surrounding text.
                     runs: vec![equation_run(
                         text.clone(),
-                        if text.chars().any(is_cjk) { "함초롬바탕" } else { font },
+                        if text.chars().any(is_cjk) {
+                            "함초롬바탕"
+                        } else {
+                            font
+                        },
                         glyph_h,
                         *x_scale,
                         col,
@@ -909,16 +1039,32 @@ fn emit_equation(
                     inline_objects: Vec::new(),
                 }));
             }
-            EquationPrimitive::Line { x1, y1, x2, y2, stroke_width, .. } => {
+            EquationPrimitive::Line {
+                x1,
+                y1,
+                x2,
+                y2,
+                stroke_width,
+                ..
+            } => {
                 ops.push(PaintOp::Line {
-                    x1: x + at(*x1), y1: y + at(*y1),
-                    x2: x + at(*x2), y2: y + at(*y2),
+                    x1: x + at(*x1),
+                    y1: y + at(*y1),
+                    x2: x + at(*x2),
+                    y2: y + at(*y2),
                     color: col,
                     width: at(*stroke_width).max(1),
                     style: BorderStyle::Solid,
                 });
             }
-            EquationPrimitive::Rectangle { x: rx, y: ry, width, height, stroke_width, .. } => {
+            EquationPrimitive::Rectangle {
+                x: rx,
+                y: ry,
+                width,
+                height,
+                stroke_width,
+                ..
+            } => {
                 let edge = BorderEdge {
                     style: BorderStyle::Solid,
                     width: kdsnr_hwp_core::EngineUnit::new(at(*stroke_width).max(1)),
@@ -955,7 +1101,11 @@ fn is_cjk(ch: char) -> bool {
 /// alignment margin the layout no longer spreads into the content).
 fn equation_content_advance(script: &str, font_size: u32, _h: i32) -> Option<i32> {
     use kdsnr_hwp_equation::lower_equation_primitives;
-    let base = if font_size > 0 { font_size as f64 } else { 1000.0 };
+    let base = if font_size > 0 {
+        font_size as f64
+    } else {
+        1000.0
+    };
     let frag = lower_equation_primitives(script, base);
     if frag.natural_height <= 0.0 {
         return None;
@@ -1018,7 +1168,9 @@ fn emit_paragraph_lines(
         let seg = &segs[j];
         let start = to_vis(seg.text_start as usize).min(units.len());
         let end = to_vis(
-            segs.get(j + 1).map(|n| n.text_start as usize).unwrap_or(usize::MAX),
+            segs.get(j + 1)
+                .map(|n| n.text_start as usize)
+                .unwrap_or(usize::MAX),
         )
         .min(units.len());
         let runs = line_runs(para, &units, start, end);
@@ -1042,10 +1194,10 @@ fn emit_paragraph_lines(
                     // equations) that Hancom does not advance past inline — the next
                     // text hugs the equation (GT). Other objects use their box width.
                     let advance = match &obj.content {
-                        ObjectContent::Equation { script, font_size, .. } => {
-                            equation_content_advance(script, *font_size, obj.height.raw())
-                                .unwrap_or_else(|| obj.width.raw())
-                        }
+                        ObjectContent::Equation {
+                            script, font_size, ..
+                        } => equation_content_advance(script, *font_size, obj.height.raw())
+                            .unwrap_or_else(|| obj.width.raw()),
                         _ => obj.width.raw(),
                     };
                     inline_objects.push(InlineObject {
@@ -1089,7 +1241,11 @@ fn emit_paragraph_lines(
         // width shrinks by whatever the start shifts right.
         let fli = para.first_line_indent.raw();
         let indent = if fli >= 0 {
-            if j == 0 { fli } else { 0 }
+            if j == 0 {
+                fli
+            } else {
+                0
+            }
         } else if j == 0 {
             0
         } else {
@@ -1214,42 +1370,44 @@ fn line_runs(para: &ParagraphModel, units: &[u16], start: usize, end: usize) -> 
     let mut buf: Vec<u16> = Vec::new();
     let mut tab_buf: Vec<i32> = Vec::new();
     let mut cur: Option<RunFmt> = None;
-    let flush =
-        |runs: &mut Vec<TextRun>, buf: &mut Vec<u16>, tab_buf: &mut Vec<i32>, cur: &Option<RunFmt>| {
-            if buf.is_empty() {
-                return;
+    let flush = |runs: &mut Vec<TextRun>,
+                 buf: &mut Vec<u16>,
+                 tab_buf: &mut Vec<i32>,
+                 cur: &Option<RunFmt>| {
+        if buf.is_empty() {
+            return;
+        }
+        if let Some(f) = cur {
+            let text = String::from_utf16_lossy(buf);
+            // Keep a tab-only run for its advance (trim drops '\t', so test it separately).
+            if !text.trim().is_empty() || text.contains(' ') || !tab_buf.is_empty() {
+                runs.push(TextRun {
+                    text,
+                    font: f.font.clone(),
+                    size_pt: f.size_pt,
+                    bold: f.bold,
+                    italic: f.italic,
+                    underline: f.underline,
+                    color: Color::from_ref(f.color),
+                    ratio: f.ratio,
+                    spacing: f.spacing,
+                    rel_sz: f.rel_sz,
+                    char_offset: f.char_offset,
+                    shade: shade_of(f.shade),
+                    strikeout: f.strikeout,
+                    strike_shape: f.strike_shape,
+                    strike_color: Color::from_ref(f.strike_color),
+                    underline_color: Color::from_ref(f.underline_color),
+                    underline_shape: f.underline_shape,
+                    border: f.border,
+                    tab_widths: tab_buf.clone(),
+                    is_hft: f.is_hft,
+                });
             }
-            if let Some(f) = cur {
-                let text = String::from_utf16_lossy(buf);
-                // Keep a tab-only run for its advance (trim drops '\t', so test it separately).
-                if !text.trim().is_empty() || text.contains(' ') || !tab_buf.is_empty() {
-                    runs.push(TextRun {
-                        text,
-                        font: f.font.clone(),
-                        size_pt: f.size_pt,
-                        bold: f.bold,
-                        italic: f.italic,
-                        underline: f.underline,
-                        color: Color::from_ref(f.color),
-                        ratio: f.ratio,
-                        spacing: f.spacing,
-                        rel_sz: f.rel_sz,
-                        char_offset: f.char_offset,
-                        shade: shade_of(f.shade),
-                        strikeout: f.strikeout,
-                        strike_shape: f.strike_shape,
-                        strike_color: Color::from_ref(f.strike_color),
-                        underline_color: Color::from_ref(f.underline_color),
-                        underline_shape: f.underline_shape,
-                        border: f.border,
-                        tab_widths: tab_buf.clone(),
-                        is_hft: f.is_hft,
-                    });
-                }
-            }
-            buf.clear();
-            tab_buf.clear();
-        };
+        }
+        buf.clear();
+        tab_buf.clear();
+    };
     for i in start..end {
         let key = para.chars.get(i).map(RunFmt::of);
         if cur != key {
@@ -1268,7 +1426,14 @@ fn line_runs(para: &ParagraphModel, units: &[u16], start: usize, end: usize) -> 
 /// Emit a table's cell grid (boxes) and cell text at the table origin. Column
 /// widths and row heights come from stored cell extents; cells are positioned by
 /// summing the cells to their left/above.
-fn emit_table(table: &TableInfo, ox: i32, oy: i32, source: SourceRef, frame: &Frame, ops: &mut Vec<PaintOp>) {
+fn emit_table(
+    table: &TableInfo,
+    ox: i32,
+    oy: i32,
+    source: SourceRef,
+    frame: &Frame,
+    ops: &mut Vec<PaintOp>,
+) {
     let n_cols = table.cols as usize;
     let n_rows = table.rows as usize;
     if n_cols == 0 || n_rows == 0 {
@@ -1307,11 +1472,15 @@ fn emit_table(table: &TableInfo, ox: i32, oy: i32, source: SourceRef, frame: &Fr
     // Row heights come from the stored box height (the same recovery layout uses
     // for vertical accumulation), so auto cells (cellSz height=0) still get the
     // box's real height instead of collapsing to zero.
-    let row_h = table.stored_row_heights().unwrap_or_else(|| vec![0i32; n_rows]);
+    let row_h = table
+        .stored_row_heights()
+        .unwrap_or_else(|| vec![0i32; n_rows]);
     let col_x: Vec<i32> = prefix_sums(&col_w);
     let row_y: Vec<i32> = prefix_sums(&row_h);
     for c in &table.cells {
-        emit_cell(c, ox, oy, &col_x, &col_w, &row_y, &row_h, source, frame, ops);
+        emit_cell(
+            c, ox, oy, &col_x, &col_w, &row_y, &row_h, source, frame, ops,
+        );
     }
 }
 
@@ -1367,7 +1536,10 @@ fn emit_cell(
     let h: i32 = row_h.iter().skip(row).take(rs).sum();
     // Cell background fill behind the text.
     if let Some(c) = cell.border.fill {
-        ops.push(PaintOp::FillRect { rect: Rect::new(x, y, w, h), color: Color::from_ref(c) });
+        ops.push(PaintOp::FillRect {
+            rect: Rect::new(x, y, w, h),
+            color: Color::from_ref(c),
+        });
     }
     // Cell text: every paragraph's line segments share one origin at the cell's
     // inner-margin corner. Their vertpos is cumulative across the cell's
@@ -1407,12 +1579,30 @@ fn emit_cell(
             }
         }
         let flow_w = para_flow_width(para, frame);
-        emit_objects(&para.objects, content_x, anchor_top, flow_w, true, source, frame, ops);
+        emit_objects(
+            &para.objects,
+            content_x,
+            anchor_top,
+            flow_w,
+            true,
+            source,
+            frame,
+            ops,
+        );
         if !para.stored_line_segs.is_empty() {
             let last = para.stored_line_segs.len() - 1;
             emit_paragraph_lines(para, content_x, content_y, 0, last, source, frame, ops);
         }
-        emit_objects(&para.objects, content_x, anchor_top, flow_w, false, source, frame, ops);
+        emit_objects(
+            &para.objects,
+            content_x,
+            anchor_top,
+            flow_w,
+            false,
+            source,
+            frame,
+            ops,
+        );
     }
     // Cell borders on top of the content.
     let b = &cell.border;
@@ -1441,7 +1631,10 @@ mod tests {
     #[test]
     fn center_align_splits_leftover() {
         // Inner area 900, content 200 -> centered down by (900-200)/2 = 350.
-        assert_eq!(cell_content_top(CellVAlign::Center, Y, H, PT, PB, CH), Y + PT + 350);
+        assert_eq!(
+            cell_content_top(CellVAlign::Center, Y, H, PT, PB, CH),
+            Y + PT + 350
+        );
     }
 
     #[test]
@@ -1453,6 +1646,9 @@ mod tests {
     #[test]
     fn center_overflow_clamps_to_top() {
         // Content taller than the area clamps to top (no negative offset).
-        assert_eq!(cell_content_top(CellVAlign::Center, Y, H, PT, PB, 2000), Y + PT);
+        assert_eq!(
+            cell_content_top(CellVAlign::Center, Y, H, PT, PB, 2000),
+            Y + PT
+        );
     }
 }

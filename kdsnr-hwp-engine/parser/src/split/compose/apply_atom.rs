@@ -8,9 +8,8 @@
 //!   - everything else: restamp the paragraph's outer (para/style) and its
 //!     default char-shape runs to the slot, preserving emphasis runs.
 //!
-//! Line segments are always cleared — the engine's own measure/paginate
-//! recomputes them against the template metrics. (The legacy pipeline rebased
-//! cached line segments only to work around rhwp's inability to reflow.)
+//! Line segments are kept throughout: the engine lays out from stored segments
+//! (it does not reflow), and the template shares the source's column geometry.
 
 use super::slot_catalog::Slot;
 use crate::model::control::Control;
@@ -27,10 +26,7 @@ pub fn apply_atom(src: Paragraph, atom: AtomKind, slot: &Slot) -> Paragraph {
     }
 }
 
-/// Reset only page/column break flags. Line segments are kept: the engine is a
-/// faithful renderer that lays out from stored segments (it does not reflow),
-/// and each per-subject template shares the source's column geometry, so the
-/// source's stored segments stay valid in the template.
+/// Reset page/column break flags only; line segments are left intact.
 fn reset_breaks(p: &mut Paragraph) {
     p.column_type = ColumnBreakType::None;
     p.raw_break_type = 0;
@@ -43,10 +39,12 @@ fn default_cs(p: &Paragraph) -> u32 {
 /// Non-box, non-balmun: template owns paragraph para/style and the default
 /// char-shape; emphasis runs (a run whose id differs from the default) survive.
 fn apply_role(mut src: Paragraph, slot: &Slot) -> Paragraph {
-    let has_visual = src
-        .controls
-        .iter()
-        .any(|c| matches!(c, Control::Picture(_) | Control::Table(_) | Control::Shape(_)));
+    let has_visual = src.controls.iter().any(|c| {
+        matches!(
+            c,
+            Control::Picture(_) | Control::Table(_) | Control::Shape(_)
+        )
+    });
     let def = default_cs(&src);
     for cs in &mut src.char_shapes {
         if cs.char_shape_id == def {
@@ -76,13 +74,22 @@ fn apply_balmun(src: Paragraph, slot: &Slot) -> Paragraph {
     let qnum_cs = slot.char_shape_id;
     let def = default_cs(&src);
 
-    let mut runs = vec![CharShapeRef { start_pos: 0, char_shape_id: qnum_cs }];
+    let mut runs = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id: qnum_cs,
+    }];
     if let Some(&body_start) = src.char_offsets.get(qnum_chars) {
-        runs.push(CharShapeRef { start_pos: body_start, char_shape_id: body_cs });
+        runs.push(CharShapeRef {
+            start_pos: body_start,
+            char_shape_id: body_cs,
+        });
         // Preserve emphasis runs (밑줄/볼드 etc.) after the question number.
         for r in &src.char_shapes {
             if r.start_pos > body_start && r.char_shape_id != def {
-                runs.push(CharShapeRef { start_pos: r.start_pos, char_shape_id: r.char_shape_id });
+                runs.push(CharShapeRef {
+                    start_pos: r.start_pos,
+                    char_shape_id: r.char_shape_id,
+                });
             }
         }
         runs.sort_by_key(|r| r.start_pos);
@@ -132,7 +139,13 @@ fn apply_box(src: Paragraph, slot: &Slot) -> Paragraph {
             .cells
             .get(content_idx)
             .and_then(|c| c.paragraphs.first())
-            .map(|p| (p.para_shape_id, p.style_id, p.char_shapes.first().map(|x| x.char_shape_id)));
+            .map(|p| {
+                (
+                    p.para_shape_id,
+                    p.style_id,
+                    p.char_shapes.first().map(|x| x.char_shape_id),
+                )
+            });
         if let Some((pp, st, cs)) = ref_meta {
             for p in &mut content {
                 p.para_shape_id = pp;
@@ -200,7 +213,7 @@ fn qnum_prefix_len(text: &str) -> Option<usize> {
         return None;
     }
     i += 1; // consume '.'
-    // A following digit means it was a decimal, not a question number.
+            // A following digit means it was a decimal, not a question number.
     if i < chars.len() && chars[i].is_ascii_digit() {
         return None;
     }

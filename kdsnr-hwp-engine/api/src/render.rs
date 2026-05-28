@@ -92,10 +92,40 @@ pub(crate) fn hancom_dir() -> PathBuf {
             "macos" => PathBuf::from(
                 "/Applications/Hancom Office HWP.app/Contents/Resources/Hnc/Shared",
             ),
-            "windows" => PathBuf::from("C:/Program Files (x86)/Hnc/Office/Shared"),
+            // Hancom Office installs under `Hnc\Office <year>\HOffice<ver>\Shared`
+            // (e.g. Office 2024 → HOffice130). Discover it; fall back to the
+            // legacy layout if nothing matches.
+            "windows" => find_windows_hancom_shared()
+                .unwrap_or_else(|| PathBuf::from("C:/Program Files (x86)/Hnc/Office/Shared")),
             _ => PathBuf::new(),
         }
     })
+}
+
+/// Locate `…\Hnc\Office*\HOffice*\Shared` under the common Program Files roots.
+#[cfg(target_os = "windows")]
+fn find_windows_hancom_shared() -> Option<PathBuf> {
+    for root in [
+        "C:/Program Files (x86)/Hnc",
+        "C:/Program Files/Hnc",
+    ] {
+        let Ok(offices) = std::fs::read_dir(root) else { continue };
+        for office in offices.flatten().filter(|e| e.path().is_dir()) {
+            let Ok(versions) = std::fs::read_dir(office.path()) else { continue };
+            for ver in versions.flatten() {
+                let shared = ver.path().join("Shared");
+                if shared.is_dir() {
+                    return Some(shared);
+                }
+            }
+        }
+    }
+    None
+}
+
+#[cfg(not(target_os = "windows"))]
+fn find_windows_hancom_shared() -> Option<PathBuf> {
+    None
 }
 
 /// Persistent decoded-glyph cache directory: `GLYPH_CACHE_DIR`, else the per-OS

@@ -80,10 +80,29 @@ pub fn missing_fonts(docs: &[Document]) -> Vec<(String, String)> {
     }
 }
 
-/// Hancom Office font directories to collect TTFs from, under `HANCOM_DIR`.
+/// Directories to collect Hancom TTFs from. The Hancom shared root holds them
+/// under `TTF/{Hwp,All,Install}`; some faces (e.g. HANBatang, HYHWPEQ) are only
+/// installed system-wide, so the OS font directory is searched too.
 fn hancom_ttf_dirs() -> Vec<PathBuf> {
     let base = crate::render::hancom_dir();
-    vec![base.join("TTF/Hwp"), base.join("TTF/Install"), base.join("Fonts")]
+    let mut dirs = vec![
+        base.join("TTF/Hwp"),
+        base.join("TTF/All"),
+        base.join("TTF/Install"),
+        base.join("Fonts"),
+    ];
+    match std::env::consts::OS {
+        "windows" => {
+            if let Ok(win) = std::env::var("WINDIR") {
+                dirs.push(PathBuf::from(win).join("Fonts"));
+            } else {
+                dirs.push(PathBuf::from("C:/Windows/Fonts"));
+            }
+        }
+        "macos" => dirs.push(PathBuf::from("/Library/Fonts")),
+        _ => {}
+    }
+    dirs
 }
 
 /// Find `file` (case-insensitive) under any Hancom TTF directory.

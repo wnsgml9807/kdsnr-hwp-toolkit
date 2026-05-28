@@ -30,6 +30,8 @@ include = [
     { path = "kdsnr-hwp-engine/*/Cargo.toml", format = "sdist" },
     { path = "kdsnr-hwp-engine/*/src/**/*", format = "sdist" },
     { path = "kdsnr-hwp-engine/hft/fonts/**/*", format = "sdist" },
+    # include_str! source for the embedded font manifest (lives outside src/).
+    { path = "kdsnr-hwp-engine/font/manifest.tsv", format = "sdist" },
 ]
 
 [tool.pytest.ini_options]

@@ -14,6 +14,7 @@
 pub mod apply_atom;
 pub mod inject;
 pub mod merge_styles;
+pub mod postprocess;
 pub mod rewrite;
 pub mod slot_catalog;
 
@@ -30,9 +31,9 @@ use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::parse_document;
 use crate::split::{classify_atom, AtomKind, Subject};
 
-const MATH_HWPX: &[u8] = include_bytes!("../../../../../templet/math.hwpx");
-const SCIENCE_HWPX: &[u8] = include_bytes!("../../../../../templet/science.hwpx");
-const SOCIAL_HWPX: &[u8] = include_bytes!("../../../../../templet/social.hwpx");
+const MATH_HWPX: &[u8] = include_bytes!("templates/math.hwpx");
+const SCIENCE_HWPX: &[u8] = include_bytes!("templates/science.hwpx");
+const SOCIAL_HWPX: &[u8] = include_bytes!("templates/social.hwpx");
 
 /// Parsed subject template, cached for the process lifetime.
 fn template_doc(subject: Subject) -> &'static Document {
@@ -81,7 +82,12 @@ pub fn compose_question(src: &Document, subject: Subject, unit_paragraphs: &[Par
         }
     }
 
-    inject(merged, composed)
+    let mut out = inject(merged, composed);
+    postprocess::strip_default_tab_stop(&mut out);
+    if matches!(subject, Subject::Science | Subject::Social) {
+        postprocess::clear_footers(&mut out);
+    }
+    out
 }
 
 #[cfg(test)]

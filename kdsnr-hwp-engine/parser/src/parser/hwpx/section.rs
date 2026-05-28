@@ -31,6 +31,22 @@ use super::utils::{
 };
 use super::HwpxError;
 
+/// HWPX 인라인 탭(`<hp:tab>`)을 정품 HWP 의 인라인 탭 블록(0x0009 뒤 7 code unit)으로
+/// 변환한다: `[width_lo, width_hi, attr, 0, 0, 0, 0x0009]`, `attr = (type<<8) | leader`.
+/// (정품 12개 탭 샘플 + hwpx leader/type 상관 검증: leader=0·type=1 → 0x100. 끝 0x0009 는
+/// 인라인 컨트롤 종료 code unit.) 직렬화·HWP 출력이 모두 이 한 표현을 일관되게 소비한다.
+fn hwpx_tab_ext(width: u32, leader: u16, tab_type: u16) -> [u16; 7] {
+    [
+        (width & 0xFFFF) as u16,
+        (width >> 16) as u16,
+        (tab_type << 8) | (leader & 0x00FF),
+        0,
+        0,
+        0,
+        0x0009,
+    ]
+}
+
 /// section*.xml을 파싱하여 Section 모델로 변환한다.
 pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
     let mut section = Section::default();
@@ -349,18 +365,18 @@ fn parse_paragraph(
                     }
                     b"tab" => {
                         push_text_part(&mut text_parts, &mut item_parts, "\t".to_string());
-                        // HWPX 인라인 탭 속성 — type 은 raw HWPX 값(0=LEFT,1=RIGHT,2=CENTER,3=DECIMAL)으로
-                        // 저장하여 native 경로 (text_measurement::measure_text_width 등)의 raw 매칭 분기와 일치시킨다.
-                        let mut ext = [0u16; 7];
+                        let mut width = 0u32;
+                        let mut leader = 0u16;
+                        let mut tab_type = 0u16;
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
-                                b"width" => ext[0] = parse_u16(&attr),
-                                b"leader" => ext[1] = parse_u16(&attr),
-                                b"type" => ext[2] = parse_u16(&attr),
+                                b"width" => width = parse_u32(&attr),
+                                b"leader" => leader = parse_u16(&attr),
+                                b"type" => tab_type = parse_u16(&attr),
                                 _ => {}
                             }
                         }
-                        para.tab_extended.push(ext);
+                        para.tab_extended.push(hwpx_tab_ext(width, leader, tab_type));
                     }
                     b"lineseg" => {
                         // 단독 lineseg (linesegarray 밖에 나올 경우)
@@ -651,17 +667,18 @@ fn read_text_content_with_tabs(
                     b"lineBreak" | b"columnBreak" => text.push('\n'),
                     b"tab" => {
                         text.push('\t');
-                        // HWPX 인라인 탭 속성 — type 은 raw HWPX 값으로 저장 (native 매칭 분기와 일치).
-                        let mut ext = [0u16; 7];
+                        let mut width = 0u32;
+                        let mut leader = 0u16;
+                        let mut tab_type = 0u16;
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
-                                b"width" => ext[0] = parse_u16(&attr),
-                                b"leader" => ext[1] = parse_u16(&attr),
-                                b"type" => ext[2] = parse_u16(&attr),
+                                b"width" => width = parse_u32(&attr),
+                                b"leader" => leader = parse_u16(&attr),
+                                b"type" => tab_type = parse_u16(&attr),
                                 _ => {}
                             }
                         }
-                        tab_ext_buf.push(ext);
+                        tab_ext_buf.push(hwpx_tab_ext(width, leader, tab_type));
                     }
                     b"nbSpace" => text.push('\u{00A0}'),
                     b"fwSpace" => text.push('\u{2007}'),

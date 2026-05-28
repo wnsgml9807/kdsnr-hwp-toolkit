@@ -151,6 +151,16 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     if !master_pages.is_empty() {
         for section in &mut sections {
             section.section_def.master_pages = master_pages.clone();
+            // 직렬화되는 secd 는 section_def 필드가 아니라 문단 내
+            // Control::SectionDef 인스턴스다(<hp:secPr> 파싱 시점에 clone 되어
+            // 바탕쪽을 아직 모름). hwp 직렬화에서 바탕쪽이 빠지지 않도록 그쪽에도 채운다.
+            for para in &mut section.paragraphs {
+                for ctrl in &mut para.controls {
+                    if let crate::model::control::Control::SectionDef(sd) = ctrl {
+                        sd.master_pages = master_pages.clone();
+                    }
+                }
+            }
         }
     }
 

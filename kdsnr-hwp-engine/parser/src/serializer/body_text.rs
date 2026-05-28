@@ -326,15 +326,18 @@ fn serialize_para_text(para: &Paragraph) -> (Vec<u8>, u32) {
             '\t' => {
                 code_units.push(0x0009);
                 mask |= 1u32 << 0x0009;
-                // TAB 확장 데이터 복원 (탭 너비, 종류 등)
+                // 탭 인라인 블록(0x0009 뒤 7 code unit). HWP·HWPX 양 출처 모두
+                // 파서가 정품 구조 [width_lo, width_hi, attr, 0, 0, 0, 0x0009] 로
+                // 저장하므로 그대로 기록한다. ext 가 없으면 종료 code unit 만 보존.
                 if tab_idx < para.tab_extended.len() {
                     for &cu in &para.tab_extended[tab_idx] {
                         code_units.push(cu);
                     }
                 } else {
-                    for _ in 0..7 {
+                    for _ in 0..6 {
                         code_units.push(0);
                     }
+                    code_units.push(0x0009);
                 }
                 tab_idx += 1;
                 prev_end = offset + 8;

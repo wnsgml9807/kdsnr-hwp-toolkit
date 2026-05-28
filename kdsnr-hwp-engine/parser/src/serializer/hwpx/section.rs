@@ -299,8 +299,15 @@ fn render_sec_pr_open(sec_def: &SectionDef) -> String {
     } else {
         sec_def.default_tab_spacing
     };
+    // 분할 출력은 tabStopVal/tabStopUnit 를 생략해 주입된 source 문단의 탭이
+    // 템플릿 기본(4000) 대신 tabStop 기반 암묵 기본으로 조판되게 한다.
+    let tab_stop_default = if sec_def.omit_default_tab_stop {
+        String::new()
+    } else {
+        format!(r#" tabStopVal="{TAB_DEFAULT_WIDTH}" tabStopUnit="HWPUNIT""#)
+    };
     format!(
-        r#"<hp:secPr id="" textDirection="{text_direction}" spaceColumns="{}" tabStop="{tab_stop}" tabStopVal="{TAB_DEFAULT_WIDTH}" tabStopUnit="HWPUNIT" outlineShapeIDRef="{outline_id}" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="{}">"#,
+        r#"<hp:secPr id="" textDirection="{text_direction}" spaceColumns="{}" tabStop="{tab_stop}"{tab_stop_default} outlineShapeIDRef="{outline_id}" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="{}">"#,
         sec_def.column_spacing,
         sec_def.master_pages.len()
     )

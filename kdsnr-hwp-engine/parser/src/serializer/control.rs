@@ -237,14 +237,33 @@ fn serialize_section_def(sd: &SectionDef, level: u16, records: &mut Vec<Record>)
         });
     }
 
-    // 기타 자식 레코드 복원 (바탕쪽 LIST_HEADER + 문단 등)
-    for raw in &sd.extra_child_records {
-        records.push(Record {
-            tag_id: raw.tag_id,
-            level: raw.level,
-            size: raw.data.len() as u32,
-            data: raw.data.clone(),
-        });
+    // 바탕쪽(secd 꼬리 LIST_HEADER + 문단).
+    // HWP 출처는 원본 바이트를 그대로 복원해 무손실. HWPX 출처는 raw 가 없으므로
+    // 모델의 master_pages 를 LIST_HEADER + 문단으로 합성한다(한컴이 hwpx masterPage 를
+    // hwp secd 자식 리스트로 변환하는 동작과 동일). 확장 바탕쪽은 구역 끝에 별도로
+    // 붙으므로 여기서는 비확장만 emit 한다.
+    if !sd.extra_child_records.is_empty() {
+        for raw in &sd.extra_child_records {
+            records.push(Record {
+                tag_id: raw.tag_id,
+                level: raw.level,
+                size: raw.data.len() as u32,
+                data: raw.data.clone(),
+            });
+        }
+    } else {
+        for mp in sd.master_pages.iter().filter(|m| !m.is_extension) {
+            serialize_list_header_with_paragraphs(
+                &mp.paragraphs,
+                level + 1,
+                mp.text_width,
+                mp.text_height,
+                mp.text_ref,
+                mp.num_ref,
+                crate::model::table::VerticalAlign::Top,
+                records,
+            );
+        }
     }
 }
 

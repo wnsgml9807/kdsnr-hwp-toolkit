@@ -48,6 +48,9 @@ venv/
 # Keep package resources/templates tracked even though root samples are ignored.
 !src/kdsnr_hwp_toolkit/resources/templates/*.hwpx
 !src/kdsnr_hwp_toolkit/bin/.gitkeep
+# Bundled subject templates compiled into the engine (include_bytes!).
+!kdsnr-hwp-engine/parser/src/split/compose/templates/
+!kdsnr-hwp-engine/parser/src/split/compose/templates/*.hwpx
 
 # Test/probe corpora are local and large; keep source code and package data only.
 /tests/
@@ -120,3 +123,6 @@ kdsnr-hwp-engine/.fonts/
 # Tracked exceptions: the README and its logo (override *.md / *.png above).
 !README.md
 !assets/logo.png
+
+# Hancom hwpx→hwp ground-truth (byte-eq reference, not redistributed)
+/GT_hwpx/

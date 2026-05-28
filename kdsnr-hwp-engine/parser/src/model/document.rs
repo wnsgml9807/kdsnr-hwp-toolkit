@@ -225,6 +225,12 @@ pub struct SectionDef {
     pub extra_child_records: Vec<RawRecord>,
     /// 바탕쪽 (extra_child_records에서 파싱, 렌더링 전용)
     pub master_pages: Vec<MasterPage>,
+    /// 분할 출력 전용: secPr 의 tabStopVal/tabStopUnit(템플릿 기본 4000)을 생략한다.
+    /// 원본 source 문단은 이 값을 설정하지 않고 tabStop 기반 암묵 기본에 기대므로,
+    /// 템플릿 secPr 에 주입될 때 4000 이 새어 들어가면 한컴이 탭을 다르게 조판한다
+    /// (legacy `_strip_templet_tabstopval`). hwp↔hwpx 변환 경로는 기본값(false)로
+    /// 기존 출력을 그대로 유지한다.
+    pub omit_default_tab_stop: bool,
 }
 
 impl Document {

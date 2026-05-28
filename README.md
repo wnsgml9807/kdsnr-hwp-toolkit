@@ -4,14 +4,14 @@
 
 # HWP Toolkit
 
-![version](https://img.shields.io/badge/version-0.1.1-blue)
+![version](https://img.shields.io/badge/version-0.1.2-blue)
 
 시험지 형식의 HWP 파일을 한컴 COM API 없이 가공하는 도구입니다.
 HWP/HWPX 파일을 읽어 문항으로 분해하고, 웹 뷰어에서 쓸 수 있는 미리보기(SVG/PNG/PDF)를 반환합니다.
 Windows/MacOS/Linux 등 다양한 환경에서 사용할 수 있습니다.
 
 - 제작 : (주)강남대성수능연구소
-- 담당자 : 권준희
+- 담당자 : 권준희 (kdsnrai@gmail.com)
 
 공개된 한컴 사양 문서를 바탕으로, 메모리에 드나드는 한컴 문서 구조와 어셈블리를 분석해 Rust로 포팅한 자체 엔진입니다.
 HWP/HWPX 파싱·직렬화, 레이아웃 조판, 문항 분해, 미리보기 렌더링을 모두 자체 구현합니다. (외부 렌더러 의존 없음)
@@ -75,14 +75,18 @@ doc.source_format                    # "hwp" | "hwpx"
 
 ### 1. 불러오기 / 저장
 
-**`import_file(path)`** — 컨테이너 종류는 확장자가 아니라 바이트로 판별합니다.
+**`import_file(path)`** — 파일을 열어 문서 모델(`Document`)로 만듭니다.
+
+컨테이너 종류(HWP/HWPX)는 확장자가 아니라 바이트로 판별하므로, 확장자가 틀려도 올바르게 읽습니다.
 
 | 인자 | 타입 | 설명 |
 | --- | --- | --- |
 | `path` | `str \| Path` | 입력 파일 경로 |
 | **반환** | `Document` | 문서 모델 |
 
-**`save_file(doc, path, file_type=None)`**
+**`save_file(doc, path, file_type=None)`** — 문서 모델을 파일로 저장합니다.
+
+형식은 `file_type`으로 지정하고, 주지 않으면 경로의 확장자(`.hwp` / `.hwpx`)로 추론합니다.
 
 | 인자 | 타입 | 설명 |
 | --- | --- | --- |
@@ -91,8 +95,10 @@ doc.source_format                    # "hwp" | "hwpx"
 | `file_type` | `"hwp" \| "hwpx" \| None` | `None`이면 확장자로 추론 |
 | **반환** | `str` | 저장된 경로 |
 
-손상된 문서(한컴이 아닌 툴로 변형·편집되어 레이아웃이 깨진 파일)는 불러올 때
-`ValueError`를 반환합니다. `is_corrupt(doc)`로 예외 없이 직접 검사할 수도 있습니다.
+**`is_corrupt(doc)`** — 문서가 손상된 형태인지 검사합니다.
+
+한컴이 아닌 툴로 변형·편집되어 레이아웃이 깨진 파일이면 `True`를 돌려줍니다. 이런 문서는
+`import_file` 단계에서 이미 `ValueError`로 막히며, 이 함수로 예외 없이 직접 확인할 수 있습니다.
 
 | 인자 | 타입 | 설명 |
 | --- | --- | --- |
@@ -110,9 +116,10 @@ k.save_file(doc, "out.hwp", file_type="hwp")
 
 ### 2. HWP ↔ HWPX 변환
 
-**`hwp_to_hwpx(doc)`** / **`hwpx_to_hwp(doc)`** — 모델은 그대로 두고 포맷 태그만 바꿉니다.
-실제 컨테이너 변환은 `save_file`에서 일어납니다. `save_file`에 `file_type`이나
-확장자를 직접 주면 태그 전환 없이 바로 저장할 수도 있습니다.
+**`hwp_to_hwpx(doc)`** / **`hwpx_to_hwp(doc)`** — 문서의 형식(HWP ↔ HWPX)을 바꿉니다.
+
+내용(모델)은 그대로 두고 포맷 태그만 전환하며, 실제 컨테이너 변환은 `save_file` 시점에
+일어납니다. `save_file`에 `file_type`이나 확장자를 직접 주면 이 전환 없이 바로 저장할 수도 있습니다.
 
 | 인자 | 타입 | 설명 |
 | --- | --- | --- |
@@ -131,8 +138,10 @@ k.save_file(hwp_doc, "out.hwp")
 
 ### 3. 개별 문항 분해
 
-**`split_set_to_question(doc)`** — 원본 순서를 유지합니다. 각 결과는 바로 저장·렌더할 수 있습니다.
-지원 과목은 수학/과학/사회이며, 국어 시험지는 `ValueError`(미지원, 다음 버전 예정)를 반환합니다.
+**`split_set_to_question(doc)`** — 시험지 한 부를 문항별 문서로 나눕니다.
+
+원본 순서를 유지하며, 각 결과는 바로 저장·렌더할 수 있습니다. 지원 과목은 수학/과학/사회이고,
+국어 시험지는 `ValueError`(미지원, 다음 버전 예정)를 반환합니다.
 
 | 인자 | 타입 | 설명 |
 | --- | --- | --- |
@@ -151,7 +160,10 @@ for q in questions:
 
 ### 4. 미리보기 렌더링
 
-**`export_preview(docs, save_path, preview_type="page", media_types=None, dpi=200)`** — 렌더 전 필요한 글꼴을 확인·수집합니다.
+**`export_preview(docs, save_path, preview_type="page", media_types=None, dpi=200)`** — 문서를 이미지/PDF 미리보기로 내보냅니다.
+
+페이지 단위 또는 문항 단위로 SVG/PNG/PDF를 생성합니다. 렌더 전 필요한 글꼴을 먼저 확인·수집하고,
+없으면 누락 목록과 함께 `ValueError`를 냅니다.
 
 | 인자 | 타입 | 설명 |
 | --- | --- | --- |

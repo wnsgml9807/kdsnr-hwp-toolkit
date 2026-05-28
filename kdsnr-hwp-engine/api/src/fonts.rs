@@ -27,9 +27,11 @@ pub struct FontReport {
     pub missing: Vec<(String, String)>,
 }
 
-/// Missing fonts as `(face, file)`, one entry per distinct missing **file** (a
-/// representative face is kept), since collection and the error report are
-/// per-file. Multiple faces mapping to the same absent file collapse to one row.
+/// Missing fonts as `(face, file)`. A missing *file* (a registered face whose
+/// font file is absent) collapses to one row, since collection is per-file. An
+/// *unregistered* face has no file (`"(미등록)"`), so it is reported per distinct
+/// face — every unmapped face is its own problem, and deduping by the shared
+/// `"(미등록)"` placeholder would hide all but the first.
 fn missing_in_dir(docs: &[Document], dir: &std::path::Path) -> Vec<(String, String)> {
     let manifest = FontManifest::load(dir);
     let mut seen = BTreeSet::new();
@@ -38,7 +40,8 @@ fn missing_in_dir(docs: &[Document], dir: &std::path::Path) -> Vec<(String, Stri
         let model = normalize(doc);
         let faces: Vec<String> = required_faces(&model).into_iter().collect();
         for m in manifest.missing_for("", &faces) {
-            if seen.insert(m.file.clone()) {
+            let key = if m.file == "(미등록)" { m.face.clone() } else { m.file.clone() };
+            if seen.insert(key) {
                 out.push((m.face, m.file));
             }
         }

@@ -7,7 +7,13 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-/// face → required font file name, loaded from `.fonts/manifest.tsv`.
+/// Canonical face→file map, compiled into the binary so deployment only needs
+/// the font *files* in `.fonts/` (the folder ships empty; `manifest.tsv` is not
+/// required at runtime). A `manifest.tsv` in the font dir, if present, overrides.
+const EMBEDDED_MANIFEST: &str = include_str!("../manifest.tsv");
+
+/// face → required font file name. Source: `<dir>/manifest.tsv` if present, else
+/// the embedded canonical map.
 pub struct FontManifest {
     dir: PathBuf,
     map: BTreeMap<String, String>,
@@ -22,19 +28,19 @@ pub struct MissingFont {
 }
 
 impl FontManifest {
-    /// Load `<dir>/manifest.tsv`. Missing/garbled lines are skipped; an absent
-    /// manifest yields an empty map (every face then reports as unregistered).
+    /// Load the face→file map: `<dir>/manifest.tsv` if it exists, otherwise the
+    /// embedded canonical map. Missing/garbled lines are skipped.
     pub fn load(dir: &Path) -> Self {
+        let text = std::fs::read_to_string(dir.join("manifest.tsv"))
+            .unwrap_or_else(|_| EMBEDDED_MANIFEST.to_string());
         let mut map = BTreeMap::new();
-        if let Ok(text) = std::fs::read_to_string(dir.join("manifest.tsv")) {
-            for line in text.lines() {
-                let line = line.trim_end();
-                if line.is_empty() {
-                    continue;
-                }
-                if let Some((face, file)) = line.split_once('\t') {
-                    map.insert(face.trim().to_string(), file.trim().to_string());
-                }
+        for line in text.lines() {
+            let line = line.trim_end();
+            if line.is_empty() {
+                continue;
+            }
+            if let Some((face, file)) = line.split_once('\t') {
+                map.insert(face.trim().to_string(), file.trim().to_string());
             }
         }
         FontManifest {

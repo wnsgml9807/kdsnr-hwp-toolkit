@@ -126,3 +126,7 @@ kdsnr-hwp-engine/.fonts/
 
 # Hancom hwpx→hwp ground-truth (byte-eq reference, not redistributed)
 /GT_hwpx/
+
+# Bundled default font dir: track the folder, never the font files.
+/src/kdsnr_hwp_toolkit/.fonts/*
+!/src/kdsnr_hwp_toolkit/.fonts/.gitkeep

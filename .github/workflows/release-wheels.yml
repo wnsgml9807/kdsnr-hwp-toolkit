@@ -26,8 +26,6 @@ jobs:
             target: x64
           - os: macos-latest
             target: aarch64
-          - os: macos-13
-            target: x86_64
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

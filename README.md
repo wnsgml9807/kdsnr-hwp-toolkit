@@ -42,7 +42,7 @@ pip install https://github.com/wnsgml9807/kdsnr-hwp-toolkit/releases/download/v0
 pip install https://github.com/wnsgml9807/kdsnr-hwp-toolkit/releases/download/v0.1.2/kdsnr_hwp_toolkit-0.1.2-cp310-abi3-macosx_11_0_arm64.whl
 ```
 
-**Linux (x64)**
+**Linux (x64)** — 한컴 오피스가 없어 글꼴 자동 수집이 안 되므로 [폰트](#폰트) 파일을 수동으로 복사해야 합니다.
 
 ```bash
 pip install https://github.com/wnsgml9807/kdsnr-hwp-toolkit/releases/download/v0.1.2/kdsnr_hwp_toolkit-0.1.2-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
@@ -67,18 +67,23 @@ pip install -e .
 한컴 오피스 설치본에서 수집합니다. 글리프는 처음 한 번만 디코딩되어 사용자 캐시에
 저장됩니다(이후 실행은 즉시 로드).
 
-- `FONT_DIR` : 글꼴 파일과 매핑이 위치한 폴더
+글꼴은 패키지에 동봉된 **`.fonts/` 폴더**(설치 위치 기준 `kdsnr_hwp_toolkit/.fonts/`)에
+모입니다. 이 폴더가 기본 글꼴 폴더이며, 폴더는 비어 있는 상태로 배포됩니다(글꼴 파일은
+미동봉). 다른 위치를 쓰려면 `FONT_DIR` 환경변수로 덮어쓸 수 있습니다.
+
+- `FONT_DIR` : 글꼴 폴더 (미설정 시 동봉된 `.fonts/`)
 - `HANCOM_PATH` : 한컴 오피스 설치 경로 (글꼴 수집 원본)
 
-`export_preview`는 렌더 전 필요한 글꼴을 확인하고, 없으면 Windows/macOS에서는
-한컴 설치본에서 자동 수집합니다. 끝내 찾지 못하면 누락 글꼴 목록과 함께
-`ValueError`를 반환합니다.
+`export_preview`는 렌더 전 필요한 글꼴을 확인하고, 없으면 **Windows/macOS에서는
+한컴 설치본에서 자동 수집**해 `.fonts/`에 채웁니다. 끝내 찾지 못하면 누락 글꼴 목록과
+함께 `ValueError`를 반환합니다.
 
-**수동 추가** — 자동 수집이 안 되는 환경(예: Linux)이거나 자동 수집에 실패하면,
-오류 메시지에 나온 글꼴 파일을 `FONT_DIR`에 직접 복사하면 됩니다.
+**수동 추가 (Linux 등)** — 한컴이 없어 자동 수집이 안 되면, 오류 메시지에 나온 글꼴
+파일을 `.fonts/` 폴더(또는 `FONT_DIR`)에 직접 복사하세요.
 
 ```bash
-export FONT_DIR=/path/to/fonts
+# 동봉된 .fonts/ 위치는 설치된 패키지 기준입니다.
+FONT_DIR=$(python -c "import kdsnr_hwp_toolkit, pathlib; print(pathlib.Path(kdsnr_hwp_toolkit.__file__).parent / '.fonts')")
 cp HCRBatang.ttf HCRDotum.ttf  ...  "$FONT_DIR"/   # 누락 목록의 파일들
 ```
 

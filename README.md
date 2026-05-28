@@ -26,8 +26,6 @@ HWP/HWPX 파싱·직렬화, 레이아웃 조판, 문항 분해, 미리보기 렌
 - 운영체제 : Windows / macOS / Linux
 - Python 3.10 이상
 
-### 사용자 — 미리 빌드된 wheel (권장)
-
 OS에 따라 아래 커맨드를 터미널에서 복사하여 실행하세요. 빌드 도구(Rust 등)는 필요 없습니다.
 
 **Windows (x64)**
@@ -46,19 +44,6 @@ pip install https://github.com/wnsgml9807/kdsnr-hwp-toolkit/releases/download/v0
 
 ```bash
 pip install https://github.com/wnsgml9807/kdsnr-hwp-toolkit/releases/download/v0.1.2/kdsnr_hwp_toolkit-0.1.2-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-```
-
-### 개발자 — 소스 빌드
-
-소스에서 직접 빌드하려면 Rust 툴체인이 필요합니다(**Windows는 Visual Studio C++ Build Tools**도 함께).
-
-```bash
-# Rust 설치 (macOS / Linux — Windows는 rustup + VS C++ Build Tools)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-git clone https://github.com/wnsgml9807/kdsnr-hwp-toolkit.git
-cd kdsnr-hwp-toolkit
-pip install -e .
 ```
 
 ### 폰트

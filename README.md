@@ -114,27 +114,27 @@ k.save_file(doc, "out.hwp", file_type="hwp")
 # "[KDSNR-HWP-TOOLKIT] 한컴이 아닌 다른 툴에 의해 변형되거나 편집되어 손상된 문서입니다. 변환이 불가능합니다."
 ```
 
-### 2. HWP ↔ HWPX 변환
+### 2. HWP → HWPX 변환
 
-**`hwp_to_hwpx(doc)`** / **`hwpx_to_hwp(doc)`** — 문서의 형식(HWP ↔ HWPX)을 바꿉니다.
+**`hwp_to_hwpx(doc)`** — HWP 문서를 HWPX 형식으로 바꿉니다.
 
 내용(모델)은 그대로 두고 포맷 태그만 전환하며, 실제 컨테이너 변환은 `save_file` 시점에
 일어납니다. `save_file`에 `file_type`이나 확장자를 직접 주면 이 전환 없이 바로 저장할 수도 있습니다.
 
 | 인자 | 타입 | 설명 |
 | --- | --- | --- |
-| `doc` | `Document` | 원본 문서 |
-| **반환** | `Document` | 포맷 태그만 전환된 새 문서 (내용 동일) |
+| `doc` | `Document` | 원본 HWP 문서 |
+| **반환** | `Document` | HWPX 태그로 전환된 새 문서 (내용 동일) |
 
 ```python
 doc = k.import_file("input.hwp")
 hwpx_doc = k.hwp_to_hwpx(doc)            # HWPX 태그로 전환
 k.save_file(hwpx_doc, "out.hwpx")
-
-doc = k.import_file("input.hwpx")
-hwp_doc = k.hwpx_to_hwp(doc)             # HWP 태그로 전환
-k.save_file(hwp_doc, "out.hwp")
 ```
+
+> **역방향(HWPX → HWP)은 다음 버전 예정입니다.** `hwpx_to_hwp(doc)` 및 HWPX 출처
+> 문서를 `.hwp`로 저장하는 호출은 현재 `ValueError`를 반환합니다. HWP 출처 문서를
+> `.hwp`로 저장하는 것은 정상 동작합니다.
 
 ### 3. 개별 문항 분해
 

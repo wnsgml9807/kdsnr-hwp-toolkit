@@ -79,6 +79,20 @@ fn save_file(doc: &Document, path: PathBuf, file_type: Option<&str>) -> PyResult
         Some(s) => Some(parse_file_type(s)?),
         None => None,
     };
+    // HWPX→HWP serialization is not yet supported (next version): block saving an
+    // HWPX-origin document as HWP, whether the target is given explicitly or via
+    // the path extension. HWP-origin saves and HWPX targets are unaffected.
+    let target_is_hwp = match ft {
+        Some(FileType::Hwp) => true,
+        Some(FileType::Hwpx) => false,
+        None => path
+            .extension()
+            .and_then(|e| e.to_str())
+            .is_some_and(|e| e.eq_ignore_ascii_case("hwp")),
+    };
+    if target_is_hwp && matches!(doc.source_format, SourceFormat::Hwpx) {
+        return Err(PyValueError::new_err(HWPX_TO_HWP_UNSUPPORTED));
+    }
     let out = api::save_file(&doc.inner, &path, ft).map_err(value_err)?;
     Ok(out.display().to_string())
 }
@@ -95,16 +109,15 @@ fn hwp_to_hwpx(doc: &Document) -> Document {
     }
 }
 
-/// Tag a document as HWP. The IR is shared between formats, so this only flips
-/// the format tag; the HWP (CFB) container is produced when `save_file` runs.
+const HWPX_TO_HWP_UNSUPPORTED: &str =
+    "[KDSNR-HWP-TOOLKIT] HWPX→HWP 변환은 다음 버전에서 지원 예정입니다.";
+
+/// Convert an HWPX-origin document to HWP. Not yet supported — raises
+/// `ValueError` (planned for a future version). HWP→HWPX and same-format saves
+/// are unaffected.
 #[pyfunction]
-fn hwpx_to_hwp(doc: &Document) -> Document {
-    Document {
-        inner: doc.inner.clone(),
-        source_format: SourceFormat::Hwp,
-        stem: doc.stem.clone(),
-        label: doc.label.clone(),
-    }
+fn hwpx_to_hwp(_doc: &Document) -> PyResult<Document> {
+    Err(PyValueError::new_err(HWPX_TO_HWP_UNSUPPORTED))
 }
 
 /// Split a problem-set document into per-question `Document`s, in order. Each is

@@ -303,6 +303,33 @@ mod tests {
         assert_eq!(FileType::from_extension(Path::new("a.txt")), None);
     }
 
+    #[test]
+    fn hwpx_to_hwp_output_has_hancom_docinfo_trailer() {
+        let (doc, _) = import_file(&original("social.hwpx")).expect("import");
+        let bytes = kdsnr_hwp_parser::serializer::serialize_hwp(&doc).expect("serialize");
+        let mut cfb = kdsnr_hwp_parser::parser::cfb_reader::CfbReader::open(&bytes).expect("cfb");
+
+        let header = kdsnr_hwp_parser::parser::header::parse_file_header(
+            &cfb.read_file_header().expect("header"),
+        )
+        .expect("parse header");
+        assert_eq!(header.version.major, 5);
+        assert_eq!(header.version.minor, 1);
+        assert_eq!(header.version.build, 1);
+        assert_eq!(header.version.revision, 0);
+        assert!(header.flags.compressed);
+
+        let doc_info = cfb.read_doc_info(true).expect("docinfo");
+        let records =
+            kdsnr_hwp_parser::parser::record::Record::read_all(&doc_info).expect("docinfo records");
+        let tags: Vec<u16> = records.iter().map(|r| r.tag_id).collect();
+        assert!(tags.contains(&kdsnr_hwp_parser::parser::tags::HWPTAG_DOC_DATA));
+        assert!(tags.contains(&kdsnr_hwp_parser::parser::tags::HWPTAG_FORBIDDEN_CHAR));
+        assert!(tags.contains(&kdsnr_hwp_parser::parser::tags::HWPTAG_COMPATIBLE_DOCUMENT));
+        assert!(tags.contains(&kdsnr_hwp_parser::parser::tags::HWPTAG_LAYOUT_COMPATIBILITY));
+        assert!(tags.contains(&kdsnr_hwp_parser::parser::tags::HWPTAG_TRACKCHANGE));
+    }
+
     /// Probe (run with `--ignored`): does HWP binary save round-trip? For each
     /// pristine original, save to HWP, re-import, and report parse/guard outcome.
     /// Decides whether `save_file(.., Hwp)` is reliable enough to offer silently.

@@ -4,7 +4,9 @@
 pub mod advance;
 pub mod fontcheck;
 pub mod fontmap;
+mod fontmap_builtin;
 pub mod hftinfo;
+mod hftinfo_builtin;
 pub mod resolver;
 pub mod script;
 pub mod ttf;

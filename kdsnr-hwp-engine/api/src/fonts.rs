@@ -110,13 +110,20 @@ fn hancom_ttf_dirs() -> Vec<PathBuf> {
 
 /// Find `file` (case-insensitive) under any Hancom TTF directory.
 fn find_in_hancom(file: &str) -> Option<PathBuf> {
+    let fallbacks: &[&str] = match file.to_ascii_lowercase().as_str() {
+        "gulim.ttf" => &["gulim.ttc"],
+        _ => &[],
+    };
     for dir in hancom_ttf_dirs() {
         let Ok(entries) = std::fs::read_dir(&dir) else { continue };
         for entry in entries.flatten() {
             if entry
                 .file_name()
                 .to_str()
-                .is_some_and(|n| n.eq_ignore_ascii_case(file))
+                .is_some_and(|n| {
+                    n.eq_ignore_ascii_case(file)
+                        || fallbacks.iter().any(|f| n.eq_ignore_ascii_case(f))
+                })
             {
                 return Some(entry.path());
             }

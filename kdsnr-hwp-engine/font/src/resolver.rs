@@ -56,8 +56,8 @@ impl FontResolver {
         hftinfo_path: &Path,
         fontmap_paths: &[&Path],
     ) -> Result<Self, String> {
-        let subst = Substitution::load_path(hftinfo_path)?;
-        let mut fontmap = FontMap::default();
+        let subst = Substitution::load_path_or_builtin(hftinfo_path);
+        let mut fontmap = FontMap::builtin();
         for p in fontmap_paths {
             if let Ok(m) = FontMap::load_path(p) {
                 fontmap.merge(m);

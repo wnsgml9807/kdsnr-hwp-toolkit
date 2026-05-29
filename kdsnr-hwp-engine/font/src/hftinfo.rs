@@ -5,6 +5,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 
+use crate::hftinfo_builtin;
 use crate::script::Script;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -49,6 +50,19 @@ fn decode_utf16le(bytes: &[u8]) -> String {
 }
 
 impl Substitution {
+    pub fn builtin() -> Self {
+        let mut s = Substitution::default();
+        for &(script, face, fcat) in hftinfo_builtin::FACE_TO_FCAT {
+            s.face_to_fcat
+                .insert((script, norm(face)), fcat.to_string());
+        }
+        for &(script, fcat, family) in hftinfo_builtin::FCAT_TO_FAMILY {
+            s.fcat_to_family
+                .insert((script, fcat.to_string()), family.to_string());
+        }
+        s
+    }
+
     pub fn parse_bytes(bytes: &[u8]) -> Self {
         let text = decode_utf16le(bytes);
         let mut s = Substitution::default();
@@ -96,6 +110,10 @@ impl Substitution {
         Ok(Self::parse_bytes(&bytes))
     }
 
+    pub fn load_path_or_builtin(path: &Path) -> Self {
+        Self::load_path(path).unwrap_or_else(|_| Self::builtin())
+    }
+
     /// Generic family a face substitutes to, for the given script. `None` when
     /// the face isn't in the table (caller treats it as TTF-native).
     pub fn substitute(&self, face: &str, script: Script) -> Option<&str> {
@@ -110,5 +128,19 @@ impl Substitution {
     /// (face_to_fcat, fcat_to_family) entry counts (diagnostics).
     pub fn counts(&self) -> (usize, usize) {
         (self.face_to_fcat.len(), self.fcat_to_family.len())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Substitution;
+    use crate::script::Script;
+
+    #[test]
+    fn builtin_substitution_has_hancom_family_categories() {
+        let s = Substitution::builtin();
+        assert_eq!(s.counts(), (491, 49));
+        assert_eq!(s.substitute("신명 중명조", Script::Hangul), Some("Batang"));
+        assert_eq!(s.substitute("신명 중고딕", Script::Hangul), Some("Dotum"));
     }
 }

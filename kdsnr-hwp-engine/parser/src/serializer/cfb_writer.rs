@@ -27,6 +27,12 @@ pub fn serialize_hwp(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     // of source (an hwpx import carries compressed=false). A genuine .hwp source
     // is already compressed, so this is a no-op for it.
     let mut header = doc.header.clone();
+    if header.raw_data.is_none() {
+        header.version.major = 5;
+        header.version.minor = 1;
+        header.version.build = 1;
+        header.version.revision = 0;
+    }
     if !header.compressed {
         header.compressed = true;
         header.flags |= 0x01;

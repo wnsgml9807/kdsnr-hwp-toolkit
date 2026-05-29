@@ -155,9 +155,9 @@ hwpx_doc = k.hwp_to_hwpx(doc)            # HWPX 태그로 전환
 k.save_file(hwpx_doc, "out.hwpx")
 ```
 
-> **역방향(HWPX → HWP)은 다음 버전 예정입니다.** `hwpx_to_hwp(doc)` 및 HWPX 출처
-> 문서를 `.hwp`로 저장하는 호출은 현재 `ValueError`를 반환합니다. HWP 출처 문서를
-> `.hwp`로 저장하는 것은 정상 동작합니다.
+> **HWPX → HWP 저장은 호환성 검증 중입니다.** `hwpx_to_hwp(doc)`로 HWP 출력 태그를
+> 지정하거나, `save_file(doc, "out.hwp", file_type="hwp")`처럼 바로 저장할 수 있습니다.
+> 한컴 저장본과의 구조 차이는 계속 줄이는 중입니다.
 
 ### 3. 개별 문항 분해
 

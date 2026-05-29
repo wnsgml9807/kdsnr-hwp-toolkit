@@ -6,6 +6,8 @@
 use std::collections::HashMap;
 use std::path::Path;
 
+use crate::fontmap_builtin;
+
 #[derive(Default)]
 pub struct FontMap {
     /// `[Font Class]`: class name → ordered font list.
@@ -17,6 +19,29 @@ pub struct FontMap {
 }
 
 impl FontMap {
+    pub fn builtin() -> Self {
+        let mut m = FontMap::default();
+        for &(name, list) in fontmap_builtin::CLASSES {
+            m.classes.insert(
+                name.to_string(),
+                list.iter().map(|s| s.to_string()).collect(),
+            );
+        }
+        for &(src, list) in fontmap_builtin::MAP_FONT {
+            m.map_font
+                .entry(src.to_string())
+                .or_default()
+                .extend(list.iter().map(|s| s.to_string()));
+        }
+        for &(src, classes) in fontmap_builtin::MAP_FONT_CLASS {
+            m.map_font_class
+                .entry(src.to_string())
+                .or_default()
+                .extend(classes.iter().map(|s| s.to_string()));
+        }
+        m
+    }
+
     pub fn load_path(path: &Path) -> Result<Self, String> {
         let bytes = std::fs::read(path).map_err(|e| e.to_string())?;
         Ok(Self::parse_bytes(&bytes))
@@ -152,5 +177,17 @@ mapFontClass=한양견명조,BATANG
     fn unknown_face_is_itself() {
         let m = sample();
         assert_eq!(m.candidates("Arial"), vec!["Arial".to_string()]);
+    }
+
+    #[test]
+    fn builtin_fontmap_has_hancom_fallbacks() {
+        let m = FontMap::builtin();
+        let c = m.candidates("한양신명조");
+        assert!(c.iter().any(|s| s == "HY신명조"));
+        assert!(c.iter().any(|s| s == "Batang"));
+
+        let c = m.candidates("-윤고딕150");
+        assert!(c.iter().any(|s| s == "한컴 윤고딕 240"));
+        assert!(c.iter().any(|s| s == "함초롬돋움"));
     }
 }

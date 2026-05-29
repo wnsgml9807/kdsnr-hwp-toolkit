@@ -125,20 +125,67 @@ pub fn serialize_doc_info(doc_info: &DocInfo, doc_props: &DocProperties) -> Vec<
         stream.extend(write_record(record.tag_id, record.level, &record.data));
     }
 
-    // COMPATIBLE_DOCUMENT (+ child LAYOUT_COMPATIBILITY): every Hancom .hwp
-    // carries these document-compatibility records. An HWPX-sourced document
-    // has none (extra_records empty), so synthesize the standard zero records
-    // to keep the DocInfo structure complete. (target program 0 = Hancom.)
+    // Hancom .hwp files carry this DocInfo trailer. HWPX does not have matching
+    // XML elements, so synthesize empty/default records for HWP output.
+    let has_doc_data = doc_info
+        .extra_records
+        .iter()
+        .any(|r| r.tag_id == tags::HWPTAG_DOC_DATA);
+    if !has_doc_data {
+        stream.extend(write_record(tags::HWPTAG_DOC_DATA, 0, &default_doc_data()));
+    }
+
+    let has_forbidden = doc_info
+        .extra_records
+        .iter()
+        .any(|r| r.tag_id == tags::HWPTAG_FORBIDDEN_CHAR);
+    if !has_forbidden {
+        stream.extend(write_record(tags::HWPTAG_FORBIDDEN_CHAR, 1, &[0u8; 16]));
+    }
+
     let has_compat = doc_info
         .extra_records
         .iter()
         .any(|r| r.tag_id == tags::HWPTAG_COMPATIBLE_DOCUMENT);
     if !has_compat {
         stream.extend(write_record(tags::HWPTAG_COMPATIBLE_DOCUMENT, 0, &[0u8; 4]));
-        stream.extend(write_record(tags::HWPTAG_LAYOUT_COMPATIBILITY, 1, &[0u8; 20]));
+        stream.extend(write_record(
+            tags::HWPTAG_LAYOUT_COMPATIBILITY,
+            1,
+            &[0u8; 20],
+        ));
+    }
+
+    let has_trackchange = doc_info
+        .extra_records
+        .iter()
+        .any(|r| r.tag_id == tags::HWPTAG_TRACKCHANGE);
+    if !has_trackchange {
+        stream.extend(write_record(
+            tags::HWPTAG_TRACKCHANGE,
+            1,
+            &default_trackchange(),
+        ));
     }
 
     stream
+}
+
+fn default_doc_data() -> Vec<u8> {
+    vec![
+        0x1c, 0x02, 0x01, 0x00, 0x00, 0x00, 0x07, 0x02, 0x00, 0x80, 0x07, 0x02, 0x08, 0x00, 0x00,
+        0x00, 0x06, 0x40, 0x06, 0x00, 0x01, 0x00, 0x00, 0x00, 0x0e, 0x40, 0x06, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x0a, 0x40, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x40, 0x07, 0x00, 0x64,
+        0x00, 0x00, 0x00, 0x1d, 0x40, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1a, 0x40, 0x06, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x10, 0x40, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x40, 0x07,
+        0x00, 0x64, 0x00, 0x00, 0x00,
+    ]
+}
+
+fn default_trackchange() -> Vec<u8> {
+    let mut data = vec![0u8; 1032];
+    data[..4].copy_from_slice(&0x38u32.to_le_bytes());
+    data
 }
 
 // ============================================================

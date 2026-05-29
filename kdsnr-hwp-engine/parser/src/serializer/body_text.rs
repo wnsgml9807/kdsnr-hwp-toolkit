@@ -18,7 +18,9 @@ use super::record_writer::write_records;
 
 use crate::model::control::Control;
 use crate::model::document::Section;
+use crate::model::header_footer::MasterPage;
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph, RangeTag};
+use crate::model::table::VerticalAlign;
 use crate::parser::record::Record;
 use crate::parser::tags;
 
@@ -35,6 +37,7 @@ pub fn serialize_section(section: &Section) -> Vec<u8> {
         let is_last = i == para_count - 1;
         serialize_paragraph_with_msb(para, 0, is_last, &mut records);
     }
+    serialize_extension_master_pages(section, &mut records);
     write_records(&records)
 }
 
@@ -49,6 +52,41 @@ pub fn serialize_paragraph_list(
         let is_last = i == para_count - 1;
         serialize_paragraph_with_msb(para, base_level, is_last, records);
     }
+}
+
+fn serialize_extension_master_pages(section: &Section, records: &mut Vec<Record>) {
+    for mp in section
+        .section_def
+        .master_pages
+        .iter()
+        .filter(|mp| mp.is_extension)
+    {
+        records.push(Record {
+            tag_id: tags::HWPTAG_LIST_HEADER,
+            level: 1,
+            size: 0,
+            data: serialize_master_page_list_header(mp),
+        });
+        serialize_paragraph_list(&mp.paragraphs, 1, records);
+    }
+}
+
+fn serialize_master_page_list_header(mp: &MasterPage) -> Vec<u8> {
+    if !mp.raw_list_header.is_empty() {
+        return mp.raw_list_header.clone();
+    }
+
+    let mut w = ByteWriter::new();
+    w.write_u16(mp.paragraphs.len() as u16).unwrap();
+    w.write_u32(VerticalAlign::Top as u32).unwrap();
+    w.write_u16(0).unwrap();
+    w.write_u32(mp.text_width).unwrap();
+    w.write_u32(mp.text_height).unwrap();
+    w.write_u8(mp.text_ref).unwrap();
+    w.write_u8(mp.num_ref).unwrap();
+    w.write_u16(mp.ext_flags).unwrap();
+    w.write_bytes(&[0u8; 14]).unwrap();
+    w.into_bytes()
 }
 
 /// 단일 문단을 레코드로 직렬화 (MSB를 위치 기반으로 강제 설정)

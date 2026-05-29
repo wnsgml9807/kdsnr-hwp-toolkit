@@ -87,6 +87,15 @@ fn save_file(doc: &Document, path: PathBuf, file_type: Option<&str>) -> PyResult
         Some(s) => Some(parse_file_type(s)?),
         None => None,
     };
+    let target = match ft {
+        Some(ft) => ft,
+        None => infer_file_type_from_path(&path)?,
+    };
+    if doc.source_format == SourceFormat::Hwpx && target == FileType::Hwp {
+        return Err(PyValueError::new_err(
+            "HWPX -> HWP 저장은 현재 호환성 검증 중이라 비활성화되어 있습니다. HWPX로 저장하거나 export_preview를 사용하세요.",
+        ));
+    }
     let out = api::save_file(&doc.inner, &path, ft).map_err(value_err)?;
     Ok(out.display().to_string())
 }
@@ -103,15 +112,13 @@ fn hwp_to_hwpx(doc: &Document) -> Document {
     }
 }
 
-/// Tag a document as HWP. The HWP container is produced when `save_file` runs.
+/// HWPX -> HWP is temporarily disabled until the generated HWP stream matches
+/// Hancom's stricter open checks across pictures and tables.
 #[pyfunction]
-fn hwpx_to_hwp(doc: &Document) -> Document {
-    Document {
-        inner: doc.inner.clone(),
-        source_format: SourceFormat::Hwp,
-        stem: doc.stem.clone(),
-        label: doc.label.clone(),
-    }
+fn hwpx_to_hwp(_doc: &Document) -> PyResult<Document> {
+    Err(PyValueError::new_err(
+        "HWPX -> HWP 저장은 현재 호환성 검증 중이라 비활성화되어 있습니다. HWPX로 저장하거나 export_preview를 사용하세요.",
+    ))
 }
 
 /// Split a problem-set document into per-question `Document`s, in order. Each is
@@ -261,6 +268,22 @@ fn parse_file_type(s: &str) -> PyResult<FileType> {
         "hwpx" => Ok(FileType::Hwpx),
         _ => Err(PyValueError::new_err(format!(
             "unknown file_type '{s}' (expected 'hwp'|'hwpx')"
+        ))),
+    }
+}
+
+fn infer_file_type_from_path(path: &std::path::Path) -> PyResult<FileType> {
+    match path
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|e| e.to_ascii_lowercase())
+        .as_deref()
+    {
+        Some("hwp") => Ok(FileType::Hwp),
+        Some("hwpx") => Ok(FileType::Hwpx),
+        _ => Err(PyValueError::new_err(format!(
+            "unknown file extension for '{}' (expected .hwp or .hwpx)",
+            path.display()
         ))),
     }
 }

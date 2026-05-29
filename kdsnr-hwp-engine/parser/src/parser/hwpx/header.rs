@@ -891,6 +891,7 @@ fn parse_border_fill(
                         b"winBrush" => {
                             bf.fill.fill_type = FillType::Solid;
                             let mut solid = SolidFill::default();
+                            solid.pattern_type = -1;
                             for attr in ce.attributes().flatten() {
                                 match attr.key.as_ref() {
                                     b"faceColor" => solid.background_color = parse_color(&attr),

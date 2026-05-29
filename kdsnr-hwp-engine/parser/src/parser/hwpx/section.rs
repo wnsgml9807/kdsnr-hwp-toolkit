@@ -18,8 +18,8 @@ use crate::model::page::{ColumnDef, ColumnDirection, ColumnType, PageBorderFill,
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph, ParagraphItem};
 use crate::model::shape::{
     ArcShape, CommonObjAttr, CurveShape, DrawingObjAttr, EllipseShape, GroupShape, HorzAlign,
-    HorzRelTo, LineShape, PolygonShape, RectangleShape, ShapeComponentAttr, ShapeObject, TextBox,
-    TextWrap, VertAlign, VertRelTo,
+    HorzRelTo, LineShape, PolygonShape, RectangleShape, ShapeComponentAttr, ShapeObject,
+    SizeCriterion, TextBox, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::{Fill, ShapeBorderLine};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
@@ -1029,6 +1029,22 @@ fn synthesize_common_obj_attr(common: &CommonObjAttr) -> u32 {
     attr
 }
 
+fn synthesize_size_criterion_bits(common: &CommonObjAttr) -> u32 {
+    let width = match common.width_criterion {
+        SizeCriterion::Paper => 0,
+        SizeCriterion::Page => 1,
+        SizeCriterion::Column => 2,
+        SizeCriterion::Para => 3,
+        SizeCriterion::Absolute => 4,
+    };
+    let height = match common.height_criterion {
+        SizeCriterion::Paper => 0,
+        SizeCriterion::Page => 1,
+        SizeCriterion::Column | SizeCriterion::Para | SizeCriterion::Absolute => 2,
+    };
+    (width << 15) | (height << 18)
+}
+
 /// 표 캡션 파싱
 fn parse_table_caption(
     e: &quick_xml::events::BytesStart,
@@ -1303,10 +1319,24 @@ fn parse_picture(
     let mut shape_attr = ShapeComponentAttr::default();
     let mut crop = CropInfo::default();
     let mut padding = crate::model::Padding::default();
+    let mut border_line = ShapeBorderLine {
+        color: 0,
+        width: 33,
+        attr: 0xd100_0040,
+        outline_style: 0,
+    };
+    let mut border_x = [0i32; 4];
+    let mut border_y = [0i32; 4];
+    let mut img_dim_width = 0u32;
+    let mut img_dim_height = 0u32;
+    let mut shape_comment = String::new();
+    let mut image_alpha = 0u8;
+    let mut picture_instance_id = 0u32;
 
     // <hp:pic> 요소 자체의 속성 파싱
     for attr in e.attributes().flatten() {
         match attr.key.as_ref() {
+            b"id" => common.instance_id = parse_u32(&attr),
             b"zOrder" => common.z_order = parse_i32(&attr),
             b"textWrap" => {
                 common.text_wrap = match attr_str(&attr).as_str() {
@@ -1319,7 +1349,7 @@ fn parse_picture(
                     _ => TextWrap::Square,
                 };
             }
-            b"instid" => common.instance_id = parse_u32(&attr),
+            b"instid" => picture_instance_id = parse_u32(&attr),
             b"groupLevel" => shape_attr.group_level = attr_str(&attr).parse().unwrap_or(0),
             _ => {}
         }
@@ -1486,6 +1516,23 @@ fn parse_picture(
                             }
                         }
                     }
+                    b"imgRect" => {}
+                    b"pt0" | b"pt1" | b"pt2" | b"pt3" => {
+                        let idx = match local {
+                            b"pt0" => 0,
+                            b"pt1" => 1,
+                            b"pt2" => 2,
+                            b"pt3" => 3,
+                            _ => 0,
+                        };
+                        for attr in ce.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"x" => border_x[idx] = parse_i32(&attr),
+                                b"y" => border_y[idx] = parse_i32(&attr),
+                                _ => {}
+                            }
+                        }
+                    }
                     b"imgClip" => {
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
@@ -1493,6 +1540,15 @@ fn parse_picture(
                                 b"right" => crop.right = parse_i32(&attr),
                                 b"top" => crop.top = parse_i32(&attr),
                                 b"bottom" => crop.bottom = parse_i32(&attr),
+                                _ => {}
+                            }
+                        }
+                    }
+                    b"imgDim" => {
+                        for attr in ce.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"dimwidth" => img_dim_width = parse_u32(&attr),
+                                b"dimheight" => img_dim_height = parse_u32(&attr),
                                 _ => {}
                             }
                         }
@@ -1509,6 +1565,7 @@ fn parse_picture(
                                 }
                                 b"bright" => img_attr.brightness = parse_i8(&attr),
                                 b"contrast" => img_attr.contrast = parse_i8(&attr),
+                                b"alpha" => image_alpha = parse_u8(&attr),
                                 b"effect" => {
                                     img_attr.effect = match attr_str(&attr).as_str() {
                                         "REAL_PIC" => ImageEffect::RealPic,
@@ -1546,9 +1603,53 @@ fn parse_picture(
                             }
                         }
                     }
+                    b"flip" => {
+                        for attr in ce.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"horizontal" => {
+                                    shape_attr.horz_flip = parse_bool(&attr);
+                                    if shape_attr.horz_flip {
+                                        shape_attr.flip |= 0x01;
+                                    } else {
+                                        shape_attr.flip &= !0x01;
+                                    }
+                                }
+                                b"vertical" => {
+                                    shape_attr.vert_flip = parse_bool(&attr);
+                                    if shape_attr.vert_flip {
+                                        shape_attr.flip |= 0x02;
+                                    } else {
+                                        shape_attr.flip &= !0x02;
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                    b"rotationInfo" => {
+                        for attr in ce.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"angle" => shape_attr.rotation_angle = parse_i16(&attr),
+                                b"centerX" => shape_attr.rotation_center.x = parse_i32(&attr),
+                                b"centerY" => shape_attr.rotation_center.y = parse_i32(&attr),
+                                b"rotateimage" => {
+                                    if parse_bool(&attr) {
+                                        shape_attr.flip |= 0x2408_0000;
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
                     b"renderingInfo" => {
                         // 그룹 내 자식의 아핀 변환 행렬 파싱
                         parse_rendering_info(reader, &mut shape_attr)?;
+                    }
+                    b"lineShape" => {
+                        border_line = parse_line_shape_attr(ce);
+                    }
+                    b"shapeComment" => {
+                        shape_comment = read_shape_comment_content(reader)?;
                     }
                     _ => {}
                 }
@@ -1566,14 +1667,87 @@ fn parse_picture(
         buf.clear();
     }
 
+    if shape_attr.local_file_version == 0 {
+        shape_attr.local_file_version = 1;
+    }
+
     let mut pic = crate::model::image::Picture::default();
     pic.image_attr = img_attr;
+    common.attr = synthesize_common_obj_attr(&common)
+        | synthesize_size_criterion_bits(&common)
+        | (common.attr & (OBJ_POS_FLOW_WITH_TEXT | OBJ_POS_ALLOW_OVERLAP))
+        | 0x0400_0000;
     pic.common = common;
     pic.shape_attr = shape_attr;
+    pic.border_color = border_line.color;
+    pic.border_width = border_line.width;
+    pic.border_attr = border_line.clone();
+    pic.border_x = border_x;
+    pic.border_y = border_y;
     pic.crop = crop;
     pic.padding = padding;
+    pic.border_opacity = image_alpha;
+    pic.instance_id = picture_instance_id;
+    pic.raw_picture_extra =
+        picture_extra_from_hwpx(pic.border_opacity, pic.instance_id, img_dim_width, img_dim_height);
+    if !shape_comment.is_empty() {
+        pic.common.description = shape_comment;
+        pic.common.raw_extra = vec![0, 0];
+    }
 
     Ok(Control::Picture(Box::new(pic)))
+}
+
+fn picture_extra_from_hwpx(
+    border_opacity: u8,
+    instance_id: u32,
+    dim_width: u32,
+    dim_height: u32,
+) -> Vec<u8> {
+    let mut extra = Vec::with_capacity(18);
+    extra.push(border_opacity);
+    extra.extend_from_slice(&instance_id.to_le_bytes());
+    extra.extend_from_slice(&0u32.to_le_bytes());
+    extra.extend_from_slice(&dim_width.to_le_bytes());
+    extra.extend_from_slice(&dim_height.to_le_bytes());
+    extra.push(0);
+    extra
+}
+
+fn read_shape_comment_content(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
+    let mut text = String::new();
+    let mut buf = Vec::new();
+
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Text(ref t)) => {
+                text.push_str(&t.decode().unwrap_or_default());
+            }
+            Ok(Event::GeneralRef(ref r)) => {
+                let raw = r.decode().unwrap_or_default();
+                match raw.as_ref() {
+                    "lt" => text.push('<'),
+                    "gt" => text.push('>'),
+                    "amp" => text.push('&'),
+                    "apos" => text.push('\''),
+                    "quot" => text.push('"'),
+                    _ => {}
+                }
+            }
+            Ok(Event::End(ref ee)) => {
+                let eename = ee.name();
+                if local_name(eename.as_ref()) == b"shapeComment" {
+                    break;
+                }
+            }
+            Ok(Event::Eof) => break,
+            Err(e) => return Err(HwpxError::XmlError(format!("shapeComment: {}", e))),
+            _ => {}
+        }
+        buf.clear();
+    }
+
+    Ok(text)
 }
 
 // ─── 그리기 객체 공통 속성 파싱 ───
@@ -1861,6 +2035,21 @@ fn parse_rendering_info(
     if let Some(sca) = pending_sca {
         sca_rot_pairs.push((sca, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]));
     }
+
+    let mut raw = Vec::with_capacity(2 + 48 + sca_rot_pairs.len() * 96);
+    raw.extend_from_slice(&(sca_rot_pairs.len() as u16).to_le_bytes());
+    for value in trans {
+        raw.extend_from_slice(&value.to_le_bytes());
+    }
+    for (sca, rot) in &sca_rot_pairs {
+        for value in sca {
+            raw.extend_from_slice(&value.to_le_bytes());
+        }
+        for value in rot {
+            raw.extend_from_slice(&value.to_le_bytes());
+        }
+    }
+    shape_attr.raw_rendering = raw;
 
     // HWP 바이너리와 동일한 합성: result = trans, 그 후 각 쌍마다 result = result × rot × sca
     let mut result = trans;

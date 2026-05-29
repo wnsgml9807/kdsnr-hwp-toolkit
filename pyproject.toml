@@ -4,13 +4,15 @@ build-backend = "maturin"
 
 [project]
 name = "kdsnr-hwp-toolkit"
-version = "0.2.1"
+version = "0.2.2"
 description = "KSAT HWP/HWPX import, conversion, splitting, and preview rendering"
 requires-python = ">=3.10"
+license = { file = "LICENSE" }
 # tqdm drives the one-time glyph-cache loading bar; Pillow downscales the images
 # extract_questions embeds as base64. Everything else is native.
 dependencies = ["tqdm>=4.66", "Pillow>=10"]
 classifiers = [
+    "License :: Other/Proprietary License",
     "Programming Language :: Rust",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -26,6 +28,8 @@ python-source = "src"
 module-name = "kdsnr_hwp_toolkit._native"
 # sdist must carry every engine workspace crate the extension links (path deps).
 include = [
+    { path = "LICENSE", format = "sdist" },
+    { path = "LICENSE", format = "wheel" },
     { path = "Cargo.lock", format = "sdist" },
     { path = "kdsnr-hwp-engine/Cargo.toml", format = "sdist" },
     { path = "kdsnr-hwp-engine/*/Cargo.toml", format = "sdist" },

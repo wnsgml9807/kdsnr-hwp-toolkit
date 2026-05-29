@@ -39,10 +39,10 @@ fn default_cs(p: &Paragraph) -> u32 {
 /// Non-box, non-balmun: template owns paragraph para/style and the default
 /// char-shape; emphasis runs (a run whose id differs from the default) survive.
 fn apply_role(mut src: Paragraph, slot: &Slot) -> Paragraph {
-    let has_visual = src.controls.iter().any(|c| {
+    let has_positioned_content = src.controls.iter().any(|c| {
         matches!(
             c,
-            Control::Picture(_) | Control::Table(_) | Control::Shape(_)
+            Control::Picture(_) | Control::Table(_) | Control::Shape(_) | Control::Equation(_)
         )
     });
     let def = default_cs(&src);
@@ -51,9 +51,9 @@ fn apply_role(mut src: Paragraph, slot: &Slot) -> Paragraph {
             cs.char_shape_id = slot.char_shape_id;
         }
     }
-    // Visual paragraphs keep the source's paraPr — it was authored to fit the
-    // picture/table; the slot's body paraPr (tight line spacing) would clip it.
-    if !has_visual {
+    // Positioned paragraphs keep the source paraPr because tabs, margins, and
+    // equations/pictures/tables are authored as one horizontal layout.
+    if !has_positioned_content {
         src.para_shape_id = slot.para_shape_id;
         src.style_id = slot.style_id;
     }

@@ -874,11 +874,9 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
         outline_style: 0,
     };
 
-    // 꼭짓점 좌표 (4개씩)
+    // 꼭짓점 좌표
     for i in 0..4 {
         pic.border_x[i] = r.read_i32().unwrap_or(0);
-    }
-    for i in 0..4 {
         pic.border_y[i] = r.read_i32().unwrap_or(0);
     }
 
@@ -908,10 +906,22 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
     };
     pic.image_attr.bin_data_id = r.read_u16().unwrap_or(0);
 
+    if r.remaining() >= 1 {
+        pic.border_opacity = r.read_u8().unwrap_or(0);
+    }
+    if r.remaining() >= 4 {
+        pic.instance_id = r.read_u32().unwrap_or(0);
+    }
+
+    let mut extra = Vec::new();
+    extra.push(pic.border_opacity);
+    extra.extend_from_slice(&pic.instance_id.to_le_bytes());
+
     // 남은 바이트 보존 (라운드트립용)
     if r.remaining() > 0 {
-        pic.raw_picture_extra = r.read_bytes(r.remaining()).unwrap_or_default().to_vec();
+        extra.extend_from_slice(&r.read_bytes(r.remaining()).unwrap_or_default());
     }
+    pic.raw_picture_extra = extra;
 
     pic
 }

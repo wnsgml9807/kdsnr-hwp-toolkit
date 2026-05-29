@@ -2,6 +2,7 @@
 name = "kdsnr-hwp-api"
 version = "0.1.0"
 edition = "2021"
+license-file = "../../LICENSE"
 
 # Model-centric conversion/render API over the engine crates. Pure Rust core
 # (no PyO3 here); the Python extension wraps this. See project_engine_api_redesign.

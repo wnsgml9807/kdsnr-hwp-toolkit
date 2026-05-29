@@ -2,6 +2,7 @@
 name = "kdsnr-hwp-hft"
 version = "0.1.0"
 edition = "2021"
+license-file = "../../LICENSE"
 
 # Hancom HFT font decoder: bitmap + vector outlines, per-glyph advance.
 # Clean-room port from Hancom Office's HncBaseDraw / HncFontLib. Pure Rust,

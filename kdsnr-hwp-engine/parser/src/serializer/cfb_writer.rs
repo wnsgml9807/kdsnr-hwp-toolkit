@@ -17,6 +17,7 @@ use crate::model::document::{Document, Preview};
 use super::body_text::serialize_section;
 use super::doc_info::serialize_doc_info;
 use super::header::serialize_file_header;
+#[cfg(target_arch = "wasm32")]
 use super::mini_cfb;
 use super::SerializeError;
 
@@ -155,25 +156,93 @@ fn write_hwp_cfb(
     // 7. 필수 보조 스트림 — 없으면 합성 (HWPX 원본은 이 스트림이 없어서
     //    Hancom이 손상으로 거부한다). 위 extra_streams가 이미 가졌으면 보존.
     use crate::serializer::hwp_aux;
-    ensure_stream(&mut streams, "/\u{0005}HwpSummaryInformation", hwp_aux::summary_information);
+    ensure_stream(
+        &mut streams,
+        "/\u{0005}HwpSummaryInformation",
+        hwp_aux::summary_information,
+    );
     ensure_stream(&mut streams, "/DocOptions/_LinkDoc", hwp_aux::link_doc);
-    ensure_stream(&mut streams, "/Scripts/DefaultJScript", hwp_aux::default_jscript);
-    ensure_stream(&mut streams, "/Scripts/JScriptVersion", hwp_aux::jscript_version);
+    ensure_stream(
+        &mut streams,
+        "/Scripts/DefaultJScript",
+        hwp_aux::default_jscript,
+    );
+    ensure_stream(
+        &mut streams,
+        "/Scripts/JScriptVersion",
+        hwp_aux::jscript_version,
+    );
+    ensure_stream(&mut streams, "/PrvText", hwp_aux::preview_text);
+    ensure_stream(&mut streams, "/PrvImage", hwp_aux::preview_image);
 
-    // mini_cfb로 CFB 컨테이너 조립 (WASM 호환)
     let named_streams: Vec<(&str, &[u8])> = streams
         .iter()
         .map(|(path, data)| (path.as_str(), data.as_slice()))
         .collect();
 
-    mini_cfb::build_cfb(&named_streams).map_err(|e| SerializeError::CfbError(e))
+    build_cfb_container(&named_streams)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn build_cfb_container(named_streams: &[(&str, &[u8])]) -> Result<Vec<u8>, SerializeError> {
+    use std::io::Cursor;
+
+    let cursor = Cursor::new(Vec::new());
+    let mut cfb = cfb::CompoundFile::create_with_version(cfb::Version::V3, cursor)
+        .map_err(|e| SerializeError::CfbError(e.to_string()))?;
+
+    for (path, data) in named_streams {
+        let path = normalize_cfb_path(path);
+        if let Some(parent) = parent_storage_path(&path) {
+            cfb.create_storage_all(&parent)
+                .map_err(|e| SerializeError::CfbError(e.to_string()))?;
+        }
+        let mut stream = cfb
+            .create_stream(&path)
+            .map_err(|e| SerializeError::CfbError(e.to_string()))?;
+        stream
+            .write_all(data)
+            .map_err(|e| SerializeError::CfbError(e.to_string()))?;
+    }
+
+    cfb.flush()
+        .map_err(|e| SerializeError::CfbError(e.to_string()))?;
+    Ok(cfb.into_inner().into_inner())
+}
+
+#[cfg(target_arch = "wasm32")]
+fn build_cfb_container(named_streams: &[(&str, &[u8])]) -> Result<Vec<u8>, SerializeError> {
+    mini_cfb::build_cfb(named_streams).map_err(SerializeError::CfbError)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn normalize_cfb_path(path: &str) -> String {
+    if path.starts_with('/') {
+        path.to_string()
+    } else {
+        format!("/{path}")
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn parent_storage_path(path: &str) -> Option<String> {
+    let trimmed = path.trim_start_matches('/');
+    let (parent, _) = trimmed.rsplit_once('/')?;
+    if parent.is_empty() {
+        None
+    } else {
+        Some(format!("/{parent}"))
+    }
 }
 
 /// Push a synthesized stream only when no stream with that name (ignoring the
 /// leading `/`) is already present.
 fn ensure_stream(streams: &mut Vec<(String, Vec<u8>)>, path: &str, synth: fn() -> Vec<u8>) {
     let name = path.trim_start_matches('/');
-    if streams.iter().any(|(p, _)| p.trim_start_matches('/') == name) {
+    if streams
+        .iter()
+        .any(|(p, _)| p.trim_start_matches('/') == name)
+    {
         return;
     }
     streams.push((path.to_string(), synth()));

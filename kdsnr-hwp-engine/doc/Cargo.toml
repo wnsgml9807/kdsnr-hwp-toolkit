@@ -3,7 +3,7 @@ name = "kdsnr-hwp-doc"
 version = "0.1.0"
 edition = "2021"
 description = "Normalized native HWP document model and context resolver."
-license = "MIT"
+license-file = "../../LICENSE"
 
 [lib]
 name = "kdsnr_hwp_doc"

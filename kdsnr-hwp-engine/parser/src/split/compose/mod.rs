@@ -37,6 +37,10 @@ const MATH_HWPX: &[u8] = include_bytes!("templates/math.hwpx");
 const SCIENCE_HWPX: &[u8] = include_bytes!("templates/science.hwpx");
 const SOCIAL_HWPX: &[u8] = include_bytes!("templates/social.hwpx");
 const KOREAN_HWPX: &[u8] = include_bytes!("templates/korean.hwpx");
+const MATH_HWP: &[u8] = include_bytes!("templates/math.hwp");
+const SCIENCE_HWP: &[u8] = include_bytes!("templates/science.hwp");
+const SOCIAL_HWP: &[u8] = include_bytes!("templates/social.hwp");
+const KOREAN_HWP: &[u8] = include_bytes!("templates/korean.hwp");
 
 /// Per-subject composition knobs. Every other step of the pipeline is
 /// subject-independent; these are the only template-driven differences.
@@ -97,6 +101,51 @@ fn template_doc(subject: Subject) -> &'static Document {
     cell.get_or_init(|| {
         parse_document(bytes).unwrap_or_else(|e| panic!("bundled {name} template parse: {e:?}"))
     })
+}
+
+fn hwp_frame_doc(subject: Subject) -> Option<&'static Document> {
+    static MATH: OnceLock<Document> = OnceLock::new();
+    static SCIENCE: OnceLock<Document> = OnceLock::new();
+    static SOCIAL: OnceLock<Document> = OnceLock::new();
+    static KOREAN: OnceLock<Document> = OnceLock::new();
+    let (cell, bytes, name) = match subject {
+        Subject::Math => (&MATH, MATH_HWP, "math"),
+        Subject::Science => (&SCIENCE, SCIENCE_HWP, "science"),
+        Subject::Social => (&SOCIAL, SOCIAL_HWP, "social"),
+        Subject::Korean => (&KOREAN, KOREAN_HWP, "korean"),
+    };
+    Some(cell.get_or_init(|| {
+        parse_document(bytes).unwrap_or_else(|e| panic!("bundled {name} hwp frame parse: {e:?}"))
+    }))
+}
+
+fn apply_hwp_section_frame(doc: &mut Document, subject: Subject, policy: ComposePolicy) {
+    let Some(frame_doc) = hwp_frame_doc(subject) else {
+        return;
+    };
+    let Some(source_section) = frame_doc.sections.first() else {
+        return;
+    };
+    let mut frame = source_section.section_def.clone();
+    if policy.show_master_on_first_page {
+        frame.hide_master_page = false;
+        frame.flags &= !0x0004;
+    }
+
+    for (si, section) in doc.sections.iter_mut().enumerate() {
+        if si != 0 {
+            continue;
+        }
+        section.section_def = frame.clone();
+        if let Some(carrier) = section.paragraphs.first_mut() {
+            for control in &mut carrier.controls {
+                if let Control::SectionDef(sd) = control {
+                    **sd = frame.clone();
+                }
+            }
+        }
+        section.raw_stream = None;
+    }
 }
 
 /// Compose one question's paragraphs into a fresh subject template document.
@@ -162,6 +211,7 @@ pub fn compose_question(
     for p in &mut composed {
         restack_linesegs(p);
     }
+    rebase_linesegs_to_unit_start(&mut composed);
     if subject == Subject::Korean {
         disable_korean_auto_numbering(&mut merged, &mut composed);
     }
@@ -172,6 +222,7 @@ pub fn compose_question(
         policy.show_master_on_first_page,
         policy.keep_carrier_spacer,
     );
+    apply_hwp_section_frame(&mut out, subject, policy);
     postprocess::strip_default_tab_stop(&mut out);
     if policy.clear_footers {
         postprocess::clear_footers(&mut out);
@@ -595,6 +646,25 @@ fn restack_linesegs(p: &mut Paragraph) {
             shift += orig[i - 1] + adv - orig[i];
         }
         p.line_segs[i].vertical_pos = orig[i] + shift;
+    }
+}
+
+fn rebase_linesegs_to_unit_start(paragraphs: &mut [Paragraph]) {
+    let Some(base) = paragraphs
+        .iter()
+        .flat_map(|p| p.line_segs.iter())
+        .map(|s| s.vertical_pos)
+        .next()
+    else {
+        return;
+    };
+    if base == 0 {
+        return;
+    }
+    for p in paragraphs {
+        for seg in &mut p.line_segs {
+            seg.vertical_pos -= base;
+        }
     }
 }
 

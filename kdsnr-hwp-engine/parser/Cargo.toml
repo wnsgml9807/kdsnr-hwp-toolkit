@@ -3,7 +3,7 @@ name = "kdsnr-hwp-parser"
 version = "0.1.0"
 edition = "2021"
 description = "KDSNR HWP/HWPX parser and HWPX serializer."
-license = "MIT"
+license-file = "../../LICENSE"
 
 [lib]
 name = "kdsnr_hwp_parser"

@@ -16,7 +16,7 @@ pub mod reader;
 pub mod section;
 pub mod utils;
 
-use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
+use crate::model::bin_data::{BinData, BinDataCompression, BinDataContent, BinDataType};
 use crate::model::document::{Document, FileHeader, HwpVersion, Section};
 
 /// HWPX 파싱 에러
@@ -73,8 +73,13 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // BinData 목록을 DocInfo에 등록
     for (i, item) in package_info.bin_data_items.iter().enumerate() {
         let ext = item.href.rsplit('.').next().unwrap_or("dat").to_string();
+        let compression = match ext.to_ascii_lowercase().as_str() {
+            "png" => BinDataCompression::NoCompress,
+            _ => BinDataCompression::Default,
+        };
         doc_info.bin_data_list.push(BinData {
             data_type: BinDataType::Embedding,
+            compression,
             storage_id: (i + 1) as u16,
             extension: Some(ext),
             ..Default::default()

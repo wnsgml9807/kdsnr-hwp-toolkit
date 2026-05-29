@@ -3,7 +3,7 @@ name = "kdsnr-hwp-render"
 version = "0.1.0"
 edition = "2021"
 description = "Native HWP backend replay."
-license = "MIT"
+license-file = "../../LICENSE"
 
 [lib]
 name = "kdsnr_hwp_render"

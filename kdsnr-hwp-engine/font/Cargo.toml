@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "Hancom-equivalent font resolution + per-char advance (자간/장평) for the render pipeline"
 publish = false
+license-file = "../../LICENSE"
 
 [lib]
 name = "kdsnr_hwp_font"

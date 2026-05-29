@@ -3,7 +3,7 @@ name = "kdsnr-hwp-paint"
 version = "0.1.0"
 edition = "2021"
 description = "Backend-independent HWP paint tree."
-license = "MIT"
+license-file = "../../LICENSE"
 
 [lib]
 name = "kdsnr_hwp_paint"

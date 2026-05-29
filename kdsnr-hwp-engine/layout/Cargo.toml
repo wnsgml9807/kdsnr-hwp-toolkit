@@ -3,7 +3,7 @@ name = "kdsnr-hwp-layout"
 version = "0.1.0"
 edition = "2021"
 description = "Native HWP measurement, pagination, and page layout tree."
-license = "MIT"
+license-file = "../../LICENSE"
 
 [lib]
 name = "kdsnr_hwp_layout"

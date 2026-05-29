@@ -586,9 +586,14 @@ fn serialize_header_control(header: &Header, level: u16, records: &mut Vec<Recor
 
     // LIST_HEADER + 문단
     serialize_list_header_with_paragraphs(
-        &header.paragraphs, level + 1,
-        header.text_width, header.text_height, header.text_ref, header.num_ref,
-        header.vertical_align, records,
+        &header.paragraphs,
+        level + 1,
+        header.text_width,
+        header.text_height,
+        header.text_ref,
+        header.num_ref,
+        header.vertical_align,
+        records,
     );
 }
 
@@ -613,9 +618,14 @@ fn serialize_footer_control(footer: &Footer, level: u16, records: &mut Vec<Recor
     records.push(make_ctrl_record(tags::CTRL_FOOTER, level, w.as_bytes()));
 
     serialize_list_header_with_paragraphs(
-        &footer.paragraphs, level + 1,
-        footer.text_width, footer.text_height, footer.text_ref, footer.num_ref,
-        footer.vertical_align, records,
+        &footer.paragraphs,
+        level + 1,
+        footer.text_width,
+        footer.text_height,
+        footer.text_ref,
+        footer.num_ref,
+        footer.vertical_align,
+        records,
     );
 }
 
@@ -636,8 +646,14 @@ fn serialize_footnote(fn_: &Footnote, level: u16, records: &mut Vec<Record>) {
     records.push(make_ctrl_record(tags::CTRL_FOOTNOTE, level, w.as_bytes()));
 
     serialize_list_header_with_paragraphs(
-        &fn_.paragraphs, level + 1, 0, 0, 0, 0,
-        crate::model::table::VerticalAlign::Top, records,
+        &fn_.paragraphs,
+        level + 1,
+        0,
+        0,
+        0,
+        0,
+        crate::model::table::VerticalAlign::Top,
+        records,
     );
 }
 
@@ -652,8 +668,14 @@ fn serialize_endnote(en: &Endnote, level: u16, records: &mut Vec<Record>) {
     records.push(make_ctrl_record(tags::CTRL_ENDNOTE, level, w.as_bytes()));
 
     serialize_list_header_with_paragraphs(
-        &en.paragraphs, level + 1, 0, 0, 0, 0,
-        crate::model::table::VerticalAlign::Top, records,
+        &en.paragraphs,
+        level + 1,
+        0,
+        0,
+        0,
+        0,
+        crate::model::table::VerticalAlign::Top,
+        records,
     );
 }
 
@@ -664,8 +686,14 @@ fn serialize_endnote(en: &Endnote, level: u16, records: &mut Vec<Record>) {
 fn serialize_hidden_comment(comment: &HiddenComment, level: u16, records: &mut Vec<Record>) {
     records.push(make_ctrl_record(tags::CTRL_HIDDEN_COMMENT, level, &[]));
     serialize_list_header_with_paragraphs(
-        &comment.paragraphs, level + 1, 0, 0, 0, 0,
-        crate::model::table::VerticalAlign::Top, records,
+        &comment.paragraphs,
+        level + 1,
+        0,
+        0,
+        0,
+        0,
+        crate::model::table::VerticalAlign::Top,
+        records,
     );
 }
 
@@ -787,11 +815,15 @@ fn serialize_picture_control(
     ctrl_data_record: Option<&[u8]>,
     records: &mut Vec<Record>,
 ) {
-    // CTRL_HEADER: ctrl_id(gso) + common_obj_attr
+    let mut common_data = serialize_common_obj_attr(&pic.common);
+    if pic.common.raw_extra.is_empty() {
+        common_data.extend_from_slice(&[0u8; 16]);
+    }
+
     records.push(make_ctrl_record(
         tags::CTRL_GEN_SHAPE,
         level,
-        &serialize_common_obj_attr(&pic.common),
+        &common_data,
     ));
 
     // 캡션 (SHAPE_COMPONENT 앞, level+1)
@@ -804,7 +836,7 @@ fn serialize_picture_control(
         tag_id: tags::HWPTAG_SHAPE_COMPONENT,
         level: level + 1,
         size: 0,
-        data: serialize_shape_component(tags::SHAPE_PICTURE_ID, &pic.shape_attr, true),
+        data: serialize_picture_shape_component(pic),
     });
 
     // CTRL_DATA: SHAPE_COMPONENT 자식으로 배치 (level+2)
@@ -826,17 +858,21 @@ fn serialize_picture_control(
     });
 }
 
+fn serialize_picture_shape_component(pic: &Picture) -> Vec<u8> {
+    let mut w = ByteWriter::new();
+    write_shape_component_base(&mut w, tags::SHAPE_PICTURE_ID, &pic.shape_attr, true);
+    w.into_bytes()
+}
+
 fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
     let mut w = ByteWriter::new();
     w.write_color_ref(pic.border_color).unwrap();
     w.write_i32(pic.border_width).unwrap();
-    w.write_u32(0).unwrap(); // border_attr
+    w.write_u32(pic.border_attr.attr).unwrap();
 
-    for &x in &pic.border_x {
-        w.write_i32(x).unwrap();
-    }
-    for &y in &pic.border_y {
-        w.write_i32(y).unwrap();
+    for i in 0..4 {
+        w.write_i32(pic.border_x[i]).unwrap();
+        w.write_i32(pic.border_y[i]).unwrap();
     }
 
     // 자르기 정보

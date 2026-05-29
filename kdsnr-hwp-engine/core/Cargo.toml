@@ -3,7 +3,7 @@ name = "kdsnr-hwp-core"
 version = "0.1.0"
 edition = "2021"
 description = "Shared native HWP engine types."
-license = "MIT"
+license-file = "../../LICENSE"
 
 [lib]
 name = "kdsnr_hwp_core"

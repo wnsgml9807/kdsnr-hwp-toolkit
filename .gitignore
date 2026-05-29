@@ -51,6 +51,7 @@ venv/
 # Bundled subject templates compiled into the engine (include_bytes!).
 !kdsnr-hwp-engine/parser/src/split/compose/templates/
 !kdsnr-hwp-engine/parser/src/split/compose/templates/*.hwpx
+!kdsnr-hwp-engine/parser/src/split/compose/templates/*.hwp
 
 # Test/probe corpora are local and large; keep source code and package data only.
 /tests/
@@ -118,6 +119,9 @@ kdsnr-hwp-engine/.fonts/
 
 # Dev scripts / probes and the uv lock — not needed to build or run the API.
 /scripts/
+!/scripts/
+/scripts/*
+!/scripts/hwp_open_cli.ps1
 /uv.lock
 
 # Tracked exceptions: the README and its logo (override *.md / *.png above).
